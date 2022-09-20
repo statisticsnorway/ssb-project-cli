@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "hack2022-dapla-hurtigstart"
+version = "0.1.0"
+description = ""
+authors = ["Arne Sørli <81353974+arneso-ssb@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "hack2022_dapla_hurtigstart"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+GitPython = "^3.1.27"
+PyGithub = "^1.55"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.8.0"
+isort = "^5.10.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
