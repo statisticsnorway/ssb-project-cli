@@ -4,6 +4,7 @@ import sys
 
 from github import Github, GithubException
 
+
 logging.basicConfig(
     level=logging.INFO,
     handlers=[
@@ -16,10 +17,10 @@ logging.basicConfig(
 
 
 def main(token: str, repo_name: str):
-    logging.info("Scanning organization for active public repos...")
     org_name = "statisticsnorway"
-    g = Github(token)
+    logging.info(f"Creating GitHub repo {org_name}/{repo_name} and set defaults.")
 
+    g = Github(token)
     org = g.get_organization(org_name)
 
     try:
@@ -40,10 +41,17 @@ def main(token: str, repo_name: str):
     logging.info(f"{repo.full_name=}")
     logging.info(f"{repo.private=}")
 
-    # main_branch = repo.get_branch("main")
-    # main_branch.edit_protection()
-    # protection = main_branch.get_protection()
-    # logging.info(f"{protection}")
+    # Set branch protection rules
+    main_branch = repo.get_branch("main")
+    main_branch.edit_protection(
+        required_approving_review_count=1, dismiss_stale_reviews=True
+    )
+    logging.info(f"{main_branch.protected=}")
+    protection = main_branch.get_protection()
+    logging.info(
+        f"{protection.required_pull_request_reviews.required_approving_review_count=}"
+    )
+    logging.info(f"{protection.required_pull_request_reviews.dismiss_stale_reviews=}")
 
 
 if __name__ == "__main__":
