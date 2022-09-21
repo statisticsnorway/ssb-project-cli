@@ -14,7 +14,7 @@ app = typer.Typer()
 def create( projectname: str = "",
             description: str = "",
             repo_privacy: Optional[str] = "Internal",
-            skip_github: Optional[bool] = False,
+            skip_github: Optional[bool] = typer.Option(None, "--skip-github/--noskip-github"),
                                 ):
     """
     1. Start Cookiecutter which requests inputs from user
@@ -35,12 +35,17 @@ def create( projectname: str = "",
     # 1. Start cookiecutter
     typer.echo(f"Start Cookiecutter for project:{projectname}, in folder {os.getcwd()} or in dapla root?")
 
+    
+    # Create empty folder on root
+    # Get content from template to local
+    # git init ?
+    # git add ?
+    
     # 2. Create github repo
     if not skip_github:
         typer.echo("Create repo on github.com")
-
-        typer.echo("Set settings on github repo")
-
+        creategithub()
+        
     # 4. Add metadata about creation
     typer.echo("Record / log metadata about project-creation to toml-file")
     metadata_path = f"/home/jovyan/{projectname}/pyproject.toml"
@@ -48,11 +53,14 @@ def create( projectname: str = "",
     metadata["ssb"]["project_creation"]["date"] = datetime.datetime.now().strftime(r"%Y-%m-%d")
     metadata["ssb"]["project_creation"]["privacy"] = repo_privacy
     metadata["ssb"]["project_creation"]["skipped_github"] = skip_github
+    if not skip_github:
+        metadata["ssb"]["project_creation"]["github_uri"] = github_uri
     metadata["ssb"]["project_creation"]["delete_run"] = False
     with open(metadata_path, "w") as toml_file:
         toml.dump(metadata, toml_file)
 
-
+    typer.echo(f"Projectfolder {projectname} created on dapla root, you may move it if you want to.")
+    
 @app.command()
 def build(  kernel: Optional[str] = "python3",
             curr_path: Optional[str] = ""
@@ -85,7 +93,7 @@ def build(  kernel: Optional[str] = "python3",
 
     add_ipykernel = subprocess.run("poetry add ipykernel".split(" "), capture_output = True)
     if add_ipykernel.returncode != 0:
-        raise ValueError(f'Returncode of making kernel: {add_ipykernel.returncode}\n{add_ipykernel.stderr.decode("utf-8")}')
+        raise ValueError(f'Returncode of adding ipykernel: {add_ipykernel.returncode}\n{add_ipykernel.stderr.decode("utf-8")}')
     
     make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(" ") + [project_name]
     result = subprocess.run(make_kernel_cmd, capture_output = True)
@@ -99,20 +107,24 @@ def build(  kernel: Optional[str] = "python3",
     workspace_uri = workspace_uri_from_projectname(project_name)
     typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
     
-    typer.echo("Record / log metadata about project-build to toml-file")
-    metadata_path = f"/home/jovyan/{project_name}/pyproject.toml"
-    metadata = toml.load(metadata_path)
-    metadata["ssb"]["project_build"]["date"] = datetime.datetime.now().strftime(r"%Y-%m-%d")
-    metadata["ssb"]["project_build"]["kernel"] = kernel
-    metadata["ssb"]["project_build"]["kernel_cmd"] = kernel_cmd
-    metadata["ssb"]["project_build"]["workspace_uri_WITH_USERNAME"] = workspace_uri
-    with open(metadata_path, "w") as toml_file:
-        toml.dump(metadata, toml_file)
+    #typer.echo("Record / log metadata about project-build to toml-file")
+    #metadata_path = f"/home/jovyan/{project_name}/pyproject.toml"
+    #metadata = toml.load(metadata_path)
+    #metadata["ssb"]["project_build"]["date"] = datetime.datetime.now().strftime(r"%Y-%m-%d")
+    #metadata["ssb"]["project_build"]["kernel"] = kernel
+    #metadata["ssb"]["project_build"]["kernel_cmd"] = kernel_cmd
+    #metadata["ssb"]["project_build"]["workspace_uri_WITH_USERNAME"] = workspace_uri
+    #with open(metadata_path, "w") as toml_file:
+    #    toml.dump(metadata, toml_file)
     
     # Reset back to the starting directory
     if curr_path:
         os.chdir(pre_path)
 
+        
+
+    
+        
 @app.command()
 def delete():
     """
@@ -158,15 +170,15 @@ def delete():
             os.remove(f"/home/jovyan/.jupyter/lab/workspaces/{workspace}")
     
     
-    typer.echo("Record / log metadata about deletion to toml-file")
-    metadata_path = f"/home/jovyan/{project_name}/pyproject.toml"
-    metadata = toml.load(metadata_path)
-    metadata["ssb"]["project_delete"]["date"] = datetime.datetime.now().strftime(r"%Y-%m-%d")
-    metadata["ssb"]["project_delete"]["venvs"] = venvs
-    metadata["ssb"]["project_delete"]["delete_cmds"] = delete_cmds
-    metadata["ssb"]["project_delete"]["workspace_uri_WITH_USERNAME"] = workspace_uri
-    with open(metadata_path, "w") as toml_file:
-        toml.dump(metadata, toml_file)
+    #typer.echo("Record / log metadata about deletion to toml-file")
+    #metadata_path = f"/home/jovyan/{project_name}/pyproject.toml"
+    #metadata = toml.load(metadata_path)
+    #metadata["ssb"]["project_delete"]["date"] = datetime.datetime.now().strftime(r"%Y-%m-%d")
+    #metadata["ssb"]["project_delete"]["venvs"] = venvs
+    #metadata["ssb"]["project_delete"]["delete_cmds"] = delete_cmds
+    #metadata["ssb"]["project_delete"]["workspace_uri_WITH_USERNAME"] = workspace_uri
+    #with open(metadata_path, "w") as toml_file:
+    #    toml.dump(metadata, toml_file)
     
 @app.command()
 def workspace():
@@ -174,6 +186,22 @@ def workspace():
     typer.echo("To create/clone the workspace:")
     typer.echo(workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd())) + "?clone" )
 
+    
+    
+@app.command()
+def creategithub():
+    # Check if repo exists already on StatisticsNorway, throw error if it exists
+    # Kjør gitconfig-scripet om brukernavn og passord ikke er satt
+    # Flere brukernavn knyttet til samme konto? Sjekke etter "primary email" knyttet til github-konto?
+
+    # git push (needs user / password)
+    github_uri = f"https://github.com/statisticsnorway/{project_name}"
+
+
+    typer.echo("Set settings on github repo")
+    # git protection
+    
+    
 def projectname_from_currfolder(curr_path: Optional[str]) -> str:
     # Record for reset later
     curr_dir = os.getcwd()
