@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 
-from github import Github, GithubException
+from github import Github, GithubException, Repository
 
 
 logging.basicConfig(
@@ -14,6 +14,19 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+
+
+def set_branch_protection_rules(repo: Repository) -> None:
+    main_branch = repo.get_branch("main")
+    main_branch.edit_protection(
+        required_approving_review_count=1, dismiss_stale_reviews=True
+    )
+    logging.info(f"main_branch.protected={repo.get_branch('main').protected}")
+    protection = main_branch.get_protection()
+    logging.info(
+        f"{protection.required_pull_request_reviews.required_approving_review_count=}"
+    )
+    logging.info(f"{protection.required_pull_request_reviews.dismiss_stale_reviews=}")
 
 
 def main(token: str, repo_name: str):
@@ -41,17 +54,7 @@ def main(token: str, repo_name: str):
     logging.info(f"{repo.full_name=}")
     logging.info(f"{repo.private=}")
 
-    # Set branch protection rules
-    main_branch = repo.get_branch("main")
-    main_branch.edit_protection(
-        required_approving_review_count=1, dismiss_stale_reviews=True
-    )
-    logging.info(f"{main_branch.protected=}")
-    protection = main_branch.get_protection()
-    logging.info(
-        f"{protection.required_pull_request_reviews.required_approving_review_count=}"
-    )
-    logging.info(f"{protection.required_pull_request_reviews.dismiss_stale_reviews=}")
+    set_branch_protection_rules(repo)
 
 
 if __name__ == "__main__":
