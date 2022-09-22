@@ -1,9 +1,9 @@
 import argparse
 import logging
 import sys
+from pathlib import Path
 
 from github import Github, GithubException, Repository
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,11 +29,27 @@ def set_branch_protection_rules(repo: Repository) -> None:
     logging.info(f"{protection.required_pull_request_reviews.dismiss_stale_reviews=}")
 
 
+def get_user_info(g: Github) -> None:
+    user = g.get_user()
+    logging.info(f"{user.login=}")
+    logging.info(f"{user.name=}")
+    logging.info(f"{user.email=}")
+
+
+def get_org_members(g: Github) -> None:
+    org = g.get_organization("statisticsnorway")
+    for i, member in enumerate(org.get_members()):
+        print(f"{i}: {member.login} {member.name} email: {member.email}")
+
+
 def main(token: str, repo_name: str):
     org_name = "statisticsnorway"
     logging.info(f"Creating GitHub repo {org_name}/{repo_name} and set defaults.")
 
     g = Github(token)
+    get_user_info(g)
+    # get_org_members(g)
+
     org = g.get_organization(org_name)
 
     try:
@@ -53,6 +69,7 @@ def main(token: str, repo_name: str):
     repo = g.get_repo(f"{org_name}/{repo_name}")
     logging.info(f"{repo.full_name=}")
     logging.info(f"{repo.private=}")
+    logging.info(f"{repo.clone_url=}")
 
     set_branch_protection_rules(repo)
 

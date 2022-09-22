@@ -11,6 +11,8 @@ packages = [{include = "hack2022_dapla_hurtigstart"}]
 python = "^3.10"
 GitPython = "^3.1.27"
 PyGithub = "^1.55"
+typer = "^0.6.1"
+toml = "^0.10.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"
