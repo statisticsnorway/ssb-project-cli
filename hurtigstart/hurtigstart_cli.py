@@ -7,19 +7,22 @@ from pathlib import Path
 from typing import Optional
 
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich import print
 import git
 import toml
 import typer
 from github import BadCredentialsException, Github, GithubException
+from enum import Enum
 
-app = typer.Typer()
-org_name = "statisticsnorway"
+app = typer.Typer(rich_markup_mode="rich")
+GITHUB_ORG_NAME = "statisticsnorway"
 debug_without_create_repo = False
+DEFAULT_REPO_CREATE_PATH = Path.home()
 
 
 def is_github_repo(token: str, repo_name: str) -> bool:
     try:
-        Github(token).get_repo(f"{org_name}/{repo_name}")
+        Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
     except BadCredentialsException:
         raise ValueError("Bad GitHub Credentials.")
     except GithubException:
@@ -67,11 +70,11 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
 
     with TempGitRemote(repo, credential_url, username_url):
         repo.git.push("--set-upstream", "origin", "main")
-    typer.echo(f"Repo successfully pushed to GitHub: {github_url}")
+    print(f"Repo successfully pushed to GitHub: {github_url}")
 
 
 def set_branch_protection_rules(github_token: str, repo_name: str) -> None:
-    repo = Github(github_token).get_repo(f"{org_name}/{repo_name}")
+    repo = Github(github_token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
     repo.get_branch("main").edit_protection(
         required_approving_review_count=1, dismiss_stale_reviews=True
     )
@@ -90,13 +93,13 @@ def extract_name_email() -> tuple[str, str]:
 
 
 def request_name_email() -> tuple[str, str]:
-    name = input("Enter full name: ")
-    email = input("Enter email    : ")
+    name = typer.prompt("Enter full name: ")
+    email = typer.prompt("Enter email    : ")
     return name, email
 
 
 def create_project_from_template(projectname: str, description: str):
-    home_dir = Path.home()
+    home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
         raise ValueError(f"The directory {project_dir} already exists.")
@@ -129,40 +132,46 @@ def create_project_from_template(projectname: str, description: str):
     return project_dir
 
 
+class RepoPrivacy(str, Enum):
+    internal = "internal"
+    private = "private"
+    public = "public"
+
+
 @app.command()
 def create(
-    projectname: str = "",
-    description: str = "",
-    repo_privacy: Optional[str] = "internal",
-    skip_github: Optional[bool] = typer.Option(None, "--skip-github/--noskip-github"),
-    github_token: Optional[str] = "",
+    project_name: str = typer.Argument(
+        ..., help="Prosjekt navn, kun alfanumerisk og underscore"
+    ),
+    description: str = typer.Argument(
+        ..., help="En kort beskrivelse av hva prosjektet ditt er for"
+    ),
+    repo_privacy: Optional[RepoPrivacy] = typer.Argument(
+        RepoPrivacy.internal, help="En kort beskrivelse av hva prosjektet ditt er for"
+    ),
+    skip_github: Optional[bool] = typer.Option(
+        False, help="Legg denne til hvis man IKKE ønsker å opprette et Github repo"
+    ),
+    github_token: Optional[str] = typer.Option(
+        "",
+        help="Ditt Github PAT, følg [link=https://statistics-norway.atlassian.net/wiki/spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og+integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHub]instruksjonene her[/link] for å skape en",
+    ),
 ):
     """
-    1. Start Cookiecutter which requests inputs from user
-    2. Create Repo under Statistics Norway (ask for access token at this point)
-    3. Set recommended settings on github repo
-    4. Add metadata about creation to .ssb_project_root ?
+    :sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket). Følger kjent beste praksis i SSB. :sparkles:
     """
 
-    # Type checking
-    repo_privacy = repo_privacy.lower()
-    accepted_repo_privacy = ["internal", "public", "private"]
-    if repo_privacy not in accepted_repo_privacy:
-        raise ValueError(
-            f"Access {repo_privacy} not among accepted accesses: {*accepted_repo_privacy,}"
-        )
-
-    if " " in projectname:
+    if " " in project_name:
         raise ValueError("Spaces not allowed in projectname, use underscore?")
 
     if not skip_github and not github_token:
         raise ValueError("Needs GitHub token, please specify with --github-token")
 
     if not debug_without_create_repo:
-        if not skip_github and is_github_repo(github_token, projectname):
-            raise ValueError(f"The repo {projectname} already exists on GitHub.")
+        if not skip_github and is_github_repo(github_token, project_name):
+            raise ValueError(f"The repo {project_name} already exists on GitHub.")
 
-    create_project_from_template(projectname, description)
+    create_project_from_template(project_name, description)
 
     # Create empty folder on root
     # Get content from template to local
@@ -171,15 +180,15 @@ def create(
 
     # 2. Create github repo
     if not skip_github:
-        typer.echo("Create repo on github.com")
-        repo_url = create_github(github_token, projectname, repo_privacy, description)
+        print("Initialise empty repo on Github")
+        repo_url = create_github(github_token, project_name, repo_privacy, description)
 
-        typer.echo("Make local git repo and push to github.")
-        git_repo_dir = Path.home().joinpath(projectname)
+        print("Create local repo and push to Github")
+        git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
         make_git_repo_and_push(github_token, repo_url, git_repo_dir)
 
-        typer.echo("Set branch protection rules.")
-        set_branch_protection_rules(github_token, projectname)
+        print("Set branch protection rules.")
+        set_branch_protection_rules(github_token, project_name)
 
     # 4. Add metadata about creation
     # typer.echo("Record / log metadata about project-creation to toml-file")
@@ -196,10 +205,12 @@ def create(
     # with open(metadata_path, "w") as toml_file:
     #     toml.dump(metadata, toml_file)
 
-    typer.echo(
-        f"Projectfolder {projectname} created in folder {Path.home()}, you may move it if you want to."
+    print(
+        f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH}, you may move it if you want to."
     )
-    build(curr_path=projectname)
+    build(curr_path=project_name)
+
+    print()
 
 
 @app.command()
@@ -212,7 +223,7 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
     5. Provide link to workspace?
     """
 
-    project_directory = Path(os.getcwd()) / curr_path
+    project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
 
     project_name = curr_path
 
@@ -222,7 +233,9 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
         transient=True,
     ) as progress:
         progress.add_task(description="Installing dependencies...", total=None)
-        result = subprocess.run("poetry install".split(), capture_output=True, cwd=project_directory)
+        result = subprocess.run(
+            "poetry install".split(), capture_output=True, cwd=project_directory
+        )
     if result.returncode != 0:
         raise ValueError(
             f'Returncode of poetry install: {result.returncode}\n{result.stderr.decode("utf-8")}'
@@ -245,7 +258,9 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
         make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(
             " "
         ) + [project_name]
-        result = subprocess.run(make_kernel_cmd, capture_output=True, cwd=project_directory)
+        result = subprocess.run(
+            make_kernel_cmd, capture_output=True, cwd=project_directory
+        )
         if result.returncode != 0:
             raise ValueError(
                 f'Returncode of {" ".join(make_kernel_cmd)}: {result.returncode}\n{result.stderr.decode("utf-8")}'
@@ -253,7 +268,7 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
         output = result.stdout.decode("utf-8")
         print(output)
 
-    typer.echo(f"Kernel ({project_name}) successfully created")
+    print(f"Kernel ({project_name}) successfully created")
 
     # workspace_uri = workspace_uri_from_projectname(project_name)
     # typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
@@ -305,7 +320,6 @@ def delete():
             os.remove(f"/home/jovyan/.jupyter/lab/workspaces/{workspace}")
 
 
-@app.command()
 def workspace():
     typer.echo(workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd())))
     typer.echo("To create/clone the workspace:")
@@ -315,7 +329,6 @@ def workspace():
     )
 
 
-@app.command()
 def create_github(
     github_token: str, repo_name: str, repo_privacy: str, repo_description: str
 ) -> str:
@@ -326,13 +339,13 @@ def create_github(
 
     g = Github(github_token)
     if not debug_without_create_repo:
-        g.get_organization(org_name).create_repo(
+        g.get_organization(GITHUB_ORG_NAME).create_repo(
             repo_name,
             private=private_repo,
             auto_init=False,
             description=repo_description,
         )
-    repo_url = g.get_repo(f"{org_name}/{repo_name}").clone_url
+    repo_url = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").clone_url
     typer.echo(f"GitHub repo created: {repo_url}")
     return repo_url
 
