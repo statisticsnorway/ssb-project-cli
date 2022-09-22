@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 
-import datetime
-import os
 import json
-import shlex
+import os
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -16,7 +14,7 @@ from github import BadCredentialsException, Github, GithubException
 
 app = typer.Typer()
 org_name = "statisticsnorway"
-debug_without_create_repo = True
+debug_without_create_repo = False
 
 
 def is_github_repo(token: str, repo_name: str) -> bool:
@@ -79,27 +77,50 @@ def set_branch_protection_rules(github_token: str, repo_name: str) -> None:
     )
 
 
+def get_gitconfig_element(element: str) -> str:
+    cmd = ["git", "config", "--get", element]
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="utf-8")
+    return None if result.stdout == "" else result.stdout.strip()
+
+
+def extract_name_email() -> tuple[str, str]:
+    name = get_gitconfig_element("user.name")
+    email = get_gitconfig_element("user.email")
+    return name, email
+
+
+def request_name_email() -> tuple[str, str]:
+    name = input("Enter full name: ")
+    email = input("Enter email    : ")
+    return name, email
+
+
 def create_project_from_template(projectname: str, description: str):
     home_dir = Path.home()
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
         raise ValueError(f"The directory {project_dir} already exists.")
 
+    # Get name and email from .gitconfig, request if not found
+    name, email = extract_name_email()
+    if not (name and email):
+        name, email = request_name_email()
+
     template_info = {
-        "full_name": "Arne Sørli",
-        "email": "81353974+arneso-ssb@users.noreply.github.com",
-        "project_name": "hack2022-dh-test-repo-05",
-        "description": "Testbeskrivelse"
+        "project_name": projectname,
+        "description": description,
+        "full_name": name,
+        "email": email,
     }
-    quoted = shlex.quote(json.dumps(template_info))
-    print(f"{quoted=}")
+    quoted = json.dumps(template_info).replace('"', '"')
+
     argv = [
         "cruft",
         "create",
         "https://github.com/statisticsnorway/stat-hurtigstart-template-master",
         "--no-input",
         "--extra-context",
-        quoted
+        quoted,
     ]
     # try:
     subprocess.run(argv, check=True, cwd=home_dir)
@@ -154,8 +175,7 @@ def create(
         repo_url = create_github(github_token, projectname, repo_privacy, description)
 
         typer.echo("Make local git repo and push to github.")
-        # TODO Replace the line below with the path to the coockiecutter generated files
-        git_repo_dir = Path("C:/Users/aei/tmp/stat-hurtigstart-template-master")
+        git_repo_dir = Path.home().joinpath(projectname)
         make_git_repo_and_push(github_token, repo_url, git_repo_dir)
 
         typer.echo("Set branch protection rules.")
@@ -177,9 +197,8 @@ def create(
     #     toml.dump(metadata, toml_file)
 
     typer.echo(
-        f"Project {projectname} created on dapla root, you may move it if you want to."
+        f"Projectfolder {projectname} created in folder {Path.home()}, you may move it if you want to."
     )
-
     build(curr_path=projectname)
 
 
