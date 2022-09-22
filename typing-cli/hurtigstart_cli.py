@@ -13,6 +13,7 @@ from github import BadCredentialsException, Github, GithubException
 
 app = typer.Typer()
 org_name = "statisticsnorway"
+debug_without_create_repo = True
 
 
 def is_github_repo(token: str, repo_name: str) -> bool:
@@ -42,6 +43,8 @@ class TempGitRemote:
         self.restore_url = restore_url
 
     def __enter__(self) -> None:
+        for remote in self.repo.remotes:
+            self.repo.delete_remote(remote)
         self.origin = self.repo.create_remote("origin", self.temp_url)
         return None
 
@@ -73,6 +76,23 @@ def set_branch_protection_rules(github_token: str, repo_name: str) -> None:
     )
 
 
+def create_project_from_template(projectname: str, description: str):
+    home_dir = Path.home()
+    project_dir = home_dir.joinpath(projectname)
+    if project_dir.exists():
+        raise ValueError(f"The directory {project_dir} already exists.")
+    argv = [
+        "cruft",
+        "create",
+        "https://github.com/statisticsnorway/stat-hurtigstart-template-master",
+    ]
+    # try:
+    subprocess.run(argv, check=True)
+    # except subprocess.CalledProcessError:
+    #     typer.echo(f"ERROR calling cruft.")
+    return project_dir
+
+
 @app.command()
 def create(
     projectname: str = "",
@@ -102,13 +122,16 @@ def create(
     if not skip_github and not github_token:
         raise ValueError("Needs GitHub token, please specify with --github-token")
 
-    if not skip_github and is_github_repo(github_token, projectname):
-        raise ValueError(f"The repo {projectname} already exists on GitHub.")
+    if not debug_without_create_repo:
+        if not skip_github and is_github_repo(github_token, projectname):
+            raise ValueError(f"The repo {projectname} already exists on GitHub.")
 
     # 1. Start cookiecutter
     typer.echo(
         f"Start Cookiecutter for project:{projectname}, in folder {os.getcwd()} or in dapla root?"
     )
+
+    create_project_from_template(projectname, description)
 
     # Create empty folder on root
     # Get content from template to local
@@ -129,19 +152,19 @@ def create(
         set_branch_protection_rules(github_token, projectname)
 
     # 4. Add metadata about creation
-    typer.echo("Record / log metadata about project-creation to toml-file")
-    metadata_path = f"/home/jovyan/{projectname}/pyproject.toml"
-    metadata = toml.load(metadata_path)
-    metadata["ssb"]["project_creation"]["date"] = datetime.datetime.now().strftime(
-        r"%Y-%m-%d"
-    )
-    metadata["ssb"]["project_creation"]["privacy"] = repo_privacy
-    metadata["ssb"]["project_creation"]["skipped_github"] = skip_github
-    if not skip_github:
-        metadata["ssb"]["project_creation"]["github_uri"] = repo_url
-    metadata["ssb"]["project_creation"]["delete_run"] = False
-    with open(metadata_path, "w") as toml_file:
-        toml.dump(metadata, toml_file)
+    # typer.echo("Record / log metadata about project-creation to toml-file")
+    # metadata_path = f"/home/jovyan/{projectname}/pyproject.toml"
+    # metadata = toml.load(metadata_path)
+    # metadata["ssb"]["project_creation"]["date"] = datetime.datetime.now().strftime(
+    #     r"%Y-%m-%d"
+    # )
+    # metadata["ssb"]["project_creation"]["privacy"] = repo_privacy
+    # metadata["ssb"]["project_creation"]["skipped_github"] = skip_github
+    # if not skip_github:
+    #     metadata["ssb"]["project_creation"]["github_uri"] = repo_url
+    # metadata["ssb"]["project_creation"]["delete_run"] = False
+    # with open(metadata_path, "w") as toml_file:
+    #     toml.dump(metadata, toml_file)
 
     typer.echo(
         f"Projectfolder {projectname} created on dapla root, you may move it if you want to."
@@ -292,12 +315,13 @@ def create_github(
     private_repo = True if repo_privacy != "public" else False
 
     g = Github(github_token)
-    g.get_organization(org_name).create_repo(
-        repo_name,
-        private=private_repo,
-        auto_init=False,
-        description=repo_description,
-    )
+    if not debug_without_create_repo:
+        g.get_organization(org_name).create_repo(
+            repo_name,
+            private=private_repo,
+            auto_init=False,
+            description=repo_description,
+        )
     repo_url = g.get_repo(f"{org_name}/{repo_name}").clone_url
     typer.echo(f"GitHub repo created: {repo_url}")
     return repo_url
