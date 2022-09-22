@@ -14,13 +14,14 @@ PyGithub = "^1.55"
 typer = "^0.6.1"
 toml = "^0.10.2"
 cruft = "^2.11.1"
+rich = "^12.5.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"
 isort = "^5.10.1"
 
 [tool.poetry.scripts]
-hurtigstart = 'hurtigstart.hurtigstart_cli:main'
+ssb-project = 'hurtigstart.hurtigstart_cli:main'
 
 [build-system]
 requires = ["poetry-core"]
