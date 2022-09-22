@@ -181,8 +181,10 @@ def create(
     #     toml.dump(metadata, toml_file)
 
     typer.echo(
-        f"Projectfolder {projectname} created on dapla root, you may move it if you want to."
+        f"Project {projectname} created on dapla root, you may move it if you want to."
     )
+
+    build()
 
 
 @app.command()
@@ -198,12 +200,13 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
         pre_path = os.getcwd()
         os.chdir(curr_path)
 
-    typer.echo("Recommend taking in changes from template? (date from pyproject.toml?)")
-
-    typer.echo("Create Venv from Poetry")
-
-    typer.echo("Create kernel from venv")
     project_name = projectname_from_currfolder(os.getcwd())
+
+    result = subprocess.run("poetry install".split(), capture_output=True)
+    if result.returncode != 0:
+        raise ValueError(
+            f'Returncode of making kernel: {result.returncode}\n{result.stderr.decode("utf-8")}'
+        )
 
     # A new tool for creating venv-kernels from poetry-venvs will not be ready for hack-demo
     kernels = get_kernels_dict()
@@ -213,14 +216,7 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
     if kernel not in kernels.keys():
         raise ValueError(f"Cant find {kernel}-template among {kernels.keys()}")
 
-    add_ipykernel = subprocess.run(
-        "poetry add ipykernel".split(" "), capture_output=True
-    )
-    if add_ipykernel.returncode != 0:
-        raise ValueError(
-            f'Returncode of adding ipykernel: {add_ipykernel.returncode}\n{add_ipykernel.stderr.decode("utf-8")}'
-        )
-
+    typer.echo(f"Installing kernel: {project_name}")
     make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(
         " "
     ) + [project_name]
@@ -232,27 +228,16 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
     output = result.stdout.decode("utf-8")
     print(output)
 
-    print("You should now have a kernel with poetry venv?")
+    typer.echo(f"Kernel ({project_name}) successfully created")
 
     workspace_uri = workspace_uri_from_projectname(project_name)
     typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
-
-    # typer.echo("Record / log metadata about project-build to toml-file")
-    # metadata_path = f"/home/jovyan/{project_name}/pyproject.toml"
-    # metadata = toml.load(metadata_path)
-    # metadata["ssb"]["project_build"]["date"] = datetime.datetime.now().strftime(r"%Y-%m-%d")
-    # metadata["ssb"]["project_build"]["kernel"] = kernel
-    # metadata["ssb"]["project_build"]["kernel_cmd"] = kernel_cmd
-    # metadata["ssb"]["project_build"]["workspace_uri_WITH_USERNAME"] = workspace_uri
-    # with open(metadata_path, "w") as toml_file:
-    #    toml.dump(metadata, toml_file)
 
     # Reset back to the starting directory
     if curr_path:
         os.chdir(pre_path)
 
 
-@app.command()
 def delete():
     """
     1. Remove kernel
@@ -297,16 +282,6 @@ def delete():
             project_name.replace(["-", "_"], "")
         ):
             os.remove(f"/home/jovyan/.jupyter/lab/workspaces/{workspace}")
-
-    # typer.echo("Record / log metadata about deletion to toml-file")
-    # metadata_path = f"/home/jovyan/{project_name}/pyproject.toml"
-    # metadata = toml.load(metadata_path)
-    # metadata["ssb"]["project_delete"]["date"] = datetime.datetime.now().strftime(r"%Y-%m-%d")
-    # metadata["ssb"]["project_delete"]["venvs"] = venvs
-    # metadata["ssb"]["project_delete"]["delete_cmds"] = delete_cmds
-    # metadata["ssb"]["project_delete"]["workspace_uri_WITH_USERNAME"] = workspace_uri
-    # with open(metadata_path, "w") as toml_file:
-    #    toml.dump(metadata, toml_file)
 
 
 @app.command()
@@ -374,7 +349,7 @@ def get_kernels_dict() -> dict():
 
 
 def main():
-    app(prog_name="Dapla hurtigstart")
+    app(prog_name="ssb-project")
 
 
 if __name__ == "__main__":
