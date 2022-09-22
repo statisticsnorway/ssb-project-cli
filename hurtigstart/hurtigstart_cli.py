@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
+from rich.progress import Progress, SpinnerColumn, TextColumn
 import git
 import toml
 import typer
@@ -140,11 +141,6 @@ def create(
         if not skip_github and is_github_repo(github_token, projectname):
             raise ValueError(f"The repo {projectname} already exists on GitHub.")
 
-    # 1. Start cookiecutter
-    typer.echo(
-        f"Start Cookiecutter for project:{projectname}, in folder {os.getcwd()} or in dapla root?"
-    )
-
     create_project_from_template(projectname, description)
 
     # Create empty folder on root
@@ -184,7 +180,7 @@ def create(
         f"Project {projectname} created on dapla root, you may move it if you want to."
     )
 
-    build()
+    build(curr_path=projectname)
 
 
 @app.command()
@@ -196,16 +192,21 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
     4. Create workspace?
     5. Provide link to workspace?
     """
-    if curr_path:
-        pre_path = os.getcwd()
-        os.chdir(curr_path)
 
-    project_name = projectname_from_currfolder(os.getcwd())
+    project_directory = Path(os.getcwd()) / curr_path
 
-    result = subprocess.run("poetry install".split(), capture_output=True)
+    project_name = curr_path
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task(description="Installing dependencies...", total=None)
+        result = subprocess.run("poetry install".split(), capture_output=True, cwd=project_directory)
     if result.returncode != 0:
         raise ValueError(
-            f'Returncode of making kernel: {result.returncode}\n{result.stderr.decode("utf-8")}'
+            f'Returncode of poetry install: {result.returncode}\n{result.stderr.decode("utf-8")}'
         )
 
     # A new tool for creating venv-kernels from poetry-venvs will not be ready for hack-demo
@@ -216,26 +217,27 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
     if kernel not in kernels.keys():
         raise ValueError(f"Cant find {kernel}-template among {kernels.keys()}")
 
-    typer.echo(f"Installing kernel: {project_name}")
-    make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(
-        " "
-    ) + [project_name]
-    result = subprocess.run(make_kernel_cmd, capture_output=True)
-    if result.returncode != 0:
-        raise ValueError(
-            f'Returncode of making kernel: {result.returncode}\n{result.stderr.decode("utf-8")}'
-        )
-    output = result.stdout.decode("utf-8")
-    print(output)
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task(description=f"Creating kernel {project_name}...", total=None)
+        make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(
+            " "
+        ) + [project_name]
+        result = subprocess.run(make_kernel_cmd, capture_output=True, cwd=project_directory)
+        if result.returncode != 0:
+            raise ValueError(
+                f'Returncode of {" ".join(make_kernel_cmd)}: {result.returncode}\n{result.stderr.decode("utf-8")}'
+            )
+        output = result.stdout.decode("utf-8")
+        print(output)
 
     typer.echo(f"Kernel ({project_name}) successfully created")
 
-    workspace_uri = workspace_uri_from_projectname(project_name)
-    typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
-
-    # Reset back to the starting directory
-    if curr_path:
-        os.chdir(pre_path)
+    # workspace_uri = workspace_uri_from_projectname(project_name)
+    # typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
 
 
 def delete():
