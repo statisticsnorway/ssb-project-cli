@@ -22,30 +22,30 @@ def create( projectname: str = "",
     3. Set recommended settings on github repo
     4. Add metadata about creation to .ssb_project_root ?
     """
-    
+
     # Type checking
     repo_privacy = repo_privacy.lower()
     accepted_repo_privacy = ["internal", "public", "private"]
     if repo_privacy not in accepted_repo_privacy:
         raise ValueError(f"Access {repo_privacy} not among accepted accesses: {*accepted_repo_privacy,}")
-        
+
     if " " in projectname:
         raise ValueError("Spaces not allowed in projectname, use underscore?")
-    
+
     # 1. Start cookiecutter
     typer.echo(f"Start Cookiecutter for project:{projectname}, in folder {os.getcwd()} or in dapla root?")
 
-    
+
     # Create empty folder on root
     # Get content from template to local
     # git init ?
     # git add ?
-    
+
     # 2. Create github repo
     if not skip_github:
         typer.echo("Create repo on github.com")
         creategithub()
-        
+
     # 4. Add metadata about creation
     typer.echo("Record / log metadata about project-creation to toml-file")
     metadata_path = f"/home/jovyan/{projectname}/pyproject.toml"
@@ -60,7 +60,7 @@ def create( projectname: str = "",
         toml.dump(metadata, toml_file)
 
     typer.echo(f"Projectfolder {projectname} created on dapla root, you may move it if you want to.")
-    
+
 @app.command()
 def build(  kernel: Optional[str] = "python3",
             curr_path: Optional[str] = ""
@@ -82,7 +82,7 @@ def build(  kernel: Optional[str] = "python3",
 
     typer.echo("Create kernel from venv")
     project_name = projectname_from_currfolder(os.getcwd())
-    
+
     # A new tool for creating venv-kernels from poetry-venvs will not be ready for hack-demo
     kernels = get_kernels_dict()
     # Flip kernel-text to key if full path to kernel given
@@ -94,19 +94,19 @@ def build(  kernel: Optional[str] = "python3",
     add_ipykernel = subprocess.run("poetry add ipykernel".split(" "), capture_output = True)
     if add_ipykernel.returncode != 0:
         raise ValueError(f'Returncode of adding ipykernel: {add_ipykernel.returncode}\n{add_ipykernel.stderr.decode("utf-8")}')
-    
+
     make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(" ") + [project_name]
     result = subprocess.run(make_kernel_cmd, capture_output = True)
     if result.returncode != 0:
         raise ValueError(f'Returncode of making kernel: {result.returncode}\n{result.stderr.decode("utf-8")}')
     output = result.stdout.decode("utf-8")
     print(output)
-    
+
     print("You should now have a kernel with poetry venv?")
 
     workspace_uri = workspace_uri_from_projectname(project_name)
     typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
-    
+
     #typer.echo("Record / log metadata about project-build to toml-file")
     #metadata_path = f"/home/jovyan/{project_name}/pyproject.toml"
     #metadata = toml.load(metadata_path)
@@ -116,15 +116,15 @@ def build(  kernel: Optional[str] = "python3",
     #metadata["ssb"]["project_build"]["workspace_uri_WITH_USERNAME"] = workspace_uri
     #with open(metadata_path, "w") as toml_file:
     #    toml.dump(metadata, toml_file)
-    
+
     # Reset back to the starting directory
     if curr_path:
         os.chdir(pre_path)
 
-        
 
-    
-        
+
+
+
 @app.command()
 def delete():
     """
@@ -143,12 +143,12 @@ def delete():
     # If you remove the currently activated virtual environment, it will be automatically deactivated.
 
     typer.echo("Remove venv / uninstall with poetry")
-    
+
     venvs = subprocess.run(["poetry", "env", "list"], capture_output= True)
     if venvs.returncode != 0:
         raise ValueError(venvs.stderr.decode("utf-8"))
     venvs = venvs.stdout.decode("utf-8")
-    
+
     delete_cmds = []
     for venv in venvs.split("\n"):
         if venv:
@@ -157,7 +157,7 @@ def delete():
                 .startswith(
                     project_name.replace("-", "").replace("_",""))):
                 delete_cmds += [['poetry', 'env', 'remove', venv.split(" ")[0]]]
-            
+
     for cmd in delete_cmds:
         deletion = subprocess.run(cmd, capture_output= True)
         if deletion.returncode != 0:
@@ -168,8 +168,8 @@ def delete():
     for workspace in os.listdir("/home/jovyan/.jupyter/lab/workspaces/"):
         if workspace.replace(["-","_"], "").startswith(project_name.replace(["-","_"], "")):
             os.remove(f"/home/jovyan/.jupyter/lab/workspaces/{workspace}")
-    
-    
+
+
     #typer.echo("Record / log metadata about deletion to toml-file")
     #metadata_path = f"/home/jovyan/{project_name}/pyproject.toml"
     #metadata = toml.load(metadata_path)
@@ -179,15 +179,15 @@ def delete():
     #metadata["ssb"]["project_delete"]["workspace_uri_WITH_USERNAME"] = workspace_uri
     #with open(metadata_path, "w") as toml_file:
     #    toml.dump(metadata, toml_file)
-    
+
 @app.command()
 def workspace():
     typer.echo(workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd())))
     typer.echo("To create/clone the workspace:")
     typer.echo(workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd())) + "?clone" )
 
-    
-    
+
+
 @app.command()
 def creategithub():
     # Check if repo exists already on StatisticsNorway, throw error if it exists
@@ -200,8 +200,8 @@ def creategithub():
 
     typer.echo("Set settings on github repo")
     # git protection
-    
-    
+
+
 def projectname_from_currfolder(curr_path: Optional[str]) -> str:
     # Record for reset later
     curr_dir = os.getcwd()
@@ -232,5 +232,9 @@ def get_kernels_dict() -> dict():
     return kernel_dict
 
 
+
+def main():
+    app(prog_name="Dapla hurtigstart")
+
 if __name__ == "__main__":
-    app()
+    main()
