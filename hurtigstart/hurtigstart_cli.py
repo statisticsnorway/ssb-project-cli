@@ -359,5 +359,9 @@ def get_kernels_dict() -> dict():
     return kernel_dict
 
 
+
+def main():
+    app(prog_name="Dapla hurtigstart")
+
 if __name__ == "__main__":
-    app()
+    main()
