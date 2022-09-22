@@ -2,6 +2,8 @@
 
 import datetime
 import os
+import json
+import shlex
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -81,13 +83,25 @@ def create_project_from_template(projectname: str, description: str):
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
         raise ValueError(f"The directory {project_dir} already exists.")
+
+    template_info = {
+        "full_name": "Arne Sørli",
+        "email": "81353974+arneso-ssb@users.noreply.github.com",
+        "project_name": "hack2022-dh-test-repo-05",
+        "description": "Testbeskrivelse"
+    }
+    quoted = shlex.quote(json.dumps(template_info))
+    print(f"{quoted=}")
     argv = [
         "cruft",
         "create",
         "https://github.com/statisticsnorway/stat-hurtigstart-template-master",
+        "--no-input",
+        "--extra-context",
+        quoted
     ]
     # try:
-    subprocess.run(argv, check=True)
+    subprocess.run(argv, check=True, cwd=home_dir)
     # except subprocess.CalledProcessError:
     #     typer.echo(f"ERROR calling cruft.")
     return project_dir
@@ -359,9 +373,9 @@ def get_kernels_dict() -> dict():
     return kernel_dict
 
 
-
 def main():
     app(prog_name="Dapla hurtigstart")
+
 
 if __name__ == "__main__":
     main()
