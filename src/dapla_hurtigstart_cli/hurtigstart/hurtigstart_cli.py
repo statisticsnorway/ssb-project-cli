@@ -3,16 +3,21 @@
 import json
 import os
 import subprocess
+from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich import print
 import git
 import toml
 import typer
-from github import BadCredentialsException, Github, GithubException
-from enum import Enum
+from github import BadCredentialsException
+from github import Github
+from github import GithubException
+from rich import print
+from rich.progress import Progress
+from rich.progress import SpinnerColumn
+from rich.progress import TextColumn
+
 
 app = typer.Typer(rich_markup_mode="rich")
 GITHUB_ORG_NAME = "statisticsnorway"

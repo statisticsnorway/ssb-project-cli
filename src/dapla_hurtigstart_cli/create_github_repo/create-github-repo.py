@@ -3,7 +3,10 @@ import logging
 import sys
 from pathlib import Path
 
-from github import Github, GithubException, Repository
+from github import Github
+from github import GithubException
+from github import Repository
+
 
 logging.basicConfig(
     level=logging.INFO,

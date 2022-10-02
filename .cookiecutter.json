@@ -1,0 +1,14 @@
+{
+  "_output_dir": "/Users/anders/Work/stat/t",
+  "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Anders Lunde",
+  "copyright_year": "2022",
+  "development_status": "Development Status :: 1 - Planning",
+  "email": "kons-lunde@ssb.no",
+  "friendly_name": "Hack2022 Dapla Hurtigstart",
+  "github_user": "statisticsnorway",
+  "license": "MIT",
+  "package_name": "dapla_hurtigstart_cli",
+  "project_name": "hack2022-dapla-hurtigstart",
+  "version": "0.0.0"
+}
