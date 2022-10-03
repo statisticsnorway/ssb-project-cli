@@ -19,7 +19,7 @@ classifiers = [
 Changelog = "https://github.com/statisticsnorway/hack2022-dapla-hurtigstart/releases"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 click = ">=8.0.1"
 dparse = "^0.6.2"
 typer = "^0.6.1"
