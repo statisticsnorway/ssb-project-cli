@@ -1,12 +1,12 @@
 """Command-line interface."""
 
-from dapla_hurtigstart_cli.hurtigstart import hurtigstart_cli
+from ssb_project_cli import ssb_project
 
 
 def main() -> None:
-    """Hurtigstart."""
-    hurtigstart_cli.main()
+    """Run app"""
+    ssb_project.main()
 
 
 if __name__ == "__main__":
-    main(prog_name="hurtigstart")  # pragma: no cover
+    main(prog_name="ssb-project")  # pragma: no cover

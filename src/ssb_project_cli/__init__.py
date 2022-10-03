@@ -1,1 +1,1 @@
-"""Hack2022 Dapla Hurtigstart."""
+"""SSB Project CLI"""

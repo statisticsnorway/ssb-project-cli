@@ -59,7 +59,7 @@ myst-parser = {version = ">=0.16.1"}
 mock = "^4.0.3"
 
 [tool.poetry.scripts]
-ssb-project-cli = "ssb_project_cli.__main__:main"
+ssb-project = "ssb_project_cli.__main__:main"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]

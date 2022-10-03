@@ -2,7 +2,7 @@
 
 from typer.testing import CliRunner
 
-from dapla_hurtigstart_cli.hurtigstart.hurtigstart_cli import app
+from ssb_project_cli.ssb_project.app import app
 
 
 runner = CliRunner()
