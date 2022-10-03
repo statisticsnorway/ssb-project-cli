@@ -1,7 +1,7 @@
 """Sphinx configuration."""
-project = "Hack2022 Dapla Hurtigstart"
-author = "Arne Sørli"
-copyright = "2022, Arne Sørli"
+project = "SSB Project CLI"
+author = "Statistics Norway"
+copyright = "2022, Statistics Norway"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",

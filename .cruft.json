@@ -1,0 +1,20 @@
+{
+  "template": "https://github.com/cjolowicz/cookiecutter-hypermodern-python",
+  "commit": "4f34f450aa6f9c79682a480abb9170066713c5f3",
+  "context": {
+    "cookiecutter": {
+      "project_name": "ssb-project-cli",
+      "package_name": "ssb_project_cli",
+      "friendly_name": "SSB Project CLI",
+      "author": "Statistics Norway",
+      "email": "mmw@ssb.no",
+      "github_user": "statisticsnorway",
+      "version": "1.0.0",
+      "copyright_year": "2022",
+      "license": "MIT",
+      "development_status": "Development Status :: 3 - Alpha",
+      "_template": "https://github.com/cjolowicz/cookiecutter-hypermodern-python"
+    }
+  },
+  "directory": null
+}

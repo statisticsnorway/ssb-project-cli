@@ -4,10 +4,6 @@ end-before: <!-- github-only -->
 ---
 ```
 
-[license]: license
-[contributor guide]: contributing
-[command-line reference]: usage
-
 ```{toctree}
 ---
 hidden:
@@ -19,5 +15,5 @@ reference
 contributing
 Code of Conduct <codeofconduct>
 License <license>
-Changelog <https://github.com/statisticsnorway/hack2022-dapla-hurtigstart/releases>
+Changelog <https://github.com/statisticsnorway/ssb-project-cli/releases>
 ```

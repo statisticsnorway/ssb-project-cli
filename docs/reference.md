@@ -1,8 +1,8 @@
 # Reference
 
-## dapla_hurtigstart_cli
+## ssb_project_cli
 
 ```{eval-rst}
-.. automodule:: dapla_hurtigstart_cli
+.. automodule:: ssb_project_cli
    :members:
 ```
