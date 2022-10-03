@@ -12,9 +12,9 @@ Here is a list of important resources for contributors:
 - [Code of Conduct]
 
 [mit license]: https://opensource.org/licenses/MIT
-[source code]: https://github.com/statisticsnorway/hack2022-dapla-hurtigstart
-[documentation]: https://hack2022-dapla-hurtigstart.readthedocs.io/
-[issue tracker]: https://github.com/statisticsnorway/hack2022-dapla-hurtigstart/issues
+[source code]: https://github.com/statisticsnorway/ssb-project-cli
+[documentation]: https://ssb-project-cli.readthedocs.io/
+[issue tracker]: https://github.com/statisticsnorway/ssb-project-cli/issues
 
 ## How to report a bug
 
@@ -54,7 +54,7 @@ or the command-line interface:
 
 ```console
 $ poetry run python
-$ poetry run hack2022-dapla-hurtigstart
+$ poetry run ssb-project-cli
 ```
 
 [poetry]: https://python-poetry.org/
@@ -108,7 +108,7 @@ $ nox --session=pre-commit -- install
 It is recommended to open an issue before starting work on anything.
 This will allow a chance to talk it over with the owners and validate your approach.
 
-[pull request]: https://github.com/statisticsnorway/hack2022-dapla-hurtigstart/pulls
+[pull request]: https://github.com/statisticsnorway/ssb-project-cli/pulls
 
 <!-- github-only -->
 
