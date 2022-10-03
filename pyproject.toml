@@ -59,7 +59,7 @@ myst-parser = {version = ">=0.16.1"}
 mock = "^4.0.3"
 
 [tool.poetry.scripts]
-hurtigstart = "dapla_hurtigstart_cli.__main__:main"
+ssb-project = "dapla_hurtigstart_cli.__main__:main"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
