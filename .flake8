@@ -1,0 +1,11 @@
+[flake8]
+select = B,B9,C,D,DAR,E,F,N,RST,S,W
+#Ignore for setup D100,F401,D103,S404,B904,D107,D105,S603,D101,B008,B950,D200,D202,D415,D205,D212,C901,D205,D212.D415,S607,S607
+#Should be ignore = E203,E501,RST201,RST203,RST301,W503,D301
+ignore = E203,E501,RST201,RST203,RST301,W503,D104,D100,F401,D103,S404,B904,D107,D105,S603,D101,B008,B950,D200,D202,D415,D205,D212,C901,D205,D212.D415,S607,S607
+max-line-length = 80
+max-complexity = 10
+docstring-convention = google
+per-file-ignores = tests/*:S101
+rst-roles = class,const,func,meth,mod,ref
+rst-directives = deprecated
