@@ -61,6 +61,9 @@ mock = "^4.0.3"
 [tool.poetry.scripts]
 ssb-project = "dapla_hurtigstart_cli.__main__:main"
 
+[tool.poetry.group.dev.dependencies]
+cruft = "^2.11.1"
+
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
 tests = ["tests", "*/tests"]
