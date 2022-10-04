@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "hack2022-dapla-hurtigstart"
-version = "1.0.0.1"
-description = "Hack2022 Dapla Hurtigstart"
-authors = ["Arne Sørli <81353974+arneso-ssb@users.noreply.github.com>"]
+name = "ssb-project-cli"
+version = "1.0.1"
+description = "SSB Project CLI"
+authors = ["Statistics Norway mmw@ssb.no"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/statisticsnorway/ssb-project-cli"
