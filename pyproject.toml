@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "ssb-project-cli"
 version = "1.0.1"
-description = "Hack2022 Dapla Hurtigstart"
+description = "SSB Project CLI"
 authors = ["Arne Sørli <81353974+arneso-ssb@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
