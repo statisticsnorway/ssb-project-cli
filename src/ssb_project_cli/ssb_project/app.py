@@ -2,7 +2,7 @@
 """Command-line-interface for project-operations in dapla-jupterlab."""
 import json
 import os
-import subprocess
+import subprocess  # noqa: S404
 from enum import Enum
 from pathlib import Path
 from typing import Optional
