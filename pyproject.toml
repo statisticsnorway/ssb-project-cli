@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hack2022-dapla-hurtigstart"
-version = "0.0.1"
+version = "1.0.0"
 description = "Hack2022 Dapla Hurtigstart"
 authors = ["Arne Sørli <81353974+arneso-ssb@users.noreply.github.com>"]
 license = "MIT"
