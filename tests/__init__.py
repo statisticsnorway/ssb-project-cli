@@ -1,1 +1,1 @@
-"""Test suite for the dapla_hurtigstart_cli package."""
+"""Test suite for the ssb_project_cli package."""
