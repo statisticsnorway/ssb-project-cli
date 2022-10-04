@@ -383,7 +383,7 @@ def delete():  # noqa C901
     # it will be automatically deactivated.
 
     typer.echo("Remove venv / uninstall with poetry")
-    # Should start process in cwd, ignoring error S607
+
     venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)  # noqa S607
     if venvs.returncode != 0:
         raise ValueError(venvs.stderr.decode("utf-8"))
@@ -502,7 +502,6 @@ def get_kernels_dict() -> dict[str, str]:
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """
-    # Should start process in cwd, ignoring error S607
     kernels = subprocess.run(  # noqa S607
         ["jupyter", "kernelspec", "list"], capture_output=True
     )
