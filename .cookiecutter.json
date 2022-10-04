@@ -1,14 +1,13 @@
 {
-  "_output_dir": "/Users/anders/Work/stat/t",
-  "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
-  "author": "Anders Lunde",
+  "_template": "https://github.com/cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Statistics Norway",
   "copyright_year": "2022",
-  "development_status": "Development Status :: 1 - Planning",
-  "email": "kons-lunde@ssb.no",
-  "friendly_name": "Hack2022 Dapla Hurtigstart",
+  "development_status": "Development Status :: 3 - Alpha",
+  "email": "mmw@ssb.no",
+  "friendly_name": "SSB Project CLI",
   "github_user": "statisticsnorway",
   "license": "MIT",
-  "package_name": "dapla_hurtigstart_cli",
-  "project_name": "hack2022-dapla-hurtigstart",
-  "version": "0.0.0"
+  "package_name": "ssb_project_cli",
+  "project_name": "ssb-project-cli",
+  "version": "1.0.0"
 }

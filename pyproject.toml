@@ -5,18 +5,18 @@ description = "Hack2022 Dapla Hurtigstart"
 authors = ["Arne Sørli <81353974+arneso-ssb@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/statisticsnorway/hack2022-dapla-hurtigstart"
-repository = "https://github.com/statisticsnorway/hack2022-dapla-hurtigstart"
-documentation = "https://hack2022-dapla-hurtigstart.readthedocs.io"
+homepage = "https://github.com/statisticsnorway/ssb-project-cli"
+repository = "https://github.com/statisticsnorway/ssb-project-cli"
+documentation = "https://ssb-project-cli.readthedocs.io"
 packages = [
-    { include = "dapla_hurtigstart_cli", from = "src" },
+    { include = "ssb_project_cli", from = "src" },
 ]
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 3 - Alpha",
 ]
 
 [tool.poetry.urls]
-Changelog = "https://github.com/statisticsnorway/hack2022-dapla-hurtigstart/releases"
+Changelog = "https://github.com/statisticsnorway/ssb-project-cli/releases"
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -59,7 +59,7 @@ myst-parser = {version = ">=0.16.1"}
 mock = "^4.0.3"
 
 [tool.poetry.scripts]
-ssb-project = "dapla_hurtigstart_cli.__main__:main"
+ssb-project = "ssb_project_cli.__main__:main"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
@@ -67,7 +67,7 @@ tests = ["tests", "*/tests"]
 
 [tool.coverage.run]
 branch = true
-source = ["dapla_hurtigstart_cli", "tests"]
+source = ["ssb_project_cli", "tests"]
 
 [tool.coverage.report]
 show_missing = true
