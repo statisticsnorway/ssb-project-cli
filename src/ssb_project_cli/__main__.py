@@ -1,7 +1,8 @@
 """Command-line interface."""
 
-from ssb_project_cli import ssb_project
 import click
+
+from ssb_project_cli import ssb_project
 
 
 @click.command()
