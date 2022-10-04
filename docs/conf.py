@@ -1,7 +1,7 @@
 """Sphinx configuration."""
 project = "SSB Project CLI"
-author = "Damir Medakovic"
-copyright = "2022, Damir Medakovic"
+author = "Statistics Norway"
+copyright = "2022, Statistics Norway"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
