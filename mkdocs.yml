@@ -1,0 +1,32 @@
+site_name: ssb-project-cli
+site_description: CLI for working with SSB projects
+site_url: https://statisticsnorway.github.io/ssb-project-cli
+
+theme:
+  name: "material"
+repo_name: statisticsnorway/ssb-project-cli
+repo_url: https://github.com/statisticsnorway/ssb-project-cli
+edit_uri: edit/main/docs/
+
+nav:
+  - Home: "index.md"
+  - Usage: "usage.md"
+  - Code Reference: reference/
+  - Contributing: "contributing.md"
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  - mkdocstrings:
+#      watch:
+#        - src/ssb-project-cli
+
+markdown_extensions:
+  - admonition #  note blocks, warning blocks -- https://github.com/mkdocs/mkdocs/issues/1659
+  - attr_list # Enables full command headers, see https://github.com/DataDog/mkdocs-click#full-command-path-headers
+  - mkdocs-click
