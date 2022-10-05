@@ -1,8 +1,8 @@
 #!/usr/bin/python3
-
+"""Command-line-interface for project-operations in dapla-jupterlab."""
 import json
 import os
-import subprocess
+import subprocess  # noqa: S404
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -26,10 +26,22 @@ DEFAULT_REPO_CREATE_PATH = Path.home()
 
 
 def is_github_repo(token: str, repo_name: str) -> bool:
+    """Checks if a Repository already exists in the organization.
+
+    Args:
+        repo_name:  Repository name
+        token: GitHub personal access token.
+
+    Returns:
+        True if the repository exists, else false.
+
+    Raises:
+        ValueError: when supplied with bad GitHub credentials.
+    """
     try:
         Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
-    except BadCredentialsException:
-        raise ValueError("Bad GitHub Credentials.")
+    except BadCredentialsException as ex:
+        raise ValueError("Bad GitHub Credentials.") from ex
     except GithubException:
         return False
     else:
@@ -47,22 +59,41 @@ class TempGitRemote:
     """Context manager class for creating and cleaning up a temporary git remote."""
 
     def __init__(self, repo: git.Repo, temp_url: str, restore_url: str) -> None:
+        """Inits a TempGitRepo.
+
+        Args:
+            repo: Git repository
+            temp_url: Temp url
+            restore_url: Restore url
+        """
         self.repo = repo
         self.temp_url = temp_url
         self.restore_url = restore_url
 
     def __enter__(self) -> None:
+        """Deletes remote in Repository and creates remote at temp_url."""
         for remote in self.repo.remotes:
             self.repo.delete_remote(remote)
         self.origin = self.repo.create_remote("origin", self.temp_url)
         return None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Deletes remote self.origen and creates a remote named origen with an url."""
         self.repo.delete_remote(self.origin)
         self.repo.create_remote("origin", self.restore_url)
 
 
 def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -> None:
+    """Makes and pushes a GitHub repository.
+
+    Inits a local repository and tries to push it to github,
+     for more information see TempGitRemote.
+
+    Args:
+        github_token: GitHub personal access token
+        github_url: Repository url
+        repo_dir: Path to local Repository
+    """
     repo = git.Repo.init(repo_dir)
     # repo = git.Repo(repo_dir)      # This line is used when debugging
     repo.git.add("-A")
@@ -79,6 +110,17 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
 
 
 def set_branch_protection_rules(github_token: str, repo_name: str) -> None:
+    """Sets branch default protection rules.
+
+    The following rules are set:
+    Main branch pull requests requires a minimum of 1 reviewer.
+    Reviews that are no longer valid can be dismissed.
+    When you dismiss a review, you must add a comment explaining why you dismissed it.
+
+    Args:
+        github_token: GitHub personal access token
+        repo_name: name of repository
+    """
     repo = Github(github_token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
     repo.get_branch("main").edit_protection(
         required_approving_review_count=1, dismiss_stale_reviews=True
@@ -86,24 +128,57 @@ def set_branch_protection_rules(github_token: str, repo_name: str) -> None:
 
 
 def get_gitconfig_element(element: str) -> str:
+    """Grabs a property from git config.
+
+    Args:
+        element: Name of the git config element retrive
+
+    Returns:
+        str: Value of git config element
+    """
     cmd = ["git", "config", "--get", element]
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="utf-8")
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        cmd, stdout=subprocess.PIPE, encoding="utf-8"
+    )
     return None if result.stdout == "" else result.stdout.strip()
 
 
 def extract_name_email() -> tuple[str, str]:
+    """Grabs email and name from git config.
+
+    Returns:
+        name: Value of user.name from git config element
+        email: Value of user.email from git config element
+    """
     name = get_gitconfig_element("user.name")
     email = get_gitconfig_element("user.email")
     return name, email
 
 
 def request_name_email() -> tuple[str, str]:
+    """Requests name and email from user.
+
+    Returns:
+        tuple[str, str]: User supplied name and email
+    """
     name = typer.prompt("Enter full name: ")
     email = typer.prompt("Enter email    : ")
     return name, email
 
 
-def create_project_from_template(projectname: str, description: str):
+def create_project_from_template(projectname: str, description: str) -> Path:
+    """Creates a project from CookiCutter template.
+
+    Args:
+        projectname: Name of project
+        description: Project description
+
+    Raises:
+        ValueError: If the project directory already exists
+
+    Returns:
+        Path: Path of project.
+    """
     home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
@@ -131,13 +206,15 @@ def create_project_from_template(projectname: str, description: str):
         quoted,
     ]
     # try:
-    subprocess.run(argv, check=True, cwd=home_dir)
+    subprocess.run(argv, check=True, cwd=home_dir)  # noqa: S603 no untrusted input
     # except subprocess.CalledProcessError:
     #     typer.echo(f"ERROR calling cruft.")
     return project_dir
 
 
 class RepoPrivacy(str, Enum):
+    """Class with predefined privacy enums."""
+
     internal = "internal"
     private = "private"
     public = "public"
@@ -145,27 +222,24 @@ class RepoPrivacy(str, Enum):
 
 @app.command()
 def create(
-    project_name: str = typer.Argument(
+    project_name: str = typer.Argument(  # noqa: B008
         ..., help="Prosjekt navn, kun alfanumerisk og underscore"
     ),
-    description: str = typer.Argument(
+    description: str = typer.Argument(  # noqa: B008
         ..., help="En kort beskrivelse av hva prosjektet ditt er for"
     ),
-    repo_privacy: Optional[RepoPrivacy] = typer.Argument(
+    repo_privacy: Optional[RepoPrivacy] = typer.Argument(  # noqa: B008
         RepoPrivacy.internal, help="En kort beskrivelse av hva prosjektet ditt er for"
     ),
-    skip_github: Optional[bool] = typer.Option(
+    skip_github: Optional[bool] = typer.Option(  # noqa: B008
         False, help="Legg denne til hvis man IKKE ønsker å opprette et Github repo"
     ),
-    github_token: Optional[str] = typer.Option(
+    github_token: Optional[str] = typer.Option(  # noqa: B008
         "",
         help="Ditt Github PAT, følg [link=https://statistics-norway.atlassian.net/wiki/spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og+integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHub]instruksjonene her[/link] for å skape en",
     ),
 ):
-    """
-    :sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket). Følger kjent beste praksis i SSB. :sparkles:
-    """
-
+    """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).Følger kjent beste praksis i SSB. :sparkles:."""
     if " " in project_name:
         raise ValueError("Spaces not allowed in projectname, use underscore?")
 
@@ -211,7 +285,8 @@ def create(
     #     toml.dump(metadata, toml_file)
 
     print(
-        f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH}, you may move it if you want to."
+        f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
+        + " you may move it if you want to."
     )
     build(curr_path=project_name)
 
@@ -220,14 +295,14 @@ def create(
 
 @app.command()
 def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
-    """
+    """Build ssb-project.
+
     1. Check if Cruft recommends updating?
     2. Create Venv from Poetry
     3. Create kernel from venv
     4. Create workspace?
     5. Provide link to workspace?
     """
-
     project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
 
     project_name = curr_path
@@ -238,15 +313,17 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
         transient=True,
     ) as progress:
         progress.add_task(description="Installing dependencies...", total=None)
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 no untrusted input
             "poetry install".split(), capture_output=True, cwd=project_directory
         )
     if result.returncode != 0:
         raise ValueError(
-            f'Returncode of poetry install: {result.returncode}\n{result.stderr.decode("utf-8")}'
+            f"Returncode of poetry install: {result.returncode}\n"
+            + f'{result.stderr.decode("utf-8")}'
         )
 
-    # A new tool for creating venv-kernels from poetry-venvs will not be ready for hack-demo
+    # A new tool for creating venv-kernels from poetry-venvs
+    # will not be ready for hack-demo
     kernels = get_kernels_dict()
     # Flip kernel-text to key if full path to kernel given
     if kernel in kernels.values():
@@ -263,12 +340,13 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
         make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(
             " "
         ) + [project_name]
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603 no untrusted input
             make_kernel_cmd, capture_output=True, cwd=project_directory
         )
         if result.returncode != 0:
             raise ValueError(
-                f'Returncode of {" ".join(make_kernel_cmd)}: {result.returncode}\n{result.stderr.decode("utf-8")}'
+                f'Returncode of {" ".join(make_kernel_cmd)}: {result.returncode}'
+                + f'\n{result.stderr.decode("utf-8")}'
             )
         output = result.stdout.decode("utf-8")
         print(output)
@@ -279,8 +357,10 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
     # typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
 
 
-def delete():
-    """
+# Function is deemed too complex, should probably be split up.
+def delete():  # noqa C901
+    """Delete project.
+
     1. Remove kernel
     2. Remove venv / uninstall with poetry
     3. Remove workspace, if exists?
@@ -293,11 +373,12 @@ def delete():
             os.remove(kernels_path + project_name)
 
     # Deactivation not necessary?
-    # If you remove the currently activated virtual environment, it will be automatically deactivated.
+    # If you remove the currently activated virtual environment,
+    # it will be automatically deactivated.
 
     typer.echo("Remove venv / uninstall with poetry")
 
-    venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)
+    venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)  # noqa S607
     if venvs.returncode != 0:
         raise ValueError(venvs.stderr.decode("utf-8"))
     venvs = venvs.stdout.decode("utf-8")
@@ -312,7 +393,9 @@ def delete():
                 delete_cmds += [["poetry", "env", "remove", venv.split(" ")[0]]]
 
     for cmd in delete_cmds:
-        deletion = subprocess.run(cmd, capture_output=True)
+        deletion = subprocess.run(  # noqa: S603 no untrusted input
+            cmd, capture_output=True
+        )
         if deletion.returncode != 0:
             raise ValueError(deletion.stderr.decode("utf-8"))
         print(deletion.stdout.decode("utf-8"))
@@ -326,6 +409,7 @@ def delete():
 
 
 def workspace():
+    """Prints uri used to create/clone a workspace."""
     typer.echo(workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd())))
     typer.echo("To create/clone the workspace:")
     typer.echo(
@@ -337,8 +421,20 @@ def workspace():
 def create_github(
     github_token: str, repo_name: str, repo_privacy: str, repo_description: str
 ) -> str:
+    """Creates a GitHub repository with name, description and privacy setting.
+
+    Args:
+        github_token: GitHub personal access token
+        repo_name: Repository name
+        repo_privacy: Repository privacy setting, see RepoPrivacy for more information
+        repo_description: Repository description
+
+    Returns:
+        str: Repository url
+    """
     # Kjør gitconfig-scripet om brukernavn og passord ikke er satt
-    # Flere brukernavn knyttet til samme konto? Sjekke etter "primary email" knyttet til github-konto?
+    # Flere brukernavn knyttet til samme konto?
+    # Sjekke etter "primary email" knyttet til github-konto?
 
     private_repo = True if repo_privacy != "public" else False
 
@@ -356,6 +452,14 @@ def create_github(
 
 
 def projectname_from_currfolder(curr_path: Optional[str]) -> str:
+    """Retrives project name from poetry's toml-config in cwd.
+
+    Args:
+        curr_path: Optional string of current path.
+
+    Returns:
+        str: Project name from poetry`s toml-config
+    """
     # Record for reset later
     curr_dir = os.getcwd()
     # Find root of project, and get projectname from poetry's toml-config
@@ -369,11 +473,32 @@ def projectname_from_currfolder(curr_path: Optional[str]) -> str:
 
 
 def workspace_uri_from_projectname(project_name: str) -> str:
-    return f"https://jupyter.dapla.ssb.no/user/{os.environ['JUPYTERHUB_USER']}/lab/workspaces/{project_name}"
+    """Generates workspace uri based on project name.
+
+    Args:
+         project_name: Project name
+
+    Returns:
+        str: Workspace uri
+    """
+    return (
+        "https://jupyter.dapla.ssb.no/user/"
+        + f"{os.environ['JUPYTERHUB_USER']}/lab/workspaces/{project_name}"
+    )
 
 
-def get_kernels_dict() -> dict():
-    kernels = subprocess.run(["jupyter", "kernelspec", "list"], capture_output=True)
+def get_kernels_dict() -> dict[str, str]:
+    """Makes a dictionary of installed kernel specifications.
+
+    Raises:
+        ValueError: If the jupyter subprocess does not return 0
+
+    Returns:
+        kernel_dict: Dictionary of installed kernel specifications
+    """
+    kernels = subprocess.run(  # noqa S607
+        ["jupyter", "kernelspec", "list"], capture_output=True
+    )
     if kernels.returncode == 0:
         kernels = kernels.stdout.decode("utf-8")
     else:
@@ -388,6 +513,7 @@ def get_kernels_dict() -> dict():
 
 
 def main():
+    """Main function of ssb_project_cli."""
     app(prog_name="ssb-project")
 
 

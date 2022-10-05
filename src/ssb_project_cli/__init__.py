@@ -1,1 +1,1 @@
-"""SSB Project CLI"""
+"""SSB Project CLI."""

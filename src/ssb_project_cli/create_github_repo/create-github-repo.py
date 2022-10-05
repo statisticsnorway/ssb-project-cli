@@ -1,7 +1,7 @@
+"""Functions for creating a GitHub repository."""
 import argparse
 import logging
 import sys
-from pathlib import Path
 
 from github import Github
 from github import GithubException
@@ -20,6 +20,16 @@ logging.basicConfig(
 
 
 def set_branch_protection_rules(repo: Repository) -> None:
+    """Sets branch default protection rules.
+
+    The following rules are set:
+    Main branch pull requests requires a minimum of 1 reviewer.
+    Reviews that are no longer valid can be dismissed.
+    When you dismiss a review, you must add a comment explaining why you dismissed it.
+
+    Args:
+        repo: GitHub repository
+    """
     main_branch = repo.get_branch("main")
     main_branch.edit_protection(
         required_approving_review_count=1, dismiss_stale_reviews=True
@@ -33,6 +43,13 @@ def set_branch_protection_rules(repo: Repository) -> None:
 
 
 def get_user_info(g: Github) -> None:
+    """Logs user info.
+
+    Logs username, name and email of a GitHub user.
+
+    Args:
+        g: GitHub
+    """
     user = g.get_user()
     logging.info(f"{user.login=}")
     logging.info(f"{user.name=}")
@@ -40,18 +57,31 @@ def get_user_info(g: Github) -> None:
 
 
 def get_org_members(g: Github) -> None:
+    """Prints GitHub organization members info.
+
+    Prints username, name and email of members in
+     Statistics Norway`s GitHub organization.
+
+    Args:
+        g: GitHub
+    """
     org = g.get_organization("statisticsnorway")
     for i, member in enumerate(org.get_members()):
         print(f"{i}: {member.login} {member.name} email: {member.email}")
 
 
 def main(token: str, repo_name: str):
+    """Creates a new repository with a given name.
+
+    Args:
+        repo_name: Name of GitHub repository to create
+        token: GitHub Personal access token
+    """
     org_name = "statisticsnorway"
     logging.info(f"Creating GitHub repo {org_name}/{repo_name} and set defaults.")
 
     g = Github(token)
     get_user_info(g)
-    # get_org_members(g)
 
     org = g.get_organization(org_name)
 

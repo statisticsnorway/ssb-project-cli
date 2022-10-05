@@ -1,14 +1,11 @@
 """Command-line interface."""
 
-import click
-
-from ssb_project_cli import ssb_project
+from ssb_project_cli.ssb_project import app
 
 
-@click.command()
 def main() -> None:
-    """Run app"""
-    ssb_project.main()
+    """Run app."""
+    app.main()
 
 
 if __name__ == "__main__":
