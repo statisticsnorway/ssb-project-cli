@@ -236,16 +236,10 @@ def create(
     ),
     github_token: Optional[str] = typer.Option(  # noqa: B008
         "",
-        help="""Ditt Github PAT, følg [link=https://statistics-norway.atlassian.net/wiki
-        /spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og
-        +integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHub]instruksjonene
-         her[/link] for å skape en""",
+        help="Ditt Github PAT, følg [link=https://statistics-norway.atlassian.net/wiki/spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og+integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHub]instruksjonene her[/link] for å skape en",
     ),
 ):
-    """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).
-
-    Følger kjent beste praksis i SSB. :sparkles:.
-    """
+    """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).Følger kjent beste praksis i SSB. :sparkles:."""
     if " " in project_name:
         raise ValueError("Spaces not allowed in projectname, use underscore?")
 
@@ -401,7 +395,7 @@ def delete():  # noqa C901
     for cmd in delete_cmds:
         deletion = subprocess.run(  # noqa: S603 no untrusted input
             cmd, capture_output=True
-        )  # noqa: S603 no untrusted input
+        )
         if deletion.returncode != 0:
             raise ValueError(deletion.stderr.decode("utf-8"))
         print(deletion.stdout.decode("utf-8"))
@@ -470,7 +464,7 @@ def projectname_from_currfolder(curr_path: Optional[str]) -> str:
     curr_dir = os.getcwd()
     # Find root of project, and get projectname from poetry's toml-config
     while "pyproject.toml" not in os.listdir():
-        os.chdir("../../dapla_hurtigstart_cli/")
+        os.chdir("../")
     pyproject = toml.load("./pyproject.toml")
     name = pyproject["tool"]["poetry"]["name"]
     # Reset working directory
@@ -519,7 +513,7 @@ def get_kernels_dict() -> dict[str, str]:
 
 
 def main():
-    """Main function of hurtigstart_cli."""
+    """Main function of ssb_project_cli."""
     app(prog_name="ssb-project")
 
 
