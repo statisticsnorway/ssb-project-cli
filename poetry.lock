@@ -113,7 +113,7 @@ uvloop = ["uvloop (>=0.15.2)"]
 name = "build"
 version = "0.8.0"
 description = "A simple, correct PEP 517 build frontend"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
@@ -874,7 +874,7 @@ python-versions = ">=2.6"
 name = "pep517"
 version = "0.13.0"
 description = "Wrappers to build Python packages using PEP 517 hooks"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
@@ -1465,7 +1465,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -1602,7 +1602,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "67b1d5b7997d42250a8ffeb32083e85a2ca42b205a4ea4e781f9fb5764081e46"
+content-hash = "72694e23821fbd0fb073e9154ba4d9b0133e6277fa003f807f39e75bf1b70578"
 
 [metadata.files]
 alabaster = [
