@@ -180,7 +180,7 @@ def create_project_from_template(projectname: str, description: str) -> Path:
     Args:
         projectname: Name of project
         description: Project description
-
+        
     Returns:
         Path: Path of project.
 
