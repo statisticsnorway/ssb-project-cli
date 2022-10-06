@@ -19,6 +19,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
+
 def set_branch_protection_rules(repo: Repo) -> None:
     """Sets branch default protection rules.
 
