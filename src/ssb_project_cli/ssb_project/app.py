@@ -5,11 +5,12 @@ import os
 import subprocess  # noqa: S404
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
-import git
 import toml
 import typer
+
+# Module "git" does not explicitly export attribute "Repo"
+from git import Repo  # type: ignore[attr-defined]
 from github import BadCredentialsException
 from github import Github
 from github import GithubException
@@ -58,7 +59,7 @@ def mangle_url(url: str, mangle_name: str) -> str:
 class TempGitRemote:
     """Context manager class for creating and cleaning up a temporary git remote."""
 
-    def __init__(self, repo: git.Repo, temp_url: str, restore_url: str) -> None:
+    def __init__(self, repo: Repo, temp_url: str, restore_url: str) -> None:
         """Inits a TempGitRepo.
 
         Args:
@@ -77,7 +78,8 @@ class TempGitRemote:
         self.origin = self.repo.create_remote("origin", self.temp_url)
         return None
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    # Look up
+    def __exit__(self, exc_type: Exception, exc_val: str, exc_tb: str) -> None:
         """Deletes remote self.origen and creates a remote named origen with an url."""
         self.repo.delete_remote(self.origin)
         self.repo.create_remote("origin", self.restore_url)
@@ -94,7 +96,7 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
         github_url: Repository url
         repo_dir: Path to local Repository
     """
-    repo = git.Repo.init(repo_dir)
+    repo = Repo.init(repo_dir)
     # repo = git.Repo(repo_dir)      # This line is used when debugging
     repo.git.add("-A")
     repo.index.commit("Initial commit")
@@ -133,6 +135,9 @@ def get_gitconfig_element(element: str) -> str:
     Args:
         element: Name of the git config element retrive
 
+    Raises:
+        ValueError: when property is not found
+
     Returns:
         str: Value of git config element
     """
@@ -140,7 +145,10 @@ def get_gitconfig_element(element: str) -> str:
     result = subprocess.run(  # noqa: S603 no untrusted input
         cmd, stdout=subprocess.PIPE, encoding="utf-8"
     )
-    return None if result.stdout == "" else result.stdout.strip()
+    if result.stdout == "":
+        raise ValueError(f'Could grab property "{str}" form git config.')
+
+    return result.stdout.strip()
 
 
 def extract_name_email() -> tuple[str, str]:
@@ -173,11 +181,11 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         projectname: Name of project
         description: Project description
 
-    Raises:
-        ValueError: If the project directory already exists
-
     Returns:
         Path: Path of project.
+
+    Raises:
+        ValueError: If the project directory already exists
     """
     home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
@@ -228,17 +236,17 @@ def create(
     description: str = typer.Argument(  # noqa: B008
         ..., help="En kort beskrivelse av hva prosjektet ditt er for"
     ),
-    repo_privacy: Optional[RepoPrivacy] = typer.Argument(  # noqa: B008
+    repo_privacy: RepoPrivacy = typer.Argument(  # noqa: B008
         RepoPrivacy.internal, help="En kort beskrivelse av hva prosjektet ditt er for"
     ),
-    skip_github: Optional[bool] = typer.Option(  # noqa: B008
+    skip_github: bool = typer.Option(  # noqa: B008
         False, help="Legg denne til hvis man IKKE ønsker å opprette et Github repo"
     ),
-    github_token: Optional[str] = typer.Option(  # noqa: B008
+    github_token: str = typer.Option(  # noqa: B008
         "",
         help="Ditt Github PAT, følg [link=https://statistics-norway.atlassian.net/wiki/spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og+integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHub]instruksjonene her[/link] for å skape en",
     ),
-):
+) -> None:
     """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).Følger kjent beste praksis i SSB. :sparkles:."""
     if " " in project_name:
         raise ValueError("Spaces not allowed in projectname, use underscore?")
@@ -294,7 +302,7 @@ def create(
 
 
 @app.command()
-def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
+def build(kernel: str = "python3", curr_path: str = "") -> None:
     """Build ssb-project.
 
     1. Check if Cruft recommends updating?
@@ -358,7 +366,7 @@ def build(kernel: Optional[str] = "python3", curr_path: Optional[str] = ""):
 
 
 # Function is deemed too complex, should probably be split up.
-def delete():  # noqa C901
+def delete() -> None:  # noqa C901
     """Delete project.
 
     1. Remove kernel
@@ -381,10 +389,11 @@ def delete():  # noqa C901
     venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)  # noqa S607
     if venvs.returncode != 0:
         raise ValueError(venvs.stderr.decode("utf-8"))
-    venvs = venvs.stdout.decode("utf-8")
+    # check
+    venvs_str: str = venvs.stdout.decode("utf-8")
 
     delete_cmds = []
-    for venv in venvs.split("\n"):
+    for venv in venvs_str.split("\n"):
         if venv:
             print(venv)
             if (venv.replace("-", "").replace("_", "")).startswith(
@@ -398,17 +407,31 @@ def delete():  # noqa C901
         )
         if deletion.returncode != 0:
             raise ValueError(deletion.stderr.decode("utf-8"))
+        # typer.echo?
         print(deletion.stdout.decode("utf-8"))
 
     typer.echo("Remove workspace, if it exist, based on project-name")
     for workspace in os.listdir("/home/jovyan/.jupyter/lab/workspaces/"):
-        if workspace.replace(["-", "_"], "").startswith(
-            project_name.replace(["-", "_"], "")
+
+        if rm_hyphen_and_underscore(workspace).startswith(
+            rm_hyphen_and_underscore(project_name)
         ):
             os.remove(f"/home/jovyan/.jupyter/lab/workspaces/{workspace}")
 
 
-def workspace():
+def rm_hyphen_and_underscore(s: str) -> str:
+    """Remove hyphens and underscores.
+
+    Args:
+        s: input string
+
+    Returns:
+        str: without a hyphen and underscore
+    """
+    return s.replace("-", "").replace("_", "")
+
+
+def workspace() -> None:
     """Prints uri used to create/clone a workspace."""
     typer.echo(workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd())))
     typer.echo("To create/clone the workspace:")
@@ -451,7 +474,7 @@ def create_github(
     return repo_url
 
 
-def projectname_from_currfolder(curr_path: Optional[str]) -> str:
+def projectname_from_currfolder(curr_path: str) -> str:
     """Retrives project name from poetry's toml-config in cwd.
 
     Args:
@@ -466,7 +489,7 @@ def projectname_from_currfolder(curr_path: Optional[str]) -> str:
     while "pyproject.toml" not in os.listdir():
         os.chdir("../")
     pyproject = toml.load("./pyproject.toml")
-    name = pyproject["tool"]["poetry"]["name"]
+    name: str = pyproject["tool"]["poetry"]["name"]
     # Reset working directory
     os.chdir(curr_dir)
     return name
@@ -496,15 +519,16 @@ def get_kernels_dict() -> dict[str, str]:
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """
-    kernels = subprocess.run(  # noqa S607
+    kernels_process = subprocess.run(  # noqa S607
         ["jupyter", "kernelspec", "list"], capture_output=True
     )
-    if kernels.returncode == 0:
-        kernels = kernels.stdout.decode("utf-8")
+    kernels_str = ""
+    if kernels_process.returncode == 0:
+        kernels_str = kernels_process.stdout.decode("utf-8")
     else:
-        raise ValueError(kernels.stderr.decode("utf-8"))
+        raise ValueError(kernels_process.stderr.decode("utf-8"))
     kernel_dict = {}
-    for kernel in kernels.split("\n")[1:]:
+    for kernel in kernels_str.split("\n")[1:]:
         line = " ".join(kernel.strip().split())
         if len(line.split(" ")) == 2:
             k, v = line.split(" ")
@@ -512,7 +536,7 @@ def get_kernels_dict() -> dict[str, str]:
     return kernel_dict
 
 
-def main():
+def main() -> None:
     """Main function of ssb_project_cli."""
     app(prog_name="ssb-project")
 
