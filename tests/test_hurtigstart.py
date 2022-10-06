@@ -52,7 +52,7 @@ def test_is_github_repo(mock_get_repo: Mock) -> None:
         is_github_repo("", "")
 
 
-@patch(f"{PKG}.git.Repo")
+@patch(f"{PKG}.Repo")
 @patch(f"{PKG}.Github.get_user")
 @patch(f"{PKG}.Github.get_repo")
 def test_make_git_repo_and_push(
@@ -76,16 +76,25 @@ def test_make_git_repo_and_push(
     assert test_repo.git.push.call_count == 1
 
 
-@patch(f"{PKG}.subprocess.run")
-def test_get_gitconfig_element(mock_run: Mock) -> None:
-    """Checks that get_gitconfig_element works correctly.
+def fake_run_gitconfig(cmd: list[str], stdout: int, encoding: str) -> Mock:
+    """Emulates subprocess.run for git config --get."""
+    vals = {
+        "user.name": "Name",
+        "user.email": "name@email.com",
+    }
+    key = cmd[-1]
+    if key not in vals:
+        return Mock(stdout="")
+    return Mock(stdout=vals[key])
 
-    NOTE: The function should probably not return None. Typeguard complains.
-    """
-    mock_run.side_effect = [Mock(stdout=s) for s in ["Name ", " name@email.com", ""]]
+
+@patch(f"{PKG}.subprocess.run", fake_run_gitconfig)
+def test_get_gitconfig_element() -> None:
+    """Checks that get_gitconfig_element works correctly."""
+    # mock_run.side_effect = [Mock(stdout=s) for s in ["Name ", " name@email.com", ""]]
     assert get_gitconfig_element("user.name") == "Name"
     assert get_gitconfig_element("user.email") == "name@email.com"
-    assert get_gitconfig_element("user.phone") is None
+    assert get_gitconfig_element("user.phone") == ""
 
 
 @patch(f"{PKG}.subprocess.run")
@@ -95,11 +104,11 @@ def test_extract_name_email(mock_run: Mock) -> None:
         Mock(stdout=s) for s in ["Name ", " name@email.com", "Name2", ""]
     ]
     assert extract_name_email() == ("Name", "name@email.com")
-    assert extract_name_email() == ("Name2", None)
+    assert extract_name_email() == ("Name2", "")
 
 
 @patch(f"{PKG}.typer.prompt")
-def test_request_name_email(mock_prompt: Mock) -> Mock:
+def test_request_name_email(mock_prompt: Mock) -> None:
     """Checks if request_name_email returns the expected values."""
     mock_prompt.side_effect = ["Name", "email@email.com"]
     assert request_name_email() == ("Name", "email@email.com")
@@ -117,14 +126,22 @@ def test_set_branch_protection_rules(mock_github: Mock) -> None:
 
 
 @patch(f"{PKG}.extract_name_email")
-def test_create_project_from_template(mock_extract: Mock, tmp_path: Path) -> None:
+@patch(f"{PKG}.request_name_email")
+def test_create_project_from_template(
+    mock_request: Mock, mock_extract: Mock, tmp_path: Path
+) -> None:
     """Checks if create_project_from_template works for a temporary path.
 
     NOTE: Kind of an integration test. Could mock away subprocess.run for pure unit test.
     """
-    mock_extract.return_value = ("Name", "email@email.com")
+    mock_extract.return_value = ("Name", "")
+    mock_request.return_value = ("Name2", "email@email.com")
     with patch(f"{PKG}.DEFAULT_REPO_CREATE_PATH", tmp_path):
         create_project_from_template("testname", "test description")
+
+        assert mock_extract.call_count == 1
+        assert mock_request.call_count == 1
+
         project_dir = tmp_path.joinpath("testname")
         assert project_dir.exists()
 
