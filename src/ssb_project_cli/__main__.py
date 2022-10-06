@@ -9,4 +9,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main(prog_name="ssb-project")  # pragma: no cover
+    main(prog_name="ssb-project")  # type: ignore[call-arg]

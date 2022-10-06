@@ -8,14 +8,14 @@ from ssb_project_cli.ssb_project.app import app
 runner = CliRunner()
 
 
-def test_app_build_help():
+def test_app_build_help() -> None:
     """Checks if the cli prints help description when supplied with build --help."""
     result = runner.invoke(app, ["build", "--help"])
     assert result.exit_code == 0
     assert "Check if Cruft recommends updating" in result.stdout
 
 
-def test_app_create_help():
+def test_app_create_help() -> None:
     """Checks if the cli prints help description when supplied with create --help."""
     result = runner.invoke(app, ["create", "--help"])
     assert result.exit_code == 0

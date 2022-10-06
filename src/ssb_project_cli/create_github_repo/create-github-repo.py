@@ -3,9 +3,10 @@ import argparse
 import logging
 import sys
 
+# Module "git" does not explicitly export attribute "Repo"
+from git import Repo  # type: ignore[attr-defined]
 from github import Github
 from github import GithubException
-from github import Repository
 
 
 logging.basicConfig(
@@ -19,7 +20,7 @@ logging.basicConfig(
 )
 
 
-def set_branch_protection_rules(repo: Repository) -> None:
+def set_branch_protection_rules(repo: Repo) -> None:
     """Sets branch default protection rules.
 
     The following rules are set:
@@ -70,7 +71,7 @@ def get_org_members(g: Github) -> None:
         print(f"{i}: {member.login} {member.name} email: {member.email}")
 
 
-def main(token: str, repo_name: str):
+def main(token: str, repo_name: str) -> None:
     """Creates a new repository with a given name.
 
     Args:
