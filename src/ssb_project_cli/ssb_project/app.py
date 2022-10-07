@@ -338,7 +338,6 @@ def build(
 
     if curr_path == "":
         project_directory = CURRENT_WORKING_DIRECTORY
-    print(CURRENT_WORKING_DIRECTORY)
 
     project_name = curr_path
 
