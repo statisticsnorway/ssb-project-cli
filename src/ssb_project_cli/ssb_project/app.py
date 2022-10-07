@@ -85,6 +85,24 @@ class TempGitRemote:
         self.repo.create_remote("origin", self.restore_url)
 
 
+def make_and_init_git_repo(repo_dir: Path) -> Repo:
+    """Makes and pushes a GitHub repository.
+
+    Inits a local repository, adds all files and commits.
+
+    Args:
+        repo_dir: Path to local Repository
+
+    Returns:
+        Repo: Repository
+    """
+    repo = Repo.init(repo_dir)
+    repo.git.add("-A")
+    repo.index.commit("Initial commit")
+    repo.git.branch("-M", "main")
+    return repo
+
+
 def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -> None:
     """Makes and pushes a GitHub repository.
 
@@ -96,11 +114,7 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
         github_url: Repository url
         repo_dir: Path to local Repository
     """
-    repo = Repo.init(repo_dir)
-    # repo = git.Repo(repo_dir)      # This line is used when debugging
-    repo.git.add("-A")
-    repo.index.commit("Initial commit")
-    repo.git.branch("-M", "main")
+    repo = make_and_init_git_repo(repo_dir)
 
     github_username = Github(github_token).get_user().login
     credential_url = mangle_url(github_url, github_token)
@@ -135,9 +149,6 @@ def get_gitconfig_element(element: str) -> str:
     Args:
         element: Name of the git config element retrive
 
-    Raises:
-        ValueError: when property is not found
-
     Returns:
         str: Value of git config element
     """
@@ -145,8 +156,6 @@ def get_gitconfig_element(element: str) -> str:
     result = subprocess.run(  # noqa: S603 no untrusted input
         cmd, stdout=subprocess.PIPE, encoding="utf-8"
     )
-    if result.stdout == "":
-        raise ValueError(f'Could grab property "{str}" form git config.')
 
     return result.stdout.strip()
 
@@ -239,8 +248,10 @@ def create(
     repo_privacy: RepoPrivacy = typer.Argument(  # noqa: B008
         RepoPrivacy.internal, help="En kort beskrivelse av hva prosjektet ditt er for"
     ),
-    skip_github: bool = typer.Option(  # noqa: B008
-        False, help="Legg denne til hvis man IKKE ønsker å opprette et Github repo"
+    add_github: bool = typer.Option(  # noqa: B008
+        False,
+        "--github",
+        help="Legg denne til hvis man ønsker å opprette et Github repo",
     ),
     github_token: str = typer.Option(  # noqa: B008
         "",
@@ -251,31 +262,35 @@ def create(
     if " " in project_name:
         raise ValueError("Spaces not allowed in projectname, use underscore?")
 
-    if not skip_github and not github_token:
+    if add_github and not github_token:
         raise ValueError("Needs GitHub token, please specify with --github-token")
 
     if not debug_without_create_repo:
-        if not skip_github and is_github_repo(github_token, project_name):
+        if add_github and is_github_repo(github_token, project_name):
             raise ValueError(f"The repo {project_name} already exists on GitHub.")
 
     create_project_from_template(project_name, description)
-
     # Create empty folder on root
     # Get content from template to local
-    # git init ?
-    # git add ?
+    # git init
+    # git add
+    # git initial commit
 
     # 2. Create github repo
-    if not skip_github:
+    # Wont push poetry.lock, poetry install not called yet
+    git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
+    if add_github:
         print("Initialise empty repo on Github")
         repo_url = create_github(github_token, project_name, repo_privacy, description)
 
         print("Create local repo and push to Github")
-        git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
         make_git_repo_and_push(github_token, repo_url, git_repo_dir)
 
         print("Set branch protection rules.")
         set_branch_protection_rules(github_token, project_name)
+    else:
+        # Wont commit poetry.lock, poetry install not called yet
+        make_and_init_git_repo(git_repo_dir)
 
     # 4. Add metadata about creation
     # typer.echo("Record / log metadata about project-creation to toml-file")
