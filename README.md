@@ -41,9 +41,9 @@ You can install _SSB Project CLI_ via [pip] from [PyPI]:
 pip install ssb-project-cli
 ```
 
-## Installation
+## Releasing a new version
 
-Releasing a new version of the CLI
+To release a new version of the CLI, run the following sequence.
 
 ```console
 git switch --create release main
