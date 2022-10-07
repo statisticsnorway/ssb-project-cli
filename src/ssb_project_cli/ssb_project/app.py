@@ -11,8 +11,6 @@ from typing import Type
 
 import toml
 import typer
-
-# Module "git" does not explicitly export attribute "Repo"
 from git import Repo  # type: ignore[attr-defined]
 from github import BadCredentialsException
 from github import Github
@@ -225,7 +223,6 @@ def create_project_from_template(projectname: str, description: str) -> Path:
     if project_dir.exists():
         raise ValueError(f"The directory {project_dir} already exists.")
 
-    # Get name and email from .gitconfig, request if not found
     name, email = extract_name_email()
     if not (name and email):
         name, email = request_name_email()
@@ -246,10 +243,9 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         "--extra-context",
         quoted,
     ]
-    # try:
+
     subprocess.run(argv, check=True, cwd=home_dir)  # noqa: S603 no untrusted input
-    # except subprocess.CalledProcessError:
-    #     typer.echo(f"ERROR calling cruft.")
+
     return project_dir
 
 
@@ -297,16 +293,9 @@ def create(
         description = request_project_description()
 
     create_project_from_template(project_name, description)
-    # Create empty folder on root
-    # Get content from template to local
-    # git init
-    # git add
-    # git initial commit
 
-    # Wont push poetry.lock, poetry install not called yet
     git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
     if add_github:
-        # 2. Create github repo
         print("Initialise empty repo on Github")
         repo_url = create_github(github_token, project_name, repo_privacy, description)
 
@@ -316,23 +305,7 @@ def create(
         print("Set branch protection rules.")
         set_branch_protection_rules(github_token, project_name)
     else:
-        # Wont commit poetry.lock, poetry install not called yet
         make_and_init_git_repo(git_repo_dir)
-
-    # 4. Add metadata about creation
-    # typer.echo("Record / log metadata about project-creation to toml-file")
-    # metadata_path = f"/home/jovyan/{projectname}/pyproject.toml"
-    # metadata = toml.load(metadata_path)
-    # metadata["ssb"]["project_creation"]["date"] = datetime.datetime.now().strftime(
-    #     r"%Y-%m-%d"
-    # )
-    # metadata["ssb"]["project_creation"]["privacy"] = repo_privacy
-    # metadata["ssb"]["project_creation"]["skipped_github"] = skip_github
-    # if not skip_github:
-    #     metadata["ssb"]["project_creation"]["github_uri"] = repo_url
-    # metadata["ssb"]["project_creation"]["delete_run"] = False
-    # with open(metadata_path, "w") as toml_file:
-    #     toml.dump(metadata, toml_file)
 
     print(
         f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
@@ -345,8 +318,6 @@ def create(
     poetry_install(project_directory)
 
     install_ipykernel(project_directory, project_name)
-
-    print()
 
 
 @app.command()
@@ -365,18 +336,7 @@ def build(kernel: str = "python3", curr_path: str = "") -> None:
 
     poetry_install(project_directory)
 
-    # A new tool for creating venv-kernels from poetry-venvs
-    # will not be ready for hack-demo
-    kernels = get_kernels_dict()
-    # Flip kernel-text to key if full path to kernel given
-    if kernel in kernels.values():
-        kernel = {v: k for k, v in kernels.items()}[kernel]
-    if kernel not in kernels.keys():
-        raise ValueError(f"Cant find {kernel}-template among {kernels.keys()}")
-
     install_ipykernel(project_directory, project_name)
-    # workspace_uri = workspace_uri_from_projectname(project_name)
-    # typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
 
 
 def install_ipykernel(project_directory: Path, project_name: str) -> None:
@@ -452,10 +412,6 @@ def delete() -> None:  # noqa C901
         if kernel.startswith(project_name):
             os.remove(kernels_path + project_name)
 
-    # Deactivation not necessary?
-    # If you remove the currently activated virtual environment,
-    # it will be automatically deactivated.
-
     typer.echo("Remove venv / uninstall with poetry")
 
     venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)  # noqa S607
@@ -527,10 +483,6 @@ def create_github(
     Returns:
         str: Repository url
     """
-    # Kjør gitconfig-scripet om brukernavn og passord ikke er satt
-    # Flere brukernavn knyttet til samme konto?
-    # Sjekke etter "primary email" knyttet til github-konto?
-
     private_repo = True if repo_privacy != "public" else False
 
     g = Github(github_token)
@@ -555,14 +507,11 @@ def projectname_from_currfolder(curr_path: str) -> str:
     Returns:
         str: Project name from poetry`s toml-config
     """
-    # Record for reset later
     curr_dir = os.getcwd()
-    # Find root of project, and get projectname from poetry's toml-config
     while "pyproject.toml" not in os.listdir():
         os.chdir("../")
     pyproject = toml.load("./pyproject.toml")
     name: str = pyproject["tool"]["poetry"]["name"]
-    # Reset working directory
     os.chdir(curr_dir)
     return name
 
