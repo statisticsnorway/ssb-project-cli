@@ -450,7 +450,7 @@ def delete() -> None:  # noqa C901
 @app.command()
 def clean(
     project_name: str = typer.Argument(  # noqa: B008
-        ..., help="Navnet til prosjektet du vil renske kernelen for."
+        ..., help="Navnet til prosjektet/kernelen du vil slette."
     )
 ) -> None:
     """Removes the kernel associated with project_name."""
