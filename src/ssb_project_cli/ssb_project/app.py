@@ -5,6 +5,9 @@ import os
 import subprocess  # noqa: S404
 from enum import Enum
 from pathlib import Path
+from types import TracebackType
+from typing import Optional
+from typing import Type
 
 import toml
 import typer
@@ -79,7 +82,12 @@ class TempGitRemote:
         return None
 
     # Look up
-    def __exit__(self, exc_type: Exception, exc_val: str, exc_tb: str) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         """Deletes remote self.origen and creates a remote named origen with an url."""
         self.repo.delete_remote(self.origin)
         self.repo.create_remote("origin", self.restore_url)
@@ -330,7 +338,13 @@ def create(
         f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
         + " you may move it if you want to."
     )
-    build(curr_path=project_name)
+
+    curr_path = project_name
+    project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
+
+    poetry_install(project_directory)
+
+    install_ipykernel(project_directory, project_name)
 
     print()
 
@@ -349,7 +363,7 @@ def build(kernel: str = "python3", curr_path: str = "") -> None:
 
     project_name = curr_path
 
-    do_poetry_install(project_directory)
+    poetry_install(project_directory)
 
     # A new tool for creating venv-kernels from poetry-venvs
     # will not be ready for hack-demo
@@ -360,6 +374,21 @@ def build(kernel: str = "python3", curr_path: str = "") -> None:
     if kernel not in kernels.keys():
         raise ValueError(f"Cant find {kernel}-template among {kernels.keys()}")
 
+    install_ipykernel(project_directory, project_name)
+    # workspace_uri = workspace_uri_from_projectname(project_name)
+    # typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
+
+
+def install_ipykernel(project_directory: Path, project_name: str) -> None:
+    """Installs ipykernel.
+
+    Args:
+        project_directory: Path of project
+        project_name: Name of project
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -382,15 +411,15 @@ def build(kernel: str = "python3", curr_path: str = "") -> None:
 
     print(f"Kernel ({project_name}) successfully created")
 
-    # workspace_uri = workspace_uri_from_projectname(project_name)
-    # typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
 
-
-def do_poetry_install(project_directory: str):
-    """Calles poetry install in project_directory.
+def poetry_install(project_directory: Path) -> None:
+    """Call poetry install in project_directory.
 
     Args:
         project_directory: Path of project
+
+    Raises:
+        ValueError: If the process returns with error code
     """
     with Progress(
         SpinnerColumn(),
