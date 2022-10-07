@@ -13,8 +13,6 @@ def test_app_build_help() -> None:
     result = runner.invoke(app, ["build", "--help"])
     assert result.exit_code == 0
     assert "Check if Cruft recommends updating" in result.stdout
-    assert "--kernel" in result.stdout
-    assert "--curr-path" in result.stdout
 
 
 def test_app_create_help() -> None:
@@ -23,11 +21,3 @@ def test_app_create_help() -> None:
     assert result.exit_code == 0
     assert "Prosjekt navn" in result.stdout
     assert "Ditt Github PAT" in result.stdout
-
-
-def test_app_help() -> None:
-    """Checks if the cli prints help description when supplied with --help."""
-    result = runner.invoke(app, ["--help"])
-    assert result.exit_code == 0
-    assert "--install-completion" in result.stdout
-    assert "--show-completion" in result.stdout
