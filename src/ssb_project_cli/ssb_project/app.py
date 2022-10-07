@@ -160,6 +160,33 @@ def get_gitconfig_element(element: str) -> str:
     return result.stdout.strip()
 
 
+def request_name_email() -> tuple[str, str]:
+    """Requests name and email from user.
+
+    Returns:
+        tuple[str, str]: User supplied name and email
+    """
+    name = typer.prompt("Enter full name: ")
+    email = typer.prompt("Enter email    : ")
+    return name, email
+
+
+def request_project_description() -> str:
+    """Prompts the user for a project description.
+
+    Continues to prompt the user until a non-empty string is supplied.
+
+    Returns:
+         str: Project description
+    """
+    description: str = typer.prompt("Fyll inn prosjektbeskrivelse")
+
+    if description == "":
+        description = request_project_description()
+
+    return description
+
+
 def extract_name_email() -> tuple[str, str]:
     """Grabs email and name from git config.
 
@@ -169,17 +196,6 @@ def extract_name_email() -> tuple[str, str]:
     """
     name = get_gitconfig_element("user.name")
     email = get_gitconfig_element("user.email")
-    return name, email
-
-
-def request_name_email() -> tuple[str, str]:
-    """Requests name and email from user.
-
-    Returns:
-        tuple[str, str]: User supplied name and email
-    """
-    name = typer.prompt("Enter full name: ")
-    email = typer.prompt("Enter email    : ")
     return name, email
 
 
@@ -243,10 +259,10 @@ def create(
         ..., help="Prosjekt navn, kun alfanumerisk og underscore"
     ),
     description: str = typer.Argument(  # noqa: B008
-        ..., help="En kort beskrivelse av hva prosjektet ditt er for"
+        "", help="En kort beskrivelse av prosjektet ditt"
     ),
     repo_privacy: RepoPrivacy = typer.Argument(  # noqa: B008
-        RepoPrivacy.internal, help="En kort beskrivelse av hva prosjektet ditt er for"
+        RepoPrivacy.internal, help="Tilgangsvalg for repoet."
     ),
     add_github: bool = typer.Option(  # noqa: B008
         False,
@@ -269,6 +285,9 @@ def create(
         if add_github and is_github_repo(github_token, project_name):
             raise ValueError(f"The repo {project_name} already exists on GitHub.")
 
+    if add_github and description == "":
+        description = request_project_description()
+
     create_project_from_template(project_name, description)
     # Create empty folder on root
     # Get content from template to local
@@ -276,10 +295,10 @@ def create(
     # git add
     # git initial commit
 
-    # 2. Create github repo
     # Wont push poetry.lock, poetry install not called yet
     git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
     if add_github:
+        # 2. Create github repo
         print("Initialise empty repo on Github")
         repo_url = create_github(github_token, project_name, repo_privacy, description)
 
@@ -330,20 +349,7 @@ def build(kernel: str = "python3", curr_path: str = "") -> None:
 
     project_name = curr_path
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        transient=True,
-    ) as progress:
-        progress.add_task(description="Installing dependencies...", total=None)
-        result = subprocess.run(  # noqa: S603 no untrusted input
-            "poetry install".split(), capture_output=True, cwd=project_directory
-        )
-    if result.returncode != 0:
-        raise ValueError(
-            f"Returncode of poetry install: {result.returncode}\n"
-            + f'{result.stderr.decode("utf-8")}'
-        )
+    do_poetry_install(project_directory)
 
     # A new tool for creating venv-kernels from poetry-venvs
     # will not be ready for hack-demo
@@ -378,6 +384,28 @@ def build(kernel: str = "python3", curr_path: str = "") -> None:
 
     # workspace_uri = workspace_uri_from_projectname(project_name)
     # typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
+
+
+def do_poetry_install(project_directory: str):
+    """Calles poetry install in project_directory.
+
+    Args:
+        project_directory: Path of project
+    """
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task(description="Installing dependencies...", total=None)
+        result = subprocess.run(  # noqa: S603 no untrusted input
+            "poetry install".split(), capture_output=True, cwd=project_directory
+        )
+    if result.returncode != 0:
+        raise ValueError(
+            f"Returncode of poetry install: {result.returncode}\n"
+            + f'{result.stderr.decode("utf-8")}'
+        )
 
 
 # Function is deemed too complex, should probably be split up.
