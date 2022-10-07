@@ -41,6 +41,24 @@ You can install _SSB Project CLI_ via [pip] from [PyPI]:
 pip install ssb-project-cli
 ```
 
+## Installation
+
+Releasing a new version of the CLI
+
+```console
+git switch --create release main
+```
+```console
+poetry version <version>
+```
+```console
+git commit --message="<project> <version>" pyproject.toml
+```
+```console
+git push origin release
+```
+
+
 ## Contributing
 
 ### Setup
