@@ -473,9 +473,7 @@ def create_github(
             description=repo_description,
         )
     repo_url = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").clone_url
-    g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").replace_topics(
-        ["ssb-project"]
-    )
+    g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").replace_topics(["ssb-project"])
     typer.echo(f"GitHub repo created: {repo_url}")
     return repo_url
 
