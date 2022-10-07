@@ -5,6 +5,9 @@ import os
 import subprocess  # noqa: S404
 from enum import Enum
 from pathlib import Path
+from types import TracebackType
+from typing import Optional
+from typing import Type
 
 import toml
 import typer
@@ -79,7 +82,12 @@ class TempGitRemote:
         return None
 
     # Look up
-    def __exit__(self, exc_type: Exception, exc_val: str, exc_tb: str) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         """Deletes remote self.origen and creates a remote named origen with an url."""
         self.repo.delete_remote(self.origin)
         self.repo.create_remote("origin", self.restore_url)
@@ -135,9 +143,6 @@ def get_gitconfig_element(element: str) -> str:
     Args:
         element: Name of the git config element retrive
 
-    Raises:
-        ValueError: when property is not found
-
     Returns:
         str: Value of git config element
     """
@@ -145,8 +150,6 @@ def get_gitconfig_element(element: str) -> str:
     result = subprocess.run(  # noqa: S603 no untrusted input
         cmd, stdout=subprocess.PIPE, encoding="utf-8"
     )
-    if result.stdout == "":
-        raise ValueError(f'Could grab property "{str}" form git config.')
 
     return result.stdout.strip()
 
