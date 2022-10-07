@@ -11,8 +11,6 @@ from typing import Type
 
 import toml
 import typer
-
-# Module "git" does not explicitly export attribute "Repo"
 from git import Repo  # type: ignore[attr-defined]
 from github import BadCredentialsException
 from github import Github
@@ -93,6 +91,24 @@ class TempGitRemote:
         self.repo.create_remote("origin", self.restore_url)
 
 
+def make_and_init_git_repo(repo_dir: Path) -> Repo:
+    """Makes and pushes a GitHub repository.
+
+    Inits a local repository, adds all files and commits.
+
+    Args:
+        repo_dir: Path to local Repository
+
+    Returns:
+        Repo: Repository
+    """
+    repo = Repo.init(repo_dir)
+    repo.git.add("-A")
+    repo.index.commit("Initial commit")
+    repo.git.branch("-M", "main")
+    return repo
+
+
 def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -> None:
     """Makes and pushes a GitHub repository.
 
@@ -104,11 +120,7 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
         github_url: Repository url
         repo_dir: Path to local Repository
     """
-    repo = Repo.init(repo_dir)
-    # repo = git.Repo(repo_dir)      # This line is used when debugging
-    repo.git.add("-A")
-    repo.index.commit("Initial commit")
-    repo.git.branch("-M", "main")
+    repo = make_and_init_git_repo(repo_dir)
 
     github_username = Github(github_token).get_user().login
     credential_url = mangle_url(github_url, github_token)
@@ -154,6 +166,33 @@ def get_gitconfig_element(element: str) -> str:
     return result.stdout.strip()
 
 
+def request_name_email() -> tuple[str, str]:
+    """Requests name and email from user.
+
+    Returns:
+        tuple[str, str]: User supplied name and email
+    """
+    name = typer.prompt("Enter full name: ")
+    email = typer.prompt("Enter email    : ")
+    return name, email
+
+
+def request_project_description() -> str:
+    """Prompts the user for a project description.
+
+    Continues to prompt the user until a non-empty string is supplied.
+
+    Returns:
+         str: Project description
+    """
+    description: str = typer.prompt("Fyll inn prosjektbeskrivelse")
+
+    if description == "":
+        description = request_project_description()
+
+    return description
+
+
 def extract_name_email() -> tuple[str, str]:
     """Grabs email and name from git config.
 
@@ -163,17 +202,6 @@ def extract_name_email() -> tuple[str, str]:
     """
     name = get_gitconfig_element("user.name")
     email = get_gitconfig_element("user.email")
-    return name, email
-
-
-def request_name_email() -> tuple[str, str]:
-    """Requests name and email from user.
-
-    Returns:
-        tuple[str, str]: User supplied name and email
-    """
-    name = typer.prompt("Enter full name: ")
-    email = typer.prompt("Enter email    : ")
     return name, email
 
 
@@ -195,7 +223,6 @@ def create_project_from_template(projectname: str, description: str) -> Path:
     if project_dir.exists():
         raise ValueError(f"The directory {project_dir} already exists.")
 
-    # Get name and email from .gitconfig, request if not found
     name, email = extract_name_email()
     if not (name and email):
         name, email = request_name_email()
@@ -216,10 +243,9 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         "--extra-context",
         quoted,
     ]
-    # try:
+
     subprocess.run(argv, check=True, cwd=home_dir)  # noqa: S603 no untrusted input
-    # except subprocess.CalledProcessError:
-    #     typer.echo(f"ERROR calling cruft.")
+
     return project_dir
 
 
@@ -237,13 +263,15 @@ def create(
         ..., help="Prosjekt navn, kun alfanumerisk og underscore"
     ),
     description: str = typer.Argument(  # noqa: B008
-        ..., help="En kort beskrivelse av hva prosjektet ditt er for"
+        "", help="En kort beskrivelse av prosjektet ditt"
     ),
     repo_privacy: RepoPrivacy = typer.Argument(  # noqa: B008
-        RepoPrivacy.internal, help="En kort beskrivelse av hva prosjektet ditt er for"
+        RepoPrivacy.internal, help="Tilgangsvalg for repoet."
     ),
-    skip_github: bool = typer.Option(  # noqa: B008
-        False, help="Legg denne til hvis man IKKE ønsker å opprette et Github repo"
+    add_github: bool = typer.Option(  # noqa: B008
+        False,
+        "--github",
+        help="Legg denne til hvis man ønsker å opprette et Github repo",
     ),
     github_token: str = typer.Option(  # noqa: B008
         "",
@@ -254,54 +282,42 @@ def create(
     if " " in project_name:
         raise ValueError("Spaces not allowed in projectname, use underscore?")
 
-    if not skip_github and not github_token:
+    if add_github and not github_token:
         raise ValueError("Needs GitHub token, please specify with --github-token")
 
     if not debug_without_create_repo:
-        if not skip_github and is_github_repo(github_token, project_name):
+        if add_github and is_github_repo(github_token, project_name):
             raise ValueError(f"The repo {project_name} already exists on GitHub.")
+
+    if add_github and description == "":
+        description = request_project_description()
 
     create_project_from_template(project_name, description)
 
-    # Create empty folder on root
-    # Get content from template to local
-    # git init ?
-    # git add ?
-
-    # 2. Create github repo
-    if not skip_github:
+    git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
+    if add_github:
         print("Initialise empty repo on Github")
         repo_url = create_github(github_token, project_name, repo_privacy, description)
 
         print("Create local repo and push to Github")
-        git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
         make_git_repo_and_push(github_token, repo_url, git_repo_dir)
 
         print("Set branch protection rules.")
         set_branch_protection_rules(github_token, project_name)
-
-    # 4. Add metadata about creation
-    # typer.echo("Record / log metadata about project-creation to toml-file")
-    # metadata_path = f"/home/jovyan/{projectname}/pyproject.toml"
-    # metadata = toml.load(metadata_path)
-    # metadata["ssb"]["project_creation"]["date"] = datetime.datetime.now().strftime(
-    #     r"%Y-%m-%d"
-    # )
-    # metadata["ssb"]["project_creation"]["privacy"] = repo_privacy
-    # metadata["ssb"]["project_creation"]["skipped_github"] = skip_github
-    # if not skip_github:
-    #     metadata["ssb"]["project_creation"]["github_uri"] = repo_url
-    # metadata["ssb"]["project_creation"]["delete_run"] = False
-    # with open(metadata_path, "w") as toml_file:
-    #     toml.dump(metadata, toml_file)
+    else:
+        make_and_init_git_repo(git_repo_dir)
 
     print(
         f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
         + " you may move it if you want to."
     )
-    build(curr_path=project_name)
 
-    print()
+    curr_path = project_name
+    project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
+
+    poetry_install(project_directory)
+
+    install_ipykernel(project_directory, project_name)
 
 
 @app.command()
@@ -318,30 +334,21 @@ def build(kernel: str = "python3", curr_path: str = "") -> None:
 
     project_name = curr_path
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        transient=True,
-    ) as progress:
-        progress.add_task(description="Installing dependencies...", total=None)
-        result = subprocess.run(  # noqa: S603 no untrusted input
-            "poetry install".split(), capture_output=True, cwd=project_directory
-        )
-    if result.returncode != 0:
-        raise ValueError(
-            f"Returncode of poetry install: {result.returncode}\n"
-            + f'{result.stderr.decode("utf-8")}'
-        )
+    poetry_install(project_directory)
 
-    # A new tool for creating venv-kernels from poetry-venvs
-    # will not be ready for hack-demo
-    kernels = get_kernels_dict()
-    # Flip kernel-text to key if full path to kernel given
-    if kernel in kernels.values():
-        kernel = {v: k for k, v in kernels.items()}[kernel]
-    if kernel not in kernels.keys():
-        raise ValueError(f"Cant find {kernel}-template among {kernels.keys()}")
+    install_ipykernel(project_directory, project_name)
 
+
+def install_ipykernel(project_directory: Path, project_name: str) -> None:
+    """Installs ipykernel.
+
+    Args:
+        project_directory: Path of project
+        project_name: Name of project
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -364,8 +371,30 @@ def build(kernel: str = "python3", curr_path: str = "") -> None:
 
     print(f"Kernel ({project_name}) successfully created")
 
-    # workspace_uri = workspace_uri_from_projectname(project_name)
-    # typer.echo(f"Suggested workspace (bookmark this): {workspace_uri}?clone")
+
+def poetry_install(project_directory: Path) -> None:
+    """Call poetry install in project_directory.
+
+    Args:
+        project_directory: Path of project
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task(description="Installing dependencies...", total=None)
+        result = subprocess.run(  # noqa: S603 no untrusted input
+            "poetry install".split(), capture_output=True, cwd=project_directory
+        )
+    if result.returncode != 0:
+        raise ValueError(
+            f"Returncode of poetry install: {result.returncode}\n"
+            + f'{result.stderr.decode("utf-8")}'
+        )
 
 
 # Function is deemed too complex, should probably be split up.
@@ -382,10 +411,6 @@ def delete() -> None:  # noqa C901
     for kernel in os.listdir(kernels_path):
         if kernel.startswith(project_name):
             os.remove(kernels_path + project_name)
-
-    # Deactivation not necessary?
-    # If you remove the currently activated virtual environment,
-    # it will be automatically deactivated.
 
     typer.echo("Remove venv / uninstall with poetry")
 
@@ -458,10 +483,6 @@ def create_github(
     Returns:
         str: Repository url
     """
-    # Kjør gitconfig-scripet om brukernavn og passord ikke er satt
-    # Flere brukernavn knyttet til samme konto?
-    # Sjekke etter "primary email" knyttet til github-konto?
-
     private_repo = True if repo_privacy != "public" else False
 
     g = Github(github_token)
@@ -486,14 +507,11 @@ def projectname_from_currfolder(curr_path: str) -> str:
     Returns:
         str: Project name from poetry`s toml-config
     """
-    # Record for reset later
     curr_dir = os.getcwd()
-    # Find root of project, and get projectname from poetry's toml-config
     while "pyproject.toml" not in os.listdir():
         os.chdir("../")
     pyproject = toml.load("./pyproject.toml")
     name: str = pyproject["tool"]["poetry"]["name"]
-    # Reset working directory
     os.chdir(curr_dir)
     return name
 
