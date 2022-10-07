@@ -8,6 +8,7 @@ import pytest
 from github import BadCredentialsException
 from github import GithubException
 
+from ssb_project_cli.ssb_project.app import clean
 from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
@@ -152,6 +153,30 @@ def test_create_project_from_template(
             create_project_from_template("testname", "test description")
 
 
+@patch(f"{PKG}.get_kernels_dict")
+@patch(f"{PKG}.subprocess.run")
+def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
+    """Check if the function works correctly and raises the expected errors."""
+    project_name = "test-project"
+    mock_kernels.return_value = {}
+    with pytest.raises(ValueError):
+        clean(project_name)
+
+    kernels = {project_name: "/kernel/path"}
+    mock_kernels.return_value = kernels
+    mock_run.return_value = Mock(returncode=1, stderr=b"Some error")
+    with pytest.raises(ValueError):
+        clean(project_name)
+
+    mock_run.return_value = Mock(
+        returncode=0,
+        stderr=f"[RemoveKernelSpec] Removed {kernels[project_name]}".encode(),
+    )
+    clean(project_name)
+
+    assert mock_run.call_count == 2
+
+
 @patch(f"{PKG}.workspace_uri_from_projectname", return_value="")
 @patch(f"{PKG}.typer.echo")
 @patch(f"{PKG}.projectname_from_currfolder", return_value="")
@@ -164,12 +189,20 @@ def test_workspace(
 
 
 @patch(f"{PKG}.typer.echo", lambda x: "")
-@patch(f"{PKG}.debug_without_create_repo", False)
 @patch(f"{PKG}.Github")
 def test_create_github(mock_github: Mock) -> None:
     """Checks if create_github works."""
-    create_github("token", "repo", "privacy", "desc")
-    assert mock_github.call_count == 1
+    instance_github = Mock()
+    mock_github.return_value = instance_github
+    with patch(f"{PKG}.debug_without_create_repo", False):
+        create_github("token", "repo", "privacy", "desc")
+    assert instance_github.get_organization.called
+
+    with patch(f"{PKG}.debug_without_create_repo", True):
+        create_github("token", "repo", "privacy", "desc")
+
+    assert mock_github.call_count == 2
+    assert instance_github.get_repo.call_count == 4
 
 
 @patch(f"{PKG}.os")
@@ -198,7 +231,7 @@ def test_get_kernels_dict(mock_run: Mock) -> None:
     mock_run.side_effect = [
         Mock(
             returncode=0,
-            stdout=b"Available kernels:\n  python    /some/path\n  R    /other/path",
+            stdout=b"Available kernels:\n  python    /some/path\n  R    /other/path\nthis line is invalid",
         ),
         Mock(returncode=1, stderr=b"Some error"),
     ]

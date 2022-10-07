@@ -447,6 +447,41 @@ def delete() -> None:  # noqa C901
             os.remove(f"/home/jovyan/.jupyter/lab/workspaces/{workspace}")
 
 
+@app.command()
+def clean(
+    project_name: str = typer.Argument(  # noqa: B008
+        ..., help="Navnet til prosjektet du vil renske kernelen for."
+    )
+) -> None:
+    """Removes the kernel associated with project_name."""
+    kernels = get_kernels_dict()
+
+    if project_name not in kernels:
+        raise ValueError(
+            f'Could not find kernel "{project_name}". Is the project name spelled correctly?'
+        )
+
+    typer.echo(f"Deleting kernel {project_name}...")
+
+    clean_cmd = f"jupyter kernelspec remove -f {project_name}".split()
+
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        clean_cmd, capture_output=True
+    )
+
+    if result.returncode != 0:
+        raise ValueError(
+            f'Returncode of {" ".join(clean_cmd)}: {result.returncode}'
+            + f'\n{result.stderr.decode("utf-8")}'
+        )
+
+    output = result.stderr.decode("utf-8").strip()
+    if output != f"[RemoveKernelSpec] Removed {kernels[project_name]}":
+        raise ValueError(f"Unexpected output {output}")
+
+    typer.echo(f"Deleted kernel {project_name}.")
+
+
 def rm_hyphen_and_underscore(s: str) -> str:
     """Remove hyphens and underscores.
 
@@ -560,8 +595,8 @@ def get_kernels_dict() -> dict[str, str]:
 
 def main() -> None:
     """Main function of ssb_project_cli."""
-    app(prog_name="ssb-project")
+    app(prog_name="ssb-project")  # pragma: no cover
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pragma: no cover
