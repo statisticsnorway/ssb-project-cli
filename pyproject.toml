@@ -85,7 +85,7 @@ source = ["ssb_project_cli", "tests"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 60
+fail_under = 70
 
 [tool.isort]
 profile = "black"
