@@ -358,7 +358,7 @@ def build(
 
 
 def get_github_pat() -> dict[str, str]:
-    """Gets GitHub users and Pat from .gitconfig.
+    """Gets GitHub users and PAT from .gitconfig.
 
     Raises:
         ValueError: If .git-credentials does not exist.
