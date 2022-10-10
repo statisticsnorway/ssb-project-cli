@@ -336,10 +336,12 @@ def build(
     """
     project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
 
+    project_name = CURRENT_WORKING_DIRECTORY.name
+
     if curr_path == "":
         project_directory = CURRENT_WORKING_DIRECTORY
-
-    project_name = curr_path
+    else:
+        project_name = curr_path
 
     poetry_install(project_directory)
 
