@@ -163,7 +163,7 @@ def test_build(
     mock_install_ipy: Mock, mock_poetry_install: Mock, tmp_path: Path
 ) -> None:
     """Check that build calls poetry_install and install_ipykernel."""
-    build(curr_path=str(tmp_path))
+    build(path=str(tmp_path))
     assert mock_poetry_install.call_count == 1
     assert mock_install_ipy.call_count == 1
 
