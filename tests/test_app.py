@@ -8,17 +8,21 @@ import pytest
 from github import BadCredentialsException
 from github import GithubException
 
+from ssb_project_cli.ssb_project.app import build
 from ssb_project_cli.ssb_project.app import clean
 from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
 from ssb_project_cli.ssb_project.app import get_gitconfig_element
 from ssb_project_cli.ssb_project.app import get_kernels_dict
+from ssb_project_cli.ssb_project.app import install_ipykernel
 from ssb_project_cli.ssb_project.app import is_github_repo
 from ssb_project_cli.ssb_project.app import make_git_repo_and_push
 from ssb_project_cli.ssb_project.app import mangle_url
+from ssb_project_cli.ssb_project.app import poetry_install
 from ssb_project_cli.ssb_project.app import projectname_from_currfolder
 from ssb_project_cli.ssb_project.app import request_name_email
+from ssb_project_cli.ssb_project.app import rm_hyphen_and_underscore
 from ssb_project_cli.ssb_project.app import set_branch_protection_rules
 from ssb_project_cli.ssb_project.app import workspace
 from ssb_project_cli.ssb_project.app import workspace_uri_from_projectname
@@ -153,6 +157,44 @@ def test_create_project_from_template(
             create_project_from_template("testname", "test description")
 
 
+@patch(f"{PKG}.poetry_install")
+@patch(f"{PKG}.install_ipykernel")
+def test_build(mock_install_ipy: Mock, mock_poetry_install: Mock) -> None:
+    """Check that build calls poetry_install and install_ipykernel."""
+    build()
+    assert mock_poetry_install.call_count == 1
+    assert mock_install_ipy.call_count == 1
+
+
+@patch(f"{PKG}.subprocess.run")
+def test_install_ipykernel(mock_run: Mock, tmp_path: Path) -> None:
+    """Check that install_ipykernel runs correct command and fails as expected."""
+    name = "testproject"
+    mock_run.return_value = Mock(returncode=1, stderr=b"some error")
+    with pytest.raises(ValueError):
+        install_ipykernel(tmp_path, name)
+    assert (
+        " ".join(mock_run.call_args[0][0])
+        == f"poetry run python3 -m ipykernel install --user --name {name}"
+    )
+    mock_run.return_value = Mock(returncode=0, stdout=b"No error")
+
+    install_ipykernel(tmp_path, name)
+    assert mock_run.call_count == 2
+
+
+@patch(f"{PKG}.subprocess.run")
+def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
+    """Check if function runs and fails correctly."""
+    mock_run.return_value = Mock(returncode=1, stderr=b"some error")
+    with pytest.raises(ValueError):
+        poetry_install(tmp_path)
+    assert mock_run.call_args[0][0] == "poetry install".split()
+    mock_run.return_value = Mock(returncode=0)
+    poetry_install(tmp_path)
+    assert mock_run.call_count == 2
+
+
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
 def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
@@ -175,6 +217,19 @@ def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
     clean(project_name)
 
     assert mock_run.call_count == 2
+
+
+@pytest.mark.parametrize(
+    "param,expected",
+    [
+        ("__-_---_", ""),
+        ("another_test", "anothertest"),
+        ("__ssb-project_cli", "ssbprojectcli"),
+    ],
+)
+def test_rm_hyphen_and_underscore(param: str, expected: str) -> None:
+    """Checks if hyphens and underscores are removed properly."""
+    assert rm_hyphen_and_underscore(param) == expected
 
 
 @patch(f"{PKG}.workspace_uri_from_projectname", return_value="")
