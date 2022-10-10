@@ -2,6 +2,7 @@
 """Command-line-interface for project-operations in dapla-jupterlab."""
 import json
 import os
+import re
 import subprocess  # noqa: S404
 from enum import Enum
 from pathlib import Path
@@ -9,6 +10,7 @@ from types import TracebackType
 from typing import Optional
 from typing import Type
 
+import questionary
 import toml
 import typer
 from git import Repo  # type: ignore[attr-defined]
@@ -267,7 +269,7 @@ def create(
         "", help="En kort beskrivelse av prosjektet ditt"
     ),
     repo_privacy: RepoPrivacy = typer.Argument(  # noqa: B008
-        RepoPrivacy.internal, help="Tilgangsvalg for repoet."
+        RepoPrivacy.internal, help="Tilgangsvalg for repoet"
     ),
     add_github: bool = typer.Option(  # noqa: B008
         False,
@@ -276,12 +278,18 @@ def create(
     ),
     github_token: str = typer.Option(  # noqa: B008
         "",
-        help="Ditt Github PAT, følg https://statistics-norway.atlassian.net/wiki/spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og+integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHubinstruksjonene her for å skape en",
+        help="Ditt Github PAT",
+        # Link does not work in jupyter labs følg https://statistics-norway.atlassian.net/wiki/spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og+integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHubinstruksjonene her for å skape en
     ),
 ) -> None:
     """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).Følger kjent beste praksis i SSB. :sparkles:."""
-    if " " in project_name:
-        raise ValueError("Spaces not allowed in projectname, use underscore?")
+    if not contains_only_alnum_underscore(project_name):
+        raise ValueError(
+            "Team name should only contain alphanumeric characters and/or underscores (e.g test_project)"
+        )
+
+    if add_github and not github_token:
+        github_token = choose_login()
 
     if add_github and not github_token:
         raise ValueError("Needs GitHub token, please specify with --github-token")
@@ -324,7 +332,7 @@ def create(
 @app.command()
 def build(
     kernel: str = "python3",
-    curr_path: str = typer.Argument(  # noqa: B008
+    path: str = typer.Argument(  # noqa: B008
         "",
         dir_okay=True,
         help=f'Relativ sti til prosjektet fra "{DEFAULT_REPO_CREATE_PATH}"',
@@ -334,19 +342,77 @@ def build(
 
     Bygger virtuelt miljø med Poetry og lager kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det bli kalt i fra.
     """
-    project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
+    project_directory = DEFAULT_REPO_CREATE_PATH / path
 
     project_name = CURRENT_WORKING_DIRECTORY.name
 
-    if curr_path == "":
+    if path == "":
         project_directory = CURRENT_WORKING_DIRECTORY
     else:
-        project_name = curr_path
+        project_name = path
 
     poetry_install(project_directory)
 
     if kernel == "python3":
         install_ipykernel(project_directory, project_name)
+
+
+def get_github_pat() -> dict[str, str]:
+    """Gets GitHub users and Pat from .gitconfig.
+
+    Raises:
+        ValueError: If .git-credentials does not exist.
+
+    Returns:
+        dict[str, str]: A dict with user as key and PAT as value.
+    """
+    git_credentials = DEFAULT_REPO_CREATE_PATH.joinpath(Path(".git-credentials"))
+    user_token_dict: dict[str, str] = {}
+    if not git_credentials.exists():
+        raise ValueError(
+            "Can not find .git-credentials, add the token manually with --github-token <TOKEN>"
+        )
+
+    with open(git_credentials) as f:
+        lines = f.readlines()
+
+        for line in lines:
+            user_token_split = line.split(":")
+            user = re.sub(r".*//", "", user_token_split[1])
+            token = re.sub(r"@.*", "", user_token_split[2]).strip()
+            user_token_dict[user] = token
+
+    return user_token_dict
+
+
+def contains_only_alnum_underscore(check_str: str) -> bool:
+    """Checks if a string consists of only alphanumeric characters and underscores.
+
+    Args:
+        check_str: String to check
+
+    Returns:
+        bool: True if the string contains only  alphanumeric characters and underscores.
+    """
+    for char in check_str:
+        if not char.isalnum() and char != "_":
+            return False
+    return True
+
+
+def choose_login() -> str:
+    """Asks the user to pick between stored GitHub usernames.
+
+    Returns:
+        str: GitHub personal access token
+    """
+    user_token_dict: dict[str, str] = get_github_pat()
+
+    choice = questionary.select(
+        "Hvilken GitHub konto skal brukes?", choices=user_token_dict.keys()  # type: ignore
+    ).ask()
+
+    return user_token_dict[choice]
 
 
 def install_ipykernel(project_directory: Path, project_name: str) -> None:
