@@ -332,7 +332,7 @@ def build(
 ) -> None:
     """Build ssb-project.
 
-    Bygger virtuelt miljø med Poetry og lager kernel. Hvis ingen argumenter blir gitt tar programmet utgangspungt i mappen det bli kalt i fra.
+    Bygger virtuelt miljø med Poetry og lager kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det bli kalt i fra.
     """
     project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
 
