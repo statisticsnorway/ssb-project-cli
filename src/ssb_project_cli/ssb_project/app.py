@@ -25,6 +25,7 @@ app = typer.Typer(rich_markup_mode="rich")
 GITHUB_ORG_NAME = "statisticsnorway"
 debug_without_create_repo = False
 DEFAULT_REPO_CREATE_PATH = Path.home()
+CURRENT_WORKING_DIRECTORY = Path.cwd()
 
 
 def is_github_repo(token: str, repo_name: str) -> bool:
@@ -321,22 +322,29 @@ def create(
 
 
 @app.command()
-def build(kernel: str = "python3", curr_path: str = "") -> None:
+def build(
+    kernel: str = "python3",
+    curr_path: str = typer.Argument(  # noqa: B008
+        "",
+        dir_okay=True,
+        help=f'Relativ sti til prosjektet fra "{DEFAULT_REPO_CREATE_PATH}"',
+    ),
+) -> None:
     """Build ssb-project.
 
-    1. Check if Cruft recommends updating?
-    2. Create Venv from Poetry
-    3. Create kernel from venv
-    4. Create workspace?
-    5. Provide link to workspace?
+    Bygger virtuelt miljø med Poetry og lager kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det bli kalt i fra.
     """
     project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
+
+    if curr_path == "":
+        project_directory = CURRENT_WORKING_DIRECTORY
 
     project_name = curr_path
 
     poetry_install(project_directory)
 
-    install_ipykernel(project_directory, project_name)
+    if kernel == "python3":
+        install_ipykernel(project_directory, project_name)
 
 
 def install_ipykernel(project_directory: Path, project_name: str) -> None:
