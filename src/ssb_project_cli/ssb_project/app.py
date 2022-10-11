@@ -131,7 +131,7 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
 
     with TempGitRemote(repo, credential_url, username_url):
         repo.git.push("--set-upstream", "origin", "main")
-    print(f"Repo successfully pushed to GitHub: {github_url}")
+    typer.echo(f"Repo successfully pushed to GitHub: {github_url}")
 
 
 def set_branch_protection_rules(github_token: str, repo_name: str) -> None:
@@ -216,15 +216,12 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         description: Project description
 
     Returns:
-        Path: Path of project.
-
-    Raises:
-        ValueError: If the project directory already exists
-    """
+        Path: Path of project."""
     home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
-        raise ValueError(f"The directory {project_dir} already exists.")
+        typer.echo(f"The directory {project_dir} already exists.")
+        exit(1)
 
     name, email = extract_name_email()
     if not (name and email):
@@ -292,11 +289,13 @@ def create(
         github_token = choose_login()
 
     if add_github and not github_token:
-        raise ValueError("Needs GitHub token, please specify with --github-token")
+        typer.echo("Needs GitHub token, please specify with --github-token")
+        exit(1)
 
     if not debug_without_create_repo:
         if add_github and is_github_repo(github_token, project_name):
-            raise ValueError(f"The repo {project_name} already exists on GitHub.")
+            typer.echo(f"The repo {project_name} already exists on GitHub.")
+            exit(1)
 
     if add_github and description == "":
         description = request_project_description()
@@ -533,7 +532,7 @@ def clean(
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
-        raise ValueError(
+        typer.echo(
             f'Could not find kernel "{project_name}". Is the project name spelled correctly?'
         )
 
