@@ -338,7 +338,7 @@ def build(
         help=f'Relativ sti til prosjektet fra "{DEFAULT_REPO_CREATE_PATH}"',
     ),
 ) -> None:
-    """Build ssb-project.
+    """Bygger et ssb prosjekt.
 
     Bygger virtuelt miljø med Poetry og lager kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det bli kalt i fra.
     """
@@ -529,7 +529,7 @@ def clean(
         ..., help="Navnet til prosjektet/kernelen du vil slette."
     )
 ) -> None:
-    """Removes the kernel associated with project_name."""
+    """Fjerner kernel knyttet til prosjekt."""
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
