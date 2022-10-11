@@ -216,7 +216,8 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         description: Project description
 
     Returns:
-        Path: Path of project."""
+        Path: Path of project.
+    """
     home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
