@@ -2,7 +2,7 @@
 name = "ssb-project-cli"
 version = "1.0.3"
 description = "SSB Project CLI"
-authors = ["Statistics Norway <mmw@ssb.no>"]
+authors = ["Statistics Norway <stat-dev@ssb.no>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/statisticsnorway/ssb-project-cli"
