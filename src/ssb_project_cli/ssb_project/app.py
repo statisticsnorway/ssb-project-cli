@@ -395,7 +395,7 @@ def valid_repo_name(name: str) -> bool:
      - 3 characters or longer
 
     Args:
-        check_str: Supplied repo name
+        name: Supplied repo name
 
     Returns:
         bool: True if the string is a valid repo name

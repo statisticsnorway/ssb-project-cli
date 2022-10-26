@@ -44,7 +44,7 @@ PKG = "ssb_project_cli.ssb_project.app"
         ("hi", False),
     ],
 )
-def test_valid_repo_name(name: str, expected: bool):
+def test_valid_repo_name(name: str, expected: bool) -> None:
     """Checks a range of valid and invalid repo names."""
     assert valid_repo_name(name) == expected
 
