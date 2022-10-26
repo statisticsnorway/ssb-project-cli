@@ -24,11 +24,29 @@ from ssb_project_cli.ssb_project.app import projectname_from_currfolder
 from ssb_project_cli.ssb_project.app import request_name_email
 from ssb_project_cli.ssb_project.app import rm_hyphen_and_underscore
 from ssb_project_cli.ssb_project.app import set_branch_protection_rules
+from ssb_project_cli.ssb_project.app import valid_repo_name
 from ssb_project_cli.ssb_project.app import workspace
 from ssb_project_cli.ssb_project.app import workspace_uri_from_projectname
 
 
 PKG = "ssb_project_cli.ssb_project.app"
+
+
+@pytest.mark.parametrize(
+    "name,expected",
+    [
+        ("word", True),
+        ("words-with-hyphens", True),
+        ("words_with_underscores", True),
+        ("non-ascii-$%&", False),
+        ("norwegian-characters-æøå", False),
+        ("words with spaces", False),
+        ("hi", False),
+    ],
+)
+def test_valid_repo_name(name: str, expected: bool):
+    """Checks a range of valid and invalid repo names."""
+    assert valid_repo_name(name) == expected
 
 
 @pytest.mark.parametrize(

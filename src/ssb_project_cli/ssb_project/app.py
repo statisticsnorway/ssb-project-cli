@@ -283,9 +283,9 @@ def create(
     ),
 ) -> None:
     """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).Følger kjent beste praksis i SSB. :sparkles:."""
-    if not contains_only_alnum_underscore(project_name):
+    if not valid_repo_name(project_name):
         raise ValueError(
-            "Team name should only contain alphanumeric characters and/or underscores (e.g test_project)"
+            "Invalid repo name, please choose a name in the form 'my-fantastic-project'"
         )
 
     if add_github and not github_token:
@@ -385,19 +385,22 @@ def get_github_pat() -> dict[str, str]:
     return user_token_dict
 
 
-def contains_only_alnum_underscore(check_str: str) -> bool:
-    """Checks if a string consists of only alphanumeric characters and underscores.
+def valid_repo_name(name: str) -> bool:
+    """Checks if the supplied name is suitable for a git repo.
+
+    Accepts:
+     - ASCII characters upper and lower case
+     - Underscores
+     - Hyphens
+     - 3 characters or longer
 
     Args:
-        check_str: String to check
+        check_str: Supplied repo name
 
     Returns:
-        bool: True if the string contains only  alphanumeric characters and underscores.
+        bool: True if the string is a valid repo name
     """
-    for char in check_str:
-        if not char.isalnum() and char != "_":
-            return False
-    return True
+    return len(name) >= 3 and re.fullmatch("^[a-zA-Z0-9-_]+$", name) is not None
 
 
 def choose_login() -> str:
