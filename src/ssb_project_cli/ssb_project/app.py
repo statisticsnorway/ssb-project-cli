@@ -9,6 +9,7 @@ from pathlib import Path
 from types import TracebackType
 from typing import Optional
 from typing import Type
+from ..config import ENVIRONMENT
 
 import questionary
 import toml
@@ -222,6 +223,11 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         ValueError: If the project directory already exists
     """
     home_dir = DEFAULT_REPO_CREATE_PATH
+    if ENVIRONMENT == "PROD":
+        project_dir = home_dir.joinpath(f"virtual_environment_projects/{projectname}")
+    else:
+        project_dir = home_dir.joinpath(projectname)
+
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
         raise ValueError(f"The directory {project_dir} already exists.")
