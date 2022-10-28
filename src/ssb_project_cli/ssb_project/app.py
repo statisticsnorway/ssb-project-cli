@@ -6,6 +6,8 @@ import re
 import subprocess  # noqa: S404
 from enum import Enum
 from pathlib import Path
+from shutil import copytree
+from tempfile import TemporaryDirectory
 from types import TracebackType
 from typing import Optional
 from typing import Type
@@ -208,12 +210,15 @@ def extract_name_email() -> tuple[str, str]:
     return name, email
 
 
-def create_project_from_template(projectname: str, description: str) -> Path:
+def create_project_from_template(
+    projectname: str, description: str, temp_dir: Path
+) -> Path:
     """Creates a project from CookiCutter template.
 
     Args:
         projectname: Name of project
         description: Project description
+        temp_dir: Temporary directory path
 
     Returns:
         Path: Path of project.
@@ -247,7 +252,7 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         quoted,
     ]
 
-    subprocess.run(argv, check=True, cwd=home_dir)  # noqa: S603 no untrusted input
+    subprocess.run(argv, check=True, cwd=temp_dir)  # noqa: S603 no untrusted input
 
     return project_dir
 
@@ -301,32 +306,38 @@ def create(
     if add_github and description == "":
         description = request_project_description()
 
-    create_project_from_template(project_name, description)
+    with TemporaryDirectory() as temp_dir:
 
-    git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
-    if add_github:
-        print("Initialise empty repo on Github")
-        repo_url = create_github(github_token, project_name, repo_privacy, description)
+        create_project_from_template(project_name, description, Path(temp_dir))
 
-        print("Create local repo and push to Github")
-        make_git_repo_and_push(github_token, repo_url, git_repo_dir)
+        git_repo_dir = Path(Path(temp_dir).joinpath(project_name))
+        if add_github:
+            print("Initialise empty repo on Github")
+            repo_url = create_github(
+                github_token, project_name, repo_privacy, description
+            )
 
-        print("Set branch protection rules.")
-        set_branch_protection_rules(github_token, project_name)
-    else:
-        make_and_init_git_repo(git_repo_dir)
+            print("Create local repo and push to Github")
+            make_git_repo_and_push(github_token, repo_url, git_repo_dir)
 
-    print(
-        f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
-        + " you may move it if you want to."
-    )
+            print("Set branch protection rules.")
+            set_branch_protection_rules(github_token, project_name)
+        else:
+            make_and_init_git_repo(git_repo_dir)
 
-    curr_path = project_name
-    project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
+        print(
+            f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
+            + " you may move it if you want to."
+        )
 
-    poetry_install(project_directory)
+        project_directory = DEFAULT_REPO_CREATE_PATH / project_name
+        temp_project_directory = Path(temp_dir) / project_name
 
-    install_ipykernel(project_directory, project_name)
+        poetry_install(temp_project_directory)
+
+        install_ipykernel(temp_project_directory, project_name)
+
+        copytree(temp_project_directory, project_directory)
 
 
 @app.command()
