@@ -1047,7 +1047,7 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pymdown-extensions"
-version = "9.6"
+version = "9.7"
 description = "Extension pack for Python Markdown."
 category = "dev"
 optional = false
@@ -2181,8 +2181,8 @@ pyjwt = [
     {file = "PyJWT-2.6.0.tar.gz", hash = "sha256:69285c7e31fc44f68a1feb309e948e0df53259d579295e6cfe2b1792329f05fd"},
 ]
 pymdown-extensions = [
-    {file = "pymdown_extensions-9.6-py3-none-any.whl", hash = "sha256:1e36490adc7bfcef1fdb21bb0306e93af99cff8ec2db199bd17e3bf009768c11"},
-    {file = "pymdown_extensions-9.6.tar.gz", hash = "sha256:b956b806439bbff10f726103a941266beb03fbe99f897c7d5e774d7170339ad9"},
+    {file = "pymdown_extensions-9.7-py3-none-any.whl", hash = "sha256:767d07d9dead0f52f5135545c01f4ed627f9a7918ee86c646d893e24c59db87d"},
+    {file = "pymdown_extensions-9.7.tar.gz", hash = "sha256:651b0107bc9ee790aedea3673cb88832c0af27d2569cf45c2de06f1d65292e96"},
 ]
 PyNaCl = [
     {file = "PyNaCl-1.5.0-cp36-abi3-macosx_10_10_universal2.whl", hash = "sha256:401002a4aaa07c9414132aaed7f6836ff98f59277a234704ff66878c2ee4a0d1"},
