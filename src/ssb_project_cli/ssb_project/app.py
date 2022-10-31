@@ -15,11 +15,14 @@ from git import Repo  # type: ignore[attr-defined]
 from github import BadCredentialsException
 from github import Github
 from github import GithubException
-from rich import print
+from rich.console import Console
 from rich.progress import Progress
 from rich.progress import SpinnerColumn
 from rich.progress import TextColumn
 
+
+console = Console(color_system=None)
+print = console.print
 
 app = typer.Typer(rich_markup_mode="rich")
 GITHUB_ORG_NAME = "statisticsnorway"
