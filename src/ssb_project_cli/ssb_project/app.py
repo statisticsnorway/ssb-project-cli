@@ -312,12 +312,12 @@ def create(
         print("Set branch protection rules.")
         set_branch_protection_rules(github_token, project_name)
 
-        print(f":white_check_mark: Github repo created at {repo_url}")
+        print(f":white_check_mark: Created Github repo at {repo_url}")
     else:
         make_and_init_git_repo(git_repo_dir)
 
     print(
-        f":white_check_mark: Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
+        f":white_check_mark: Created project ({project_name}) in folder {DEFAULT_REPO_CREATE_PATH},"
         + " you may move it if you want to."
     )
 
@@ -433,7 +433,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
                 f'Failed while installing kernel: {result.stderr.decode("utf-8")}'
             )
 
-    print(f":white_check_mark: Kernel ({project_name}) successfully created")
+    print(f":white_check_mark: Created Kernel ({project_name})")
 
 
 def poetry_install(project_directory: Path) -> None:
