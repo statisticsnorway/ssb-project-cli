@@ -21,10 +21,14 @@ from rich.progress import SpinnerColumn
 from rich.progress import TextColumn
 
 
+# Don't print with color, it's difficult to read when run in Jupyter
 console = Console(color_system=None)
 print = console.print
 
-app = typer.Typer(rich_markup_mode="rich")
+app = typer.Typer(
+    rich_markup_mode="rich",
+    pretty_exceptions_show_locals=False,  # Locals can contain sensitive information
+)
 GITHUB_ORG_NAME = "statisticsnorway"
 debug_without_create_repo = False
 DEFAULT_REPO_CREATE_PATH = Path.home()
