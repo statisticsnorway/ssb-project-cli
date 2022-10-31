@@ -224,7 +224,8 @@ def create_project_from_template(projectname: str, description: str) -> Path:
     home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
-        raise ValueError(f"The directory {project_dir} already exists.")
+        print(f"A project with name '{projectname}' already exists. Please choose another name.")
+        exit(1)
 
     name, email = extract_name_email()
     if not (name and email):
@@ -284,19 +285,23 @@ def create(
 ) -> None:
     """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).Følger kjent beste praksis i SSB. :sparkles:."""
     if not valid_repo_name(project_name):
-        raise ValueError(
+        print(
             "Invalid repo name, please choose a name in the form 'my-fantastic-project'"
         )
+
+        exit(1)
 
     if add_github and not github_token:
         github_token = choose_login()
 
     if add_github and not github_token:
-        raise ValueError("Needs GitHub token, please specify with --github-token")
+        print("Needs GitHub token, please specify with --github-token")
+        exit(1)
 
     if not debug_without_create_repo:
         if add_github and is_github_repo(github_token, project_name):
-            raise ValueError(f"The repo {project_name} already exists on GitHub.")
+            print(f"A repo with the name {project_name} already exists on GitHub. Please choose another name.")
+            exit(1)
 
     if add_github and description == "":
         description = request_project_description()
@@ -369,9 +374,10 @@ def get_github_pat() -> dict[str, str]:
     git_credentials = DEFAULT_REPO_CREATE_PATH.joinpath(Path(".git-credentials"))
     user_token_dict: dict[str, str] = {}
     if not git_credentials.exists():
-        raise ValueError(
-            "Can not find .git-credentials, add the token manually with --github-token <TOKEN>"
+        print(
+            "Could not find a '.git-credentials' in your environment. Please add it manually with the --github-token <TOKEN> option."
         )
+        exit(1)
 
     with open(git_credentials) as f:
         lines = f.readlines()
@@ -536,9 +542,11 @@ def clean(
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
-        raise ValueError(
+        print(
             f'Could not find kernel "{project_name}". Is the project name spelled correctly?'
         )
+
+        exit(1)
 
     typer.echo(f"Deleting kernel {project_name}...")
 
