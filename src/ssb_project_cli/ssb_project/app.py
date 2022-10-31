@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 """Command-line-interface for project-operations in dapla-jupterlab."""
 import json
-import os
 import re
 import subprocess  # noqa: S404
 from enum import Enum
@@ -11,7 +10,6 @@ from typing import Optional
 from typing import Type
 
 import questionary
-import toml
 import typer
 from git import Repo  # type: ignore[attr-defined]
 from github import BadCredentialsException
@@ -508,28 +506,6 @@ def clean(
     typer.echo(f"Deleted kernel {project_name}.")
 
 
-def rm_hyphen_and_underscore(s: str) -> str:
-    """Remove hyphens and underscores.
-
-    Args:
-        s: input string
-
-    Returns:
-        str: without a hyphen and underscore
-    """
-    return s.replace("-", "").replace("_", "")
-
-
-def workspace() -> None:
-    """Prints uri used to create/clone a workspace."""
-    typer.echo(workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd())))
-    typer.echo("To create/clone the workspace:")
-    typer.echo(
-        workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd()))
-        + "?clone"
-    )
-
-
 def create_github(
     github_token: str, repo_name: str, repo_privacy: str, repo_description: str
 ) -> str:
@@ -558,39 +534,6 @@ def create_github(
     g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").replace_topics(["ssb-project"])
     typer.echo(f"GitHub repo created: {repo_url}")
     return repo_url
-
-
-def projectname_from_currfolder(curr_path: str) -> str:
-    """Retrives project name from poetry's toml-config in cwd.
-
-    Args:
-        curr_path: Optional string of current path.
-
-    Returns:
-        str: Project name from poetry`s toml-config
-    """
-    curr_dir = os.getcwd()
-    while "pyproject.toml" not in os.listdir():
-        os.chdir("../")
-    pyproject = toml.load("./pyproject.toml")
-    name: str = pyproject["tool"]["poetry"]["name"]
-    os.chdir(curr_dir)
-    return name
-
-
-def workspace_uri_from_projectname(project_name: str) -> str:
-    """Generates workspace uri based on project name.
-
-    Args:
-         project_name: Project name
-
-    Returns:
-        str: Workspace uri
-    """
-    return (
-        "https://jupyter.dapla.ssb.no/user/"
-        + f"{os.environ['JUPYTERHUB_USER']}/lab/workspaces/{project_name}"
-    )
 
 
 def get_kernels_dict() -> dict[str, str]:
