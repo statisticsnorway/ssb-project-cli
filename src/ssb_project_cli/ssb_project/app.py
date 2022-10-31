@@ -282,7 +282,7 @@ def create(
         # Link does not work in jupyter labs følg https://statistics-norway.atlassian.net/wiki/spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og+integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHubinstruksjonene her for å skape en
     ),
 ) -> None:
-    """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).Følger kjent beste praksis i SSB. :sparkles:."""
+    """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket). Følger kjent beste praksis i SSB."""
     if not valid_repo_name(project_name):
         raise ValueError(
             "Invalid repo name, please choose a name in the form 'my-fantastic-project'"
@@ -338,10 +338,7 @@ def build(
         help=f'Relativ sti til prosjektet fra "{DEFAULT_REPO_CREATE_PATH}"',
     ),
 ) -> None:
-    """Bygger et ssb prosjekt.
-
-    Bygger virtuelt miljø med Poetry og lager kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det bli kalt i fra.
-    """
+    """:wrench: Bygg virtuelt miljø og kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det er kalt i fra."""
     project_directory = DEFAULT_REPO_CREATE_PATH / path
 
     project_name = CURRENT_WORKING_DIRECTORY.name
@@ -476,63 +473,13 @@ def poetry_install(project_directory: Path) -> None:
         )
 
 
-# Function is deemed too complex, should probably be split up.
-def delete() -> None:  # noqa C901
-    """Delete project.
-
-    1. Remove kernel
-    2. Remove venv / uninstall with poetry
-    3. Remove workspace, if exists?
-    """
-    project_name = projectname_from_currfolder(os.getcwd())
-    typer.echo("Remove kernel")
-    kernels_path = "/home/jovyan/.local/share/jupyter/kernels/"
-    for kernel in os.listdir(kernels_path):
-        if kernel.startswith(project_name):
-            os.remove(kernels_path + project_name)
-
-    typer.echo("Remove venv / uninstall with poetry")
-
-    venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)  # noqa S607
-    if venvs.returncode != 0:
-        raise ValueError(venvs.stderr.decode("utf-8"))
-    # check
-    venvs_str: str = venvs.stdout.decode("utf-8")
-
-    delete_cmds = []
-    for venv in venvs_str.split("\n"):
-        if venv:
-            print(venv)
-            if (venv.replace("-", "").replace("_", "")).startswith(
-                project_name.replace("-", "").replace("_", "")
-            ):
-                delete_cmds += [["poetry", "env", "remove", venv.split(" ")[0]]]
-
-    for cmd in delete_cmds:
-        deletion = subprocess.run(  # noqa: S603 no untrusted input
-            cmd, capture_output=True
-        )
-        if deletion.returncode != 0:
-            raise ValueError(deletion.stderr.decode("utf-8"))
-        # typer.echo?
-        print(deletion.stdout.decode("utf-8"))
-
-    typer.echo("Remove workspace, if it exist, based on project-name")
-    for workspace in os.listdir("/home/jovyan/.jupyter/lab/workspaces/"):
-
-        if rm_hyphen_and_underscore(workspace).startswith(
-            rm_hyphen_and_underscore(project_name)
-        ):
-            os.remove(f"/home/jovyan/.jupyter/lab/workspaces/{workspace}")
-
-
 @app.command()
 def clean(
     project_name: str = typer.Argument(  # noqa: B008
         ..., help="Navnet til prosjektet/kernelen du vil slette."
     )
 ) -> None:
-    """Fjerner kernel knyttet til prosjekt."""
+    """:broom: Fjern kernel knyttet til prosjektet."""
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
