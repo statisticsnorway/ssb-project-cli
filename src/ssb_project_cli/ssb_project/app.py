@@ -325,11 +325,6 @@ def create(
         else:
             make_and_init_git_repo(git_repo_dir)
 
-        print(
-            f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
-            + " you may move it if you want to."
-        )
-
         project_directory = DEFAULT_REPO_CREATE_PATH / project_name
         temp_project_directory = Path(temp_dir) / project_name
 
@@ -338,6 +333,11 @@ def create(
         install_ipykernel(temp_project_directory, project_name)
 
         copytree(temp_project_directory, project_directory)
+
+        print(
+            f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
+            + " you may move it if you want to."
+        )
 
 
 @app.command()
