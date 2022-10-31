@@ -46,7 +46,9 @@ def is_github_repo(token: str, repo_name: str) -> bool:
     try:
         Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
     except BadCredentialsException as ex:
-        raise ValueError("Bad GitHub Credentials.") from ex
+        print("The provided Github credentials are invalid. This is probably due to a invalid or expired token.")
+        print(ex)
+        exit(1)
     except GithubException:
         return False
     else:
@@ -286,7 +288,7 @@ def create(
     """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).Følger kjent beste praksis i SSB. :sparkles:."""
     if not valid_repo_name(project_name):
         print(
-            "Invalid repo name, please choose a name in the form 'my-fantastic-project'"
+            "Invalid repo name: Please choose a valid name. For example: 'my-fantastic-project'"
         )
 
         exit(1)
