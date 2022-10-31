@@ -110,7 +110,6 @@ def fake_run_gitconfig(cmd: list[str], stdout: int, encoding: str) -> Mock:
 @patch(f"{PKG}.subprocess.run", fake_run_gitconfig)
 def test_get_gitconfig_element() -> None:
     """Checks that get_gitconfig_element works correctly."""
-    # mock_run.side_effect = [Mock(stdout=s) for s in ["Name ", " name@email.com", ""]]
     assert get_gitconfig_element("user.name") == "Name"
     assert get_gitconfig_element("user.email") == "name@email.com"
     assert get_gitconfig_element("user.phone") == ""

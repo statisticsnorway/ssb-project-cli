@@ -311,25 +311,21 @@ def create(
 
         print("Set branch protection rules.")
         set_branch_protection_rules(github_token, project_name)
+
+        print(f":white_check_mark: Github repo created at {repo_url}")
     else:
         make_and_init_git_repo(git_repo_dir)
 
     print(
-        f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
+        f":white_check_mark: Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
         + " you may move it if you want to."
     )
 
-    curr_path = project_name
-    project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
-
-    poetry_install(project_directory)
-
-    install_ipykernel(project_directory, project_name)
+    build(path=project_name)
 
 
 @app.command()
 def build(
-    kernel: str = "python3",
     path: str = typer.Argument(  # noqa: B008
         "",
         dir_okay=True,
@@ -337,19 +333,16 @@ def build(
     ),
 ) -> None:
     """:wrench: Bygg virtuelt miljø og kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det er kalt i fra."""
-    project_directory = DEFAULT_REPO_CREATE_PATH / path
-
-    project_name = CURRENT_WORKING_DIRECTORY.name
-
     if path == "":
+        project_name = CURRENT_WORKING_DIRECTORY.name
         project_directory = CURRENT_WORKING_DIRECTORY
     else:
         project_name = path
+        project_directory = DEFAULT_REPO_CREATE_PATH / path
 
     poetry_install(project_directory)
 
-    if kernel == "python3":
-        install_ipykernel(project_directory, project_name)
+    install_ipykernel(project_directory, project_name)
 
 
 def get_github_pat() -> dict[str, str]:
@@ -437,13 +430,10 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         )
         if result.returncode != 0:
             raise ValueError(
-                f'Returncode of {" ".join(make_kernel_cmd)}: {result.returncode}'
-                + f'\n{result.stderr.decode("utf-8")}'
+                f'Failed while installing kernel: {result.stderr.decode("utf-8")}'
             )
-        output = result.stdout.decode("utf-8")
-        print(output)
 
-    print(f"Kernel ({project_name}) successfully created")
+    print(f":white_check_mark: Kernel ({project_name}) successfully created")
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -466,8 +456,11 @@ def poetry_install(project_directory: Path) -> None:
         )
     if result.returncode != 0:
         raise ValueError(
-            f"Returncode of poetry install: {result.returncode}\n"
-            + f'{result.stderr.decode("utf-8")}'
+            f'Failed while installing dependencies: {result.stderr.decode("utf-8")}'
+        )
+    else:
+        print(
+            ":white_check_mark: Created virtual environment and installed dependencies"
         )
 
 
