@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """Command-line-interface for project-operations in dapla-jupterlab."""
 import json
 import re
@@ -8,7 +7,6 @@ from pathlib import Path
 from types import TracebackType
 from typing import Optional
 from typing import Type
-from ..config import ENVIRONMENT
 
 import questionary
 import typer
@@ -21,6 +19,9 @@ from rich.progress import Progress
 from rich.progress import SpinnerColumn
 from rich.progress import TextColumn
 
+from .environment import JUPYTER_IMAGE_SPEC
+from .environment import PIP_INDEX_URL
+
 
 # Don't print with color, it's difficult to read when run in Jupyter
 console = Console(color_system=None)
@@ -32,9 +33,22 @@ app = typer.Typer(
     pretty_exceptions_show_locals=False,  # Locals can contain sensitive information
 )
 GITHUB_ORG_NAME = "statisticsnorway"
+NEXUS_SOURCE_NAME = "nexus"
 debug_without_create_repo = False
 DEFAULT_REPO_CREATE_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()
+
+
+def running_onprem(image_spec: str) -> bool:
+    """Are we running in Jupyter on-prem?
+
+    Args:
+        image_spec: Value of the JUPYTER_IMAGE_SPEC environment variable
+
+    Returns:
+        True if running on-prem, else False.
+    """
+    return "onprem" in image_spec
 
 
 def is_github_repo(token: str, repo_name: str) -> bool:
@@ -228,10 +242,6 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         ValueError: If the project directory already exists
     """
     home_dir = DEFAULT_REPO_CREATE_PATH
-    if ENVIRONMENT == "PROD":
-        project_dir = home_dir.joinpath(f"virtual_environment_projects/{projectname}")
-    else:
-        project_dir = home_dir.joinpath(projectname)
 
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
@@ -355,6 +365,17 @@ def build(
         project_name = path
         project_directory = DEFAULT_REPO_CREATE_PATH / path
 
+    if running_onprem(JUPYTER_IMAGE_SPEC):
+        print(
+            ":twisted_rightwards_arrows: Detected onprem environment, using proxy for package installation"
+        )
+        poetry_source_add(PIP_INDEX_URL, project_directory)
+    elif poetry_source_includes_source_name(project_directory):
+        print(
+            ":twisted_rightwards_arrows: Detected non-onprem environment, removing proxy for package installation"
+        )
+        poetry_source_remove(project_directory)
+
     poetry_install(project_directory)
 
     install_ipykernel(project_directory, project_name)
@@ -475,6 +496,77 @@ def poetry_install(project_directory: Path) -> None:
         )
     else:
         print(":white_check_mark: Installed dependencies in the virtual environment")
+
+
+def poetry_source_add(
+    source_url: str, cwd: str, source_name: str = NEXUS_SOURCE_NAME
+) -> None:
+    """Add a package installation source for this project.
+
+    Args:
+        source_url: URL of 'simple' package API of package server
+        cwd: Path of project to add source to
+        source_name: Name of source to add
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        f"poetry source add --default {source_name} {source_url}".split(),
+        capture_output=True,
+        cwd=cwd,
+    )
+    if result.returncode != 0:
+        raise ValueError(f'Error adding Poetry source: {result.stderr.decode("utf-8")}')
+
+
+def poetry_source_includes_source_name(
+    cwd: str, source_name: str = NEXUS_SOURCE_NAME
+) -> bool:
+    """Check whether this source is already added to the project.
+
+    Args:
+        cwd: Path of project to add source to
+        source_name: Name of source to check
+
+    Returns:
+        True if the source exists in the list
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        "poetry source show".split(),
+        capture_output=True,
+        cwd=cwd,
+    )
+    if result.returncode != 0:
+        raise ValueError(
+            f'Error showing Poetry source: {result.stderr.decode("utf-8")}'
+        )
+
+    return source_name in result.stdout.decode("utf-8")
+
+
+def poetry_source_remove(cwd: str, source_name: str = NEXUS_SOURCE_NAME) -> None:
+    """Remove a package installation source for this project.
+
+    Args:
+        cwd: Path of project to add source to
+        source_name: Name of source to be removed
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        f"poetry source remove {source_name}".split(),
+        capture_output=True,
+        cwd=cwd,
+    )
+    if result.returncode != 0:
+        raise ValueError(
+            f'Error removing Poetry source: {result.stderr.decode("utf-8")}'
+        )
 
 
 @app.command()
