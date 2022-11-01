@@ -300,7 +300,7 @@ def create(
         help="Your Github Personal Access Token, follow these instructions to create one: https://statisticsnorway.github.io/dapla-manual/ssb-project.html#personal-access-token-pat",
     ),
 ) -> None:
-    """:sparkles: Create a project locally, and optionally on Github with the flag --github. The project will follow SSB's best practice for development."""
+    """:sparkles:\tCreate a project locally, and optionally on Github with the flag --github. The project will follow SSB's best practice for development."""
     if not valid_repo_name(project_name):
         raise ValueError(
             "Invalid repo name, please choose a name in the form 'my-fantastic-project'"
@@ -334,18 +334,18 @@ def create(
         print("Setting branch protection rules")
         set_branch_protection_rules(github_token, project_name)
 
-        print(f":white_check_mark: Created Github repo. View it here: {repo_url}")
+        print(f":white_check_mark:\tCreated Github repo. View it here: {repo_url}")
     else:
         make_and_init_git_repo(git_repo_dir)
 
     print(
-        f":white_check_mark: Created project ({project_name}) in the folder {DEFAULT_REPO_CREATE_PATH}"
+        f":white_check_mark:\tCreated project ({project_name}) in the folder {DEFAULT_REPO_CREATE_PATH}"
     )
 
     build(path=project_name)
 
     print(
-        ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
+        ":tada:\tAll done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
     )
 
 
@@ -357,7 +357,7 @@ def build(
         help=f'Relative path to project from "{DEFAULT_REPO_CREATE_PATH}"',
     ),
 ) -> None:
-    """:wrench: Create a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
+    """:wrench:\tCreate a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
     if path == "":
         project_name = CURRENT_WORKING_DIRECTORY.name
         project_directory = CURRENT_WORKING_DIRECTORY
@@ -367,12 +367,12 @@ def build(
 
     if running_onprem(JUPYTER_IMAGE_SPEC):
         print(
-            ":twisted_rightwards_arrows: Detected onprem environment, using proxy for package installation"
+            ":twisted_rightwards_arrows:\tDetected onprem environment, using proxy for package installation"
         )
         poetry_source_add(PIP_INDEX_URL, project_directory)
     elif poetry_source_includes_source_name(project_directory):
         print(
-            ":twisted_rightwards_arrows: Detected non-onprem environment, removing proxy for package installation"
+            ":twisted_rightwards_arrows:\tDetected non-onprem environment, removing proxy for package installation"
         )
         poetry_source_remove(project_directory)
 
@@ -469,7 +469,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
                 f'Error during installation of the Jupyter kernel: {result.stderr.decode("utf-8")}'
             )
 
-    print(f":white_check_mark: Installed Jupyter Kernel ({project_name})")
+    print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -486,7 +486,10 @@ def poetry_install(project_directory: Path) -> None:
         TextColumn("[progress.description]{task.description}"),
         transient=True,
     ) as progress:
-        progress.add_task(description="Installing dependencies...", total=None)
+        progress.add_task(
+            description="Installing dependencies... This may take a few minutes",
+            total=None,
+        )
         result = subprocess.run(  # noqa: S603 no untrusted input
             "poetry install".split(), capture_output=True, cwd=project_directory
         )
@@ -495,7 +498,7 @@ def poetry_install(project_directory: Path) -> None:
             f'Error during installation of dependencies: {result.stderr.decode("utf-8")}'
         )
     else:
-        print(":white_check_mark: Installed dependencies in the virtual environment")
+        print(":white_check_mark:\tInstalled dependencies in the virtual environment")
 
 
 def poetry_source_add(
@@ -575,7 +578,7 @@ def clean(
         ..., help="Name of the kernel to be deleted"
     )
 ) -> None:
-    """:broom: Delete the project's Jupyter kernel."""
+    """:broom:\tDelete the project's Jupyter kernel."""
     kernels = get_kernels_dict()
 
     if project_name not in kernels:

@@ -172,13 +172,18 @@ def test_create_project_from_template(
 
 @patch(f"{PKG}.poetry_install")
 @patch(f"{PKG}.install_ipykernel")
+@patch(f"{PKG}.poetry_source_includes_source_name", return_value=False)
 def test_build(
-    mock_install_ipy: Mock, mock_poetry_install: Mock, tmp_path: Path
+    mock_install_ipy: Mock,
+    mock_poetry_install: Mock,
+    mock_poetry_source_includes_source_name: Mock,
+    tmp_path: Path,
 ) -> None:
-    """Check that build calls poetry_install and install_ipykernel."""
+    """Check that build calls poetry_install, install_ipykernel and poetry_source_includes_source_name."""
     build(path=str(tmp_path))
     assert mock_poetry_install.call_count == 1
     assert mock_install_ipy.call_count == 1
+    assert mock_poetry_source_includes_source_name.call_count == 1
 
 
 @patch(f"{PKG}.subprocess.run")
