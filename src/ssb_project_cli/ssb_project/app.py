@@ -9,6 +9,7 @@ from pathlib import Path
 from types import TracebackType
 from typing import Optional
 from typing import Type
+import time
 
 import questionary
 import toml
@@ -42,7 +43,7 @@ def is_github_repo(token: str, repo_name: str) -> bool:
     try:
         Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
     except ValueError as ex:
-        print("The provided Github credentials are invalid. This is probably due to a invalid or expired token.")
+        typer.echo("The provided Github credentials are invalid. This is probably due to a invalid or expired token.")
         exit(1)
     except GithubException:
         return False
@@ -218,7 +219,7 @@ def create_project_from_template(projectname: str, description: str) -> Path:
     home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
-        print(f"A project with name '{projectname}' already exists. Please choose another name.")
+        typer.echo(f"A project with name '{projectname}' already exists. Please choose another name.")
         exit(1)
 
     name, email = extract_name_email()
@@ -258,28 +259,28 @@ class RepoPrivacy(str, Enum):
 @app.command()
 def create(
     project_name: str = typer.Argument(  # noqa: B008
-        ..., help="Prosjekt navn, kun alfanumerisk og underscore"
+        ..., help="Project name. Only apha-numeric and underscores allowed."
     ),
     description: str = typer.Argument(  # noqa: B008
-        "", help="En kort beskrivelse av prosjektet ditt"
+        "", help="A short description of your project."
     ),
     repo_privacy: RepoPrivacy = typer.Argument(  # noqa: B008
-        RepoPrivacy.internal, help="Tilgangsvalg for repoet"
+        RepoPrivacy.internal, help="Privacy settings for your repo."
     ),
     add_github: bool = typer.Option(  # noqa: B008
         False,
         "--github",
-        help="Legg denne til hvis man ønsker å opprette et Github repo",
+        help="Add this flag if you wish to create a github repo.",
     ),
     github_token: str = typer.Option(  # noqa: B008
         "",
-        help="Ditt Github PAT",
+        help="Your github PAT (Personal Access Token).",
         # Link does not work in jupyter labs følg https://statistics-norway.atlassian.net/wiki/spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og+integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHubinstruksjonene her for å skape en
     ),
 ) -> None:
-    """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket).Følger kjent beste praksis i SSB. :sparkles:."""
+    """:sparkles: Create a project locally and on Github (optional). Follows SSB best-practices. :sparkles:."""
     if not valid_repo_name(project_name):
-        print(
+        typer.echo(
             "Invalid repo name: Please choose a valid name. For example: 'my-fantastic-project'"
         )
 
@@ -289,12 +290,12 @@ def create(
         github_token = choose_login()
 
     if add_github and not github_token:
-        print("Needs GitHub token, please specify with --github-token")
+        typer.echo("Needs GitHub token, please specify with --github-token")
         exit(1)
 
     if not debug_without_create_repo:
         if add_github and is_github_repo(github_token, project_name):
-            print(f"A repo with the name {project_name} already exists on GitHub. Please choose another name.")
+            typer.echo(f"A repo with the name {project_name} already exists on GitHub. Please choose another name.")
             exit(1)
 
     if add_github and description == "":
@@ -334,12 +335,12 @@ def build(
     path: str = typer.Argument(  # noqa: B008
         "",
         dir_okay=True,
-        help=f'Relativ sti til prosjektet fra "{DEFAULT_REPO_CREATE_PATH}"',
+        help=f'Relative path to the project from "{DEFAULT_REPO_CREATE_PATH}"',
     ),
 ) -> None:
-    """Bygger et ssb prosjekt.
+    """Builds a ssb project.
 
-    Bygger virtuelt miljø med Poetry og lager kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det bli kalt i fra.
+    Builds a virtual environment with Poetry and creates a kernel. If no arguments are provided, the command will build from your current folder. 
     """
     project_directory = DEFAULT_REPO_CREATE_PATH / path
 
@@ -365,8 +366,8 @@ def get_github_pat() -> dict[str, str]:
     git_credentials = DEFAULT_REPO_CREATE_PATH.joinpath(Path(".git-credentials"))
     user_token_dict: dict[str, str] = {}
     if not git_credentials.exists():
-        print(
-            "Could not find a '.git-credentials' in your environment. Please add it manually with the --github-token <TOKEN> option."
+        typer.echo(
+            "Could not find your github token. Please add it manually with the --github-token <TOKEN> option."
         )
         exit(1)
 
@@ -445,7 +446,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         output = result.stdout.decode("utf-8")
         print(output)
 
-    print(f"Kernel ({project_name}) successfully created")
+    print(f"Kernel ({project_name}) successfully created.")
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -467,10 +468,34 @@ def poetry_install(project_directory: Path) -> None:
             "poetry install".split(), capture_output=True, cwd=project_directory
         )
     if result.returncode != 0:
-        raise ValueError(
-            f"Returncode of poetry install: {result.returncode}\n"
-            + f'{result.stderr.decode("utf-8")}'
-        )
+
+        calling_function = "poetry-install"
+        log = str(result)
+
+        typer.echo("Something went wrong when installing packages with Poetry.")
+        create_error_log(log, calling_function)
+        exit(1)
+
+
+def create_error_log(log: str, calling_function: str) -> None:
+    """Creates a file with log of error in the current folder.
+
+    Raises:
+        Exception: If a log file could not be created.
+    """
+    confirm = questionary.confirm("Do you wish to create a log of the error? The log is a description of the error which can be sent to customer service for further assistance.").ask()
+
+    if confirm:
+        try:
+            filename = f"{calling_function}-error-{int(time.time())}.txt"
+            with open(filename, "w+") as f:
+                f.write(log)
+                typer.echo(f"A file with the name {filename} was created in your current directory. It contains a description of your error.")
+                f.close()
+        except Exception as e:
+            typer.echo(f"Error when creating log file: {e}")
+        
+
 
 
 # Function is deemed too complex, should probably be split up.
@@ -533,12 +558,11 @@ def clean(
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
-        print(
+        typer.echo(
             f'Could not find kernel "{project_name}". Is the project name spelled correctly?'
         )
 
         exit(1)
-
 
     confirmation = questionary.confirm(f"Are you sure you want to delete the kernel '{project_name}'. This action will delete the kernel associated with the virtual environment and leave all other files untouched.").ask()
 
