@@ -312,32 +312,36 @@ def create(
 
         git_repo_dir = Path(Path(temp_dir).joinpath(project_name))
         if add_github:
-            print("Initialise empty repo on Github")
+            print("Creating an empty repo on Github")
             repo_url = create_github(
                 github_token, project_name, repo_privacy, description
             )
 
-            print("Create local repo and push to Github")
+            print("Creating a local repo, and pushing to Github")
             make_git_repo_and_push(github_token, repo_url, git_repo_dir)
 
-            print("Set branch protection rules.")
+            print("Setting branch protection rules")
             set_branch_protection_rules(github_token, project_name)
+
+            print(f":white_check_mark: Created Github repo. View it here: {repo_url}")
         else:
             make_and_init_git_repo(git_repo_dir)
 
-        project_directory = DEFAULT_REPO_CREATE_PATH / project_name
+        print(
+            f":white_check_mark: Created project ({project_name}) in the folder {DEFAULT_REPO_CREATE_PATH}"
+        )
+
+        project_directory = CURRENT_WORKING_DIRECTORY / project_name
         temp_project_directory = Path(temp_dir) / project_name
 
-        poetry_install(temp_project_directory)
-
-        install_ipykernel(temp_project_directory, project_name)
+        build(path=str(temp_project_directory))
 
         copytree(temp_project_directory, project_directory)
 
-        print(
-            f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
-            + " you may move it if you want to."
-        )
+
+print(
+    ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
+)
 
 
 @app.command()
@@ -346,21 +350,19 @@ def build(
     path: str = typer.Argument(  # noqa: B008
         "",
         dir_okay=True,
-        help=f'Relativ sti til prosjektet fra "{DEFAULT_REPO_CREATE_PATH}"',
+        help="Sti til prosjektet",
     ),
 ) -> None:
     """Bygger et ssb prosjekt.
 
     Bygger virtuelt miljø med Poetry og lager kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det bli kalt i fra.
     """
-    project_directory = DEFAULT_REPO_CREATE_PATH / path
+    project_directory = Path(path)
 
     project_name = CURRENT_WORKING_DIRECTORY.name
 
     if path == "":
         project_directory = CURRENT_WORKING_DIRECTORY
-    else:
-        project_name = path
 
     poetry_install(project_directory)
 
