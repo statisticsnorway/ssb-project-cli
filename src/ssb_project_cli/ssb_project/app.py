@@ -527,7 +527,11 @@ def delete() -> None:  # noqa C901
 
     venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)  # noqa S607
     if venvs.returncode != 0:
-        raise ValueError(venvs.stderr.decode("utf-8"))
+        calling_function = "poetry-env-list"
+        log = str(venvs)
+        typer.echo("Something went wrong while listing Poetry environments.")
+        create_error_log(log, calling_function)
+        exit(1)
 
     venvs_str: str = venvs.stdout.decode("utf-8")
 
@@ -561,10 +565,10 @@ def delete() -> None:  # noqa C901
 @app.command()
 def clean(
     project_name: str = typer.Argument(  # noqa: B008
-        ..., help="Navnet til prosjektet/kernelen du vil slette."
+        ..., help="The name of the project/kernel you want to delete."
     )
 ) -> None:
-    """Fjerner kernel knyttet til prosjekt."""
+    """Deletes the kernel corresponding to the provided project name."""
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
@@ -591,15 +595,16 @@ def clean(
         clean_cmd, capture_output=True
     )
 
-    if result.returncode != 0:
-        raise ValueError(
-            f'Returncode of {" ".join(clean_cmd)}: {result.returncode}'
-            + f'\n{result.stderr.decode("utf-8")}'
-        )
-
     output = result.stderr.decode("utf-8").strip()
-    if output != f"[RemoveKernelSpec] Removed {kernels[project_name]}":
-        raise ValueError(f"Unexpected output {output}")
+
+    if result.returncode != 0 or output != f"[RemoveKernelSpec] Removed {kernels[project_name]}":
+
+        calling_function = "clean-kernel"
+        log = str(result)
+
+        typer.echo("Something went wrong while removing the jupyter kernel.")
+        create_error_log(log, calling_function)
+        exit(1)
 
     typer.echo(f"Deleted kernel {project_name}.")
 
@@ -705,7 +710,8 @@ def get_kernels_dict() -> dict[str, str]:
     if kernels_process.returncode == 0:
         kernels_str = kernels_process.stdout.decode("utf-8")
     else:
-        raise ValueError(kernels_process.stderr.decode("utf-8"))
+        typer.echo(f"An error occured while listing the installed kernel specifications.")
+        exit(1)
     kernel_dict = {}
     for kernel in kernels_str.split("\n")[1:]:
         line = " ".join(kernel.strip().split())
