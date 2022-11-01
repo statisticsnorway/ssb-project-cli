@@ -443,6 +443,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         )
         if result.returncode != 0:
 
+
             calling_function = "install-kernel"
             log = str(result)
 

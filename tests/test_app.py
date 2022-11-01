@@ -71,8 +71,6 @@ def test_is_github_repo(mock_get_repo: Mock) -> None:
     ]
     assert is_github_repo("", "")
     assert not is_github_repo("", "")
-    with pytest.raises(ValueError):
-        is_github_repo("", "")
 
 
 @patch(f"{PKG}.Repo")
