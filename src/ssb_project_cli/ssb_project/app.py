@@ -327,21 +327,20 @@ def create(
         else:
             make_and_init_git_repo(git_repo_dir)
 
-        print(
-            f":white_check_mark: Created project ({project_name}) in the folder {DEFAULT_REPO_CREATE_PATH}"
-        )
-
         project_directory = CURRENT_WORKING_DIRECTORY / project_name
         temp_project_directory = Path(temp_dir) / project_name
+
+        print(
+            f":white_check_mark: Created project ({project_name}) in the folder {project_directory}"
+        )
 
         build(path=str(temp_project_directory))
 
         copytree(temp_project_directory, project_directory)
 
-
-print(
-    ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
-)
+        print(
+            ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
+        )
 
 
 @app.command()
