@@ -43,7 +43,7 @@ def is_github_repo(token: str, repo_name: str) -> bool:
     try:
         Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
     except ValueError as ex:
-        typer.echo("The provided Github credentials are invalid. This is probably due to a invalid or expired token.")
+        typer.echo("The provided Github credentials are invalid. Please check that your token is valid and not expired.")
         exit(1)
     except GithubException:
         return False
@@ -439,10 +439,14 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             make_kernel_cmd, capture_output=True, cwd=project_directory
         )
         if result.returncode != 0:
-            raise ValueError(
-                f'Returncode of {" ".join(make_kernel_cmd)}: {result.returncode}'
-                + f'\n{result.stderr.decode("utf-8")}'
-            )
+
+            calling_function = "install-kernel"
+            log = str(result)
+
+            typer.echo("Something went wrong while installing ipykernel.")
+            create_error_log(log, calling_function)
+            exit(1)
+            
         output = result.stdout.decode("utf-8")
         print(output)
 
@@ -480,8 +484,9 @@ def poetry_install(project_directory: Path) -> None:
 def create_error_log(log: str, calling_function: str) -> None:
     """Creates a file with log of error in the current folder.
 
-    Raises:
-        Exception: If a log file could not be created.
+    Args:
+        log: The content of the error log.
+        calling_function: The function in which the error occured. Used to give a more descriptive name to error log file. 
     """
     confirm = questionary.confirm("Do you wish to create a log of the error? The log is a description of the error which can be sent to customer service for further assistance.").ask()
 
@@ -518,7 +523,7 @@ def delete() -> None:  # noqa C901
     venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)  # noqa S607
     if venvs.returncode != 0:
         raise ValueError(venvs.stderr.decode("utf-8"))
-    # check
+        
     venvs_str: str = venvs.stdout.decode("utf-8")
 
     delete_cmds = []
