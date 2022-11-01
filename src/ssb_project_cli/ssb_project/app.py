@@ -540,12 +540,12 @@ def clean(
         exit(1)
 
 
-    confirmation = questionary.confirm(f"Are you sure you want to delete the kernel '{project_name}'").ask()
+    confirmation = questionary.confirm(f"Are you sure you want to delete the kernel '{project_name}'. This action will delete the kernel associated with the virtual environment and leave all other files untouched.").ask()
 
     if not confirmation:
         exit(1)
 
-    typer.echo(f"Deleting kernel {project_name}...")
+    typer.echo(f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually.")
 
     clean_cmd = f"jupyter kernelspec remove -f {project_name}".split()
 
