@@ -12,12 +12,14 @@ def test_app_build_help() -> None:
     """Checks if the cli prints help description when supplied with build --help."""
     result = runner.invoke(app, ["build", "--help"])
     assert result.exit_code == 0
-    assert "Bygg virtuelt miljø og tilhørende Jupyter kernel." in result.stdout
+    assert (
+        "Create a virtual environment and corresponding Jupyter kernel" in result.stdout
+    )
 
 
 def test_app_create_help() -> None:
     """Checks if the cli prints help description when supplied with create --help."""
     result = runner.invoke(app, ["create", "--help"])
     assert result.exit_code == 0
-    assert "Prosjekt navn" in result.stdout
-    assert "Ditt Github PAT" in result.stdout
+    assert "Project name" in result.stdout
+    assert "Your Github " in result.stdout
