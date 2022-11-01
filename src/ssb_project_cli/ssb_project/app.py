@@ -14,7 +14,6 @@ import questionary
 import toml
 import typer
 from git import Repo  # type: ignore[attr-defined]
-from github import BadCredentialsException
 from github import Github
 from github import GithubException
 from rich import print
@@ -39,15 +38,11 @@ def is_github_repo(token: str, repo_name: str) -> bool:
 
     Returns:
         True if the repository exists, else false.
-
-    Raises:
-        ValueError: when supplied with bad GitHub credentials.
     """
     try:
         Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
-    except BadCredentialsException as ex:
+    except ValueError as ex:
         print("The provided Github credentials are invalid. This is probably due to a invalid or expired token.")
-        print(ex)
         exit(1)
     except GithubException:
         return False
@@ -219,9 +214,6 @@ def create_project_from_template(projectname: str, description: str) -> Path:
 
     Returns:
         Path: Path of project.
-
-    Raises:
-        ValueError: If the project directory already exists
     """
     home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
@@ -366,9 +358,6 @@ def build(
 
 def get_github_pat() -> dict[str, str]:
     """Gets GitHub users and PAT from .gitconfig.
-
-    Raises:
-        ValueError: If .git-credentials does not exist.
 
     Returns:
         dict[str, str]: A dict with user as key and PAT as value.
@@ -548,6 +537,12 @@ def clean(
             f'Could not find kernel "{project_name}". Is the project name spelled correctly?'
         )
 
+        exit(1)
+
+
+    confirmation = questionary.confirm(f"Are you sure you want to delete the kernel '{project_name}'").ask()
+
+    if not confirmation:
         exit(1)
 
     typer.echo(f"Deleting kernel {project_name}...")
