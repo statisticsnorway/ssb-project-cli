@@ -348,7 +348,6 @@ def build(
     kernel: str = "python3",
     path: str = typer.Argument(  # noqa: B008
         "",
-        dir_okay=True,
         help="Sti til prosjektet",
     ),
 ) -> None:
@@ -362,6 +361,8 @@ def build(
 
     if path == "":
         project_directory = CURRENT_WORKING_DIRECTORY
+    else:
+        project_name = project_directory.name
 
     poetry_install(project_directory)
 
