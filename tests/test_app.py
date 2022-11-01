@@ -171,7 +171,7 @@ def test_create_project_from_template(
         pyproject = project_dir.joinpath("pyproject.toml")
         assert pyproject.exists()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(SystemExit):
             create_project_from_template("testname", "test description")
 
 
@@ -311,5 +311,5 @@ def test_get_kernels_dict(mock_run: Mock) -> None:
         Mock(returncode=1, stderr=b"Some error"),
     ]
     assert get_kernels_dict() == {"python": "/some/path", "R": "/other/path"}
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         get_kernels_dict()
