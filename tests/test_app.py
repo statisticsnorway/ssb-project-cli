@@ -10,7 +10,6 @@ from github import GithubException
 
 from ssb_project_cli.ssb_project.app import build
 from ssb_project_cli.ssb_project.app import clean
-from ssb_project_cli.ssb_project.app import create
 from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
@@ -314,33 +313,3 @@ def test_get_kernels_dict(mock_run: Mock) -> None:
     assert get_kernels_dict() == {"python": "/some/path", "R": "/other/path"}
     with pytest.raises(ValueError):
         get_kernels_dict()
-
-
-def test_create_project_folder() -> None:
-    """Fails if copytree is called when an error is raised by a functions inside create.
-
-    Fails if copytree is not called when no error is raised.
-    """
-    with patch(
-        f"{PKG}.create_project_from_template", return_value=None
-    ) as mock_template:
-        with patch(f"{PKG}.make_and_init_git_repo", return_value=None):
-            with patch(f"{PKG}.poetry_install", return_value=None):
-                with patch(
-                    f"{PKG}.install_ipykernel", return_value=None
-                ) as mock_kernel:
-                    with patch(f"{PKG}.copytree", return_value=None) as mock_copy:
-                        mock_template.side_effect = ValueError("template failing")
-                        with pytest.raises(ValueError):
-                            create("test_project", "description", add_github=False)
-                        assert mock_copy.call_count == 0
-                        mock_template.side_effect = None
-
-                        mock_kernel.side_effect = ValueError("kernel failing")
-                        with pytest.raises(ValueError):
-                            create("test_project", "description", add_github=False)
-                        assert mock_copy.call_count == 0
-                        mock_kernel.side_effect = None
-
-                        create("test_project", "description", add_github=False)
-                        assert mock_copy.call_count == 1
