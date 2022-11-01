@@ -354,10 +354,7 @@ def build(
         help="Sti til prosjektet",
     ),
 ) -> None:
-    """Bygger et ssb prosjekt.
-
-    Bygger virtuelt miljø med Poetry og lager kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det bli kalt i fra.
-    """
+    """:wrench: Create a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
     project_directory = Path(path)
 
     project_name = CURRENT_WORKING_DIRECTORY.name
