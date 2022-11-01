@@ -4,12 +4,12 @@ import json
 import os
 import re
 import subprocess  # noqa: S404
+import time
 from enum import Enum
 from pathlib import Path
 from types import TracebackType
 from typing import Optional
 from typing import Type
-import time
 
 import questionary
 import toml
@@ -42,8 +42,10 @@ def is_github_repo(token: str, repo_name: str) -> bool:
     """
     try:
         Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
-    except ValueError as ex:
-        typer.echo("The provided Github credentials are invalid. Please check that your token is valid and not expired.")
+    except ValueError:
+        typer.echo(
+            "The provided Github credentials are invalid. Please check that your token is valid and not expired."
+        )
         exit(1)
     except GithubException:
         return False
@@ -219,7 +221,9 @@ def create_project_from_template(projectname: str, description: str) -> Path:
     home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
-        typer.echo(f"A project with name '{projectname}' already exists. Please choose another name.")
+        typer.echo(
+            f"A project with name '{projectname}' already exists. Please choose another name."
+        )
         exit(1)
 
     name, email = extract_name_email()
@@ -295,7 +299,9 @@ def create(
 
     if not debug_without_create_repo:
         if add_github and is_github_repo(github_token, project_name):
-            typer.echo(f"A repo with the name {project_name} already exists on GitHub. Please choose another name.")
+            typer.echo(
+                f"A repo with the name {project_name} already exists on GitHub. Please choose another name."
+            )
             exit(1)
 
     if add_github and description == "":
@@ -340,7 +346,7 @@ def build(
 ) -> None:
     """Builds a ssb project.
 
-    Builds a virtual environment with Poetry and creates a kernel. If no arguments are provided, the command will build from your current folder. 
+    Builds a virtual environment with Poetry and creates a kernel. If no arguments are provided, the command will build from your current folder.
     """
     project_directory = DEFAULT_REPO_CREATE_PATH / path
 
@@ -422,9 +428,6 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
     Args:
         project_directory: Path of project
         project_name: Name of project
-
-    Raises:
-        ValueError: If the process returns with error code
     """
     with Progress(
         SpinnerColumn(),
@@ -446,7 +449,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             typer.echo("Something went wrong while installing ipykernel.")
             create_error_log(log, calling_function)
             exit(1)
-            
+
         output = result.stdout.decode("utf-8")
         print(output)
 
@@ -486,21 +489,23 @@ def create_error_log(log: str, calling_function: str) -> None:
 
     Args:
         log: The content of the error log.
-        calling_function: The function in which the error occured. Used to give a more descriptive name to error log file. 
+        calling_function: The function in which the error occured. Used to give a more descriptive name to error log file.
     """
-    confirm = questionary.confirm("Do you wish to create a log of the error? The log is a description of the error which can be sent to customer service for further assistance.").ask()
+    confirm = questionary.confirm(
+        "Do you wish to create a log of the error? The log is a description of the error which can be sent to customer service for further assistance."
+    ).ask()
 
     if confirm:
         try:
             filename = f"{calling_function}-error-{int(time.time())}.txt"
             with open(filename, "w+") as f:
                 f.write(log)
-                typer.echo(f"A file with the name {filename} was created in your current directory. It contains a description of your error.")
+                typer.echo(
+                    f"A file with the name {filename} was created in your current directory. It contains a description of your error."
+                )
                 f.close()
         except Exception as e:
             typer.echo(f"Error when creating log file: {e}")
-        
-
 
 
 # Function is deemed too complex, should probably be split up.
@@ -523,7 +528,7 @@ def delete() -> None:  # noqa C901
     venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)  # noqa S607
     if venvs.returncode != 0:
         raise ValueError(venvs.stderr.decode("utf-8"))
-        
+
     venvs_str: str = venvs.stdout.decode("utf-8")
 
     delete_cmds = []
@@ -569,12 +574,16 @@ def clean(
 
         exit(1)
 
-    confirmation = questionary.confirm(f"Are you sure you want to delete the kernel '{project_name}'. This action will delete the kernel associated with the virtual environment and leave all other files untouched.").ask()
+    confirmation = questionary.confirm(
+        f"Are you sure you want to delete the kernel '{project_name}'. This action will delete the kernel associated with the virtual environment and leave all other files untouched."
+    ).ask()
 
     if not confirmation:
         exit(1)
 
-    typer.echo(f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually.")
+    typer.echo(
+        f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually."
+    )
 
     clean_cmd = f"jupyter kernelspec remove -f {project_name}".split()
 
