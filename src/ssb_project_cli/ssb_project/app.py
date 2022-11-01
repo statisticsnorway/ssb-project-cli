@@ -26,6 +26,7 @@ console = Console(color_system=None)
 print = console.print
 
 app = typer.Typer(
+    help="Besøk Dapla manualen for veiledning: https://statisticsnorway.github.io/dapla-manual/ssb-project.html",
     rich_markup_mode="rich",
     pretty_exceptions_show_locals=False,  # Locals can contain sensitive information
 )
@@ -51,7 +52,7 @@ def is_github_repo(token: str, repo_name: str) -> bool:
     try:
         Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
     except BadCredentialsException as ex:
-        raise ValueError("Bad GitHub Credentials.") from ex
+        raise ValueError("Ugyldig GitHub innloggingsopplysninger.") from ex
     except GithubException:
         return False
     else:
@@ -136,7 +137,6 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
 
     with TempGitRemote(repo, credential_url, username_url):
         repo.git.push("--set-upstream", "origin", "main")
-    print(f"Repo successfully pushed to GitHub: {github_url}")
 
 
 def set_branch_protection_rules(github_token: str, repo_name: str) -> None:
@@ -229,7 +229,7 @@ def create_project_from_template(projectname: str, description: str) -> Path:
     home_dir = DEFAULT_REPO_CREATE_PATH
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
-        raise ValueError(f"The directory {project_dir} already exists.")
+        raise ValueError(f"Mappen '{project_dir}' eksisterer allerede.")
 
     name, email = extract_name_email()
     if not (name and email):
@@ -290,18 +290,20 @@ def create(
     """:sparkles: Skap et prosjekt lokalt og på Github (hvis ønsket). Følger kjent beste praksis i SSB."""
     if not valid_repo_name(project_name):
         raise ValueError(
-            "Invalid repo name, please choose a name in the form 'my-fantastic-project'"
+            "Ugyldig navn på repoet, vennligst velg et navn i formen 'mitt-statistikk-prosjekt'"
         )
 
     if add_github and not github_token:
         github_token = choose_login()
 
     if add_github and not github_token:
-        raise ValueError("Needs GitHub token, please specify with --github-token")
+        raise ValueError("Github token må angis, vennligst bruk '--github-token xxxx'")
 
     if not debug_without_create_repo:
         if add_github and is_github_repo(github_token, project_name):
-            raise ValueError(f"The repo {project_name} already exists on GitHub.")
+            raise ValueError(
+                f"Et repo med navn {project_name} eksisterer allerede på GitHub."
+            )
 
     if add_github and description == "":
         description = request_project_description()
@@ -310,25 +312,30 @@ def create(
 
     git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
     if add_github:
-        print("Initialise empty repo on Github")
+        print("Oppretter tom repo på Github")
         repo_url = create_github(github_token, project_name, repo_privacy, description)
 
-        print("Create local repo and push to Github")
+        print("Oppretter repo lokalt og pusher til Github")
         make_git_repo_and_push(github_token, repo_url, git_repo_dir)
 
-        print("Set branch protection rules.")
+        print("Instiller 'branch protection' regler.")
         set_branch_protection_rules(github_token, project_name)
 
-        print(f":white_check_mark: Created Github repo at {repo_url}")
+        print(
+            f":white_check_mark: Opprettet Github repo. Repoet finnes her: {repo_url}"
+        )
     else:
         make_and_init_git_repo(git_repo_dir)
 
     print(
-        f":white_check_mark: Created project ({project_name}) in folder {DEFAULT_REPO_CREATE_PATH},"
-        + " you may move it if you want to."
+        f":white_check_mark: Opprettet prosjekt ({project_name}) i mappen {DEFAULT_REPO_CREATE_PATH}"
     )
 
     build(path=project_name)
+
+    print(
+        ":tada: Ferdig! Besøk Dapla manualen for veiledning på bruk av prosjektet: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
+    )
 
 
 @app.command()
@@ -339,7 +346,7 @@ def build(
         help=f'Relativ sti til prosjektet fra "{DEFAULT_REPO_CREATE_PATH}"',
     ),
 ) -> None:
-    """:wrench: Bygg virtuelt miljø og kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det er kalt i fra."""
+    """:wrench: Bygg virtuelt miljø og tilhørende Jupyter kernel. Hvis ingen argumenter blir gitt tar programmet utgangspunkt i mappen det er kalt i fra."""
     if path == "":
         project_name = CURRENT_WORKING_DIRECTORY.name
         project_directory = CURRENT_WORKING_DIRECTORY
@@ -365,7 +372,7 @@ def get_github_pat() -> dict[str, str]:
     user_token_dict: dict[str, str] = {}
     if not git_credentials.exists():
         raise ValueError(
-            "Can not find .git-credentials, add the token manually with --github-token <TOKEN>"
+            "Fant ikke .git-credentials, angi ditt Github token med '--github-token xxxx'"
         )
 
     with open(git_credentials) as f:
@@ -428,7 +435,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         TextColumn("[progress.description]{task.description}"),
         transient=True,
     ) as progress:
-        progress.add_task(description=f"Creating kernel {project_name}...", total=None)
+        progress.add_task(description="Installerer Jupyter kernel...", total=None)
         make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(
             " "
         ) + [project_name]
@@ -437,10 +444,10 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         )
         if result.returncode != 0:
             raise ValueError(
-                f'Failed while installing kernel: {result.stderr.decode("utf-8")}'
+                f'Feilet under installasjon av Jupyter kernel: {result.stderr.decode("utf-8")}'
             )
 
-    print(f":white_check_mark: Created Kernel ({project_name})")
+    print(f":white_check_mark: Installert Jupyter Kernel ({project_name})")
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -457,17 +464,17 @@ def poetry_install(project_directory: Path) -> None:
         TextColumn("[progress.description]{task.description}"),
         transient=True,
     ) as progress:
-        progress.add_task(description="Installing dependencies...", total=None)
+        progress.add_task(description="Installerer avhengigheter...", total=None)
         result = subprocess.run(  # noqa: S603 no untrusted input
             "poetry install".split(), capture_output=True, cwd=project_directory
         )
     if result.returncode != 0:
         raise ValueError(
-            f'Failed while installing dependencies: {result.stderr.decode("utf-8")}'
+            f'Feilet under installasjon av avhengigheter: {result.stderr.decode("utf-8")}'
         )
     else:
         print(
-            ":white_check_mark: Created virtual environment and installed dependencies"
+            ":white_check_mark: Opprettet virtuelt miljø og installert avhengighetene"
         )
 
 
@@ -482,10 +489,10 @@ def clean(
 
     if project_name not in kernels:
         raise ValueError(
-            f'Could not find kernel "{project_name}". Is the project name spelled correctly?'
+            f'Fant ikke Jupyter kernelen "{project_name}". Er navnet riktig?'
         )
 
-    typer.echo(f"Deleting kernel {project_name}...")
+    print(f"Sletter Jupyter kernel {project_name}...")
 
     clean_cmd = f"jupyter kernelspec remove -f {project_name}".split()
 
@@ -495,15 +502,16 @@ def clean(
 
     if result.returncode != 0:
         raise ValueError(
-            f'Returncode of {" ".join(clean_cmd)}: {result.returncode}'
-            + f'\n{result.stderr.decode("utf-8")}'
+            f'Feilet under sletting av Jupyter kernel: {result.stderr.decode("utf-8")}'
         )
 
     output = result.stderr.decode("utf-8").strip()
     if output != f"[RemoveKernelSpec] Removed {kernels[project_name]}":
-        raise ValueError(f"Unexpected output {output}")
+        raise ValueError(
+            f'Feilet under sletting av Jupyter kernel: {result.stderr.decode("utf-8")}'
+        )
 
-    typer.echo(f"Deleted kernel {project_name}.")
+    print(f"Slettet Jupyter kernel {project_name}.")
 
 
 def create_github(
@@ -532,7 +540,6 @@ def create_github(
         )
     repo_url = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").clone_url
     g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").replace_topics(["ssb-project"])
-    typer.echo(f"GitHub repo created: {repo_url}")
     return repo_url
 
 
