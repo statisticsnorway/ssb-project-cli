@@ -351,7 +351,7 @@ def create(
 def build(
     path: str = typer.Argument(  # noqa: B008
         "",
-        help="Sti til prosjektet",
+        help="Project path",
     ),
 ) -> None:
     """:wrench: Create a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
