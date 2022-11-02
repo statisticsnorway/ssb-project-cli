@@ -8,6 +8,7 @@ import pytest
 from github import BadCredentialsException
 from github import GithubException
 
+from ssb_project_cli.ssb_project.app import NEXUS_SOURCE_NAME
 from ssb_project_cli.ssb_project.app import build
 from ssb_project_cli.ssb_project.app import clean
 from ssb_project_cli.ssb_project.app import create_github
@@ -20,7 +21,11 @@ from ssb_project_cli.ssb_project.app import is_github_repo
 from ssb_project_cli.ssb_project.app import make_git_repo_and_push
 from ssb_project_cli.ssb_project.app import mangle_url
 from ssb_project_cli.ssb_project.app import poetry_install
+from ssb_project_cli.ssb_project.app import poetry_source_add
+from ssb_project_cli.ssb_project.app import poetry_source_includes_source_name
+from ssb_project_cli.ssb_project.app import poetry_source_remove
 from ssb_project_cli.ssb_project.app import request_name_email
+from ssb_project_cli.ssb_project.app import running_onprem
 from ssb_project_cli.ssb_project.app import set_branch_protection_rules
 from ssb_project_cli.ssb_project.app import valid_repo_name
 
@@ -170,15 +175,50 @@ def test_create_project_from_template(
             create_project_from_template("testname", "test description", tmp_path)
 
 
+@patch(f"{PKG}.running_onprem")
 @patch(f"{PKG}.poetry_install")
 @patch(f"{PKG}.install_ipykernel")
+@patch(f"{PKG}.poetry_source_includes_source_name")
+@patch(f"{PKG}.poetry_source_add")
+@patch(f"{PKG}.poetry_source_remove")
+@pytest.mark.parametrize(
+    "running_onprem_return,poetry_source_includes_source_name_return,calls_to_poetry_source_includes_source_name,calls_to_poetry_source_add,calls_to_poetry_source_remove",
+    [
+        (False, False, 1, 0, 0),
+        (True, False, 0, 1, 0),
+        (True, True, 0, 1, 0),
+        (False, True, 1, 0, 1),
+    ],
+)
 def test_build(
-    mock_install_ipy: Mock, mock_poetry_install: Mock, tmp_path: Path
+    mock_poetry_source_remove: Mock,
+    mock_poetry_source_add: Mock,
+    mock_poetry_source_includes_source_name: Mock,
+    mock_install_ipykernel: Mock,
+    mock_poetry_install: Mock,
+    mock_running_onprem: Mock,
+    running_onprem_return: bool,
+    poetry_source_includes_source_name_return: bool,
+    calls_to_poetry_source_includes_source_name: int,
+    calls_to_poetry_source_add: int,
+    calls_to_poetry_source_remove: int,
+    tmp_path: Path,
 ) -> None:
-    """Check that build calls poetry_install and install_ipykernel."""
+    """Check that build calls poetry_install, install_ipykernel and poetry_source_includes_source_name."""
+    mock_running_onprem.return_value = running_onprem_return
+    mock_poetry_source_includes_source_name.return_value = (
+        poetry_source_includes_source_name_return
+    )
     build(path=str(tmp_path))
     assert mock_poetry_install.call_count == 1
-    assert mock_install_ipy.call_count == 1
+    assert mock_install_ipykernel.call_count == 1
+    assert mock_running_onprem.call_count == 1
+    assert (
+        mock_poetry_source_includes_source_name.call_count
+        == calls_to_poetry_source_includes_source_name
+    )
+    assert mock_poetry_source_add.call_count == calls_to_poetry_source_add
+    assert mock_poetry_source_remove.call_count == calls_to_poetry_source_remove
 
 
 @patch(f"{PKG}.subprocess.run")
@@ -232,6 +272,67 @@ def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
     clean(project_name)
 
     assert mock_run.call_count == 2
+
+
+@pytest.mark.parametrize(
+    "image_spec,expected_result",
+    [
+        ("prod-bip/ssb/statistikktjenester/jupyterlab-onprem:0.1.3", True),
+        ("rod-bip/ssb/dapla/dapla-jupyterlab:1.3.7", False),
+    ],
+)
+def test_running_onprem(image_spec: str, expected_result: bool) -> None:
+    assert running_onprem(image_spec) == expected_result
+
+
+@patch(f"{PKG}.subprocess.run")
+def test_poetry_source_add(mock_run: Mock) -> None:
+    mock_run.side_effect = [
+        Mock(
+            returncode=0,
+            stdout=f"Adding source with name {NEXUS_SOURCE_NAME}.",
+        ),
+        Mock(returncode=1, stderr=b"Some error"),
+    ]
+    poetry_source_add("http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME)
+    with pytest.raises(ValueError):
+        poetry_source_add(
+            "http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME
+        )
+
+
+@patch(f"{PKG}.subprocess.run")
+def test_poetry_source_includes_source_name(mock_run: Mock) -> None:
+    mock_run.side_effect = [
+        Mock(
+            returncode=0,
+            stdout=b" name\t: nexus\n url\t: http://example.com\n default\t: yes\n secondary\t: no",
+        ),
+        Mock(returncode=0, stdout=b"No sources configured for this project."),
+        Mock(returncode=1, stderr=b"Some error"),
+    ]
+    assert poetry_source_includes_source_name(Path("."), source_name=NEXUS_SOURCE_NAME)
+    assert not poetry_source_includes_source_name(
+        Path("."), source_name=NEXUS_SOURCE_NAME
+    )
+    with pytest.raises(ValueError):
+        poetry_source_add(
+            "http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME
+        )
+
+
+@patch(f"{PKG}.subprocess.run")
+def test_poetry_source_remove(mock_run: Mock) -> None:
+    mock_run.side_effect = [
+        Mock(
+            returncode=0,
+            stdout=f"Removing source with name {NEXUS_SOURCE_NAME}.",
+        ),
+        Mock(returncode=1, stderr=b"Some error"),
+    ]
+    poetry_source_remove(Path("."), source_name=NEXUS_SOURCE_NAME)
+    with pytest.raises(ValueError):
+        poetry_source_remove(Path("."), source_name=NEXUS_SOURCE_NAME)
 
 
 @patch(f"{PKG}.typer.echo", lambda x: "")

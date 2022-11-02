@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """Command-line-interface for project-operations in dapla-jupterlab."""
 import json
 import re
@@ -22,6 +21,9 @@ from rich.progress import Progress
 from rich.progress import SpinnerColumn
 from rich.progress import TextColumn
 
+from .environment import JUPYTER_IMAGE_SPEC
+from .environment import PIP_INDEX_URL
+
 
 # Don't print with color, it's difficult to read when run in Jupyter
 console = Console(color_system=None)
@@ -33,9 +35,22 @@ app = typer.Typer(
     pretty_exceptions_show_locals=False,  # Locals can contain sensitive information
 )
 GITHUB_ORG_NAME = "statisticsnorway"
+NEXUS_SOURCE_NAME = "nexus"
 debug_without_create_repo = False
 HOME_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()
+
+
+def running_onprem(image_spec: str) -> bool:
+    """Are we running in Jupyter on-prem?
+
+    Args:
+        image_spec: Value of the JUPYTER_IMAGE_SPEC environment variable
+
+    Returns:
+        True if running on-prem, else False.
+    """
+    return "onprem" in image_spec
 
 
 def is_github_repo(token: str, repo_name: str) -> bool:
@@ -289,7 +304,7 @@ def create(
         help="Your Github Personal Access Token, follow these instructions to create one: https://statisticsnorway.github.io/dapla-manual/ssb-project.html#personal-access-token-pat",
     ),
 ) -> None:
-    """:sparkles: Create a project locally, and optionally on Github with the flag --github. The project will follow SSB's best practice for development."""
+    """:sparkles:\tCreate a project locally, and optionally on Github with the flag --github. The project will follow SSB's best practice for development."""
     if not valid_repo_name(project_name):
         raise ValueError(
             "Invalid repo name, please choose a name in the form 'my-fantastic-project'"
@@ -327,21 +342,18 @@ def create(
             print("Setting branch protection rules")
             set_branch_protection_rules(github_token, project_name)
 
-            print(f":white_check_mark: Created Github repo. View it here: {repo_url}")
+            print(f":white_check_mark:\tCreated Github repo. View it here: {repo_url}")
         else:
             make_and_init_git_repo(git_repo_dir)
 
         project_directory = CURRENT_WORKING_DIRECTORY / project_name
         temp_project_directory = Path(temp_dir) / project_name
 
+        build(path=str(temp_project_directory))
+        copytree(temp_project_directory, project_directory)
         print(
             f":white_check_mark: Created project ({project_name}) in the folder {project_directory}"
         )
-
-        build(path=str(temp_project_directory))
-
-        copytree(temp_project_directory, project_directory)
-
         print(
             ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
         )
@@ -354,10 +366,8 @@ def build(
         help="Project path",
     ),
 ) -> None:
-    """:wrench: Create a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
+    """:wrench:\tCreate a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
     project_directory = Path(path)
-
-    project_name = CURRENT_WORKING_DIRECTORY.name
 
     if path == "":
         project_name = CURRENT_WORKING_DIRECTORY.name
@@ -365,8 +375,18 @@ def build(
     else:
         project_name = project_directory.name
 
-    poetry_install(project_directory)
+    if running_onprem(JUPYTER_IMAGE_SPEC):
+        print(
+            ":twisted_rightwards_arrows:\tDetected onprem environment, using proxy for package installation"
+        )
+        poetry_source_add(PIP_INDEX_URL, project_directory)
+    elif poetry_source_includes_source_name(project_directory):
+        print(
+            ":twisted_rightwards_arrows:\tDetected non-onprem environment, removing proxy for package installation"
+        )
+        poetry_source_remove(project_directory)
 
+    poetry_install(project_directory)
     install_ipykernel(project_directory, project_name)
 
 
@@ -458,7 +478,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
                 f'Error during installation of the Jupyter kernel: {result.stderr.decode("utf-8")}'
             )
 
-    print(f":white_check_mark: Installed Jupyter Kernel ({project_name})")
+    print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -475,7 +495,10 @@ def poetry_install(project_directory: Path) -> None:
         TextColumn("[progress.description]{task.description}"),
         transient=True,
     ) as progress:
-        progress.add_task(description="Installing dependencies...", total=None)
+        progress.add_task(
+            description="Installing dependencies... This may take a few minutes",
+            total=None,
+        )
         result = subprocess.run(  # noqa: S603 no untrusted input
             "poetry install".split(), capture_output=True, cwd=project_directory
         )
@@ -484,7 +507,78 @@ def poetry_install(project_directory: Path) -> None:
             f'Error during installation of dependencies: {result.stderr.decode("utf-8")}'
         )
     else:
-        print(":white_check_mark: Installed dependencies in the virtual environment")
+        print(":white_check_mark:\tInstalled dependencies in the virtual environment")
+
+
+def poetry_source_add(
+    source_url: str, cwd: Path, source_name: str = NEXUS_SOURCE_NAME
+) -> None:
+    """Add a package installation source for this project.
+
+    Args:
+        source_url: URL of 'simple' package API of package server
+        cwd: Path of project to add source to
+        source_name: Name of source to add
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        f"poetry source add --default {source_name} {source_url}".split(),
+        capture_output=True,
+        cwd=cwd,
+    )
+    if result.returncode != 0:
+        raise ValueError(f'Error adding Poetry source: {result.stderr.decode("utf-8")}')
+
+
+def poetry_source_includes_source_name(
+    cwd: Path, source_name: str = NEXUS_SOURCE_NAME
+) -> bool:
+    """Check whether this source is already added to the project.
+
+    Args:
+        cwd: Path of project to add source to
+        source_name: Name of source to check
+
+    Returns:
+        True if the source exists in the list
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        "poetry source show".split(),
+        capture_output=True,
+        cwd=cwd,
+    )
+    if result.returncode != 0:
+        raise ValueError(
+            f'Error showing Poetry source: {result.stderr.decode("utf-8")}'
+        )
+
+    return source_name in result.stdout.decode("utf-8")
+
+
+def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> None:
+    """Remove a package installation source for this project.
+
+    Args:
+        cwd: Path of project to add source to
+        source_name: Name of source to be removed
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        f"poetry source remove {source_name}".split(),
+        capture_output=True,
+        cwd=cwd,
+    )
+    if result.returncode != 0:
+        raise ValueError(
+            f'Error removing Poetry source: {result.stderr.decode("utf-8")}'
+        )
 
 
 @app.command()
@@ -493,7 +587,7 @@ def clean(
         ..., help="Name of the kernel to be deleted"
     )
 ) -> None:
-    """:broom: Delete the project's Jupyter kernel."""
+    """:broom:\tDelete the project's Jupyter kernel."""
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
