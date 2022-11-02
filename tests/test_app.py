@@ -11,7 +11,6 @@ from github import GithubException
 from ssb_project_cli.ssb_project.app import NEXUS_SOURCE_NAME
 from ssb_project_cli.ssb_project.app import build
 from ssb_project_cli.ssb_project.app import clean
-from ssb_project_cli.ssb_project.app import create_error_log
 from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
@@ -171,7 +170,8 @@ def test_create_project_from_template(
         assert pyproject.exists()
 
         with pytest.raises(SystemExit):
-            create_project_from_template("testname", "test description")
+            # Should tmp_path be added?
+            create_project_from_template("testname", "test description", tmp_path)
 
 
 @patch(f"{PKG}.running_onprem")
@@ -274,16 +274,6 @@ def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
 
     assert mock_run.call_count == 2
 
-
-@patch("builtins.open")
-@patch(f"{PKG}.questionary")
-def test_create_error_log(mock_confirm: Mock, mock_open: Mock) -> None:
-    """Check that, given positive confirmation, the open function (which creates the log file) runs."""
-    mock_confirm.return_value = True
-
-    create_error_log("", "")
-
-    assert mock_open.call_count == 1
 
 
 @pytest.mark.parametrize(
