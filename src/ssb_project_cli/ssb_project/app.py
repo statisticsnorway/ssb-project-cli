@@ -5,6 +5,8 @@ import re
 import subprocess  # noqa: S404
 from enum import Enum
 from pathlib import Path
+from shutil import copytree
+from tempfile import TemporaryDirectory
 from types import TracebackType
 from typing import Optional
 from typing import Type
@@ -32,7 +34,7 @@ app = typer.Typer(
 )
 GITHUB_ORG_NAME = "statisticsnorway"
 debug_without_create_repo = False
-DEFAULT_REPO_CREATE_PATH = Path.home()
+HOME_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()
 
 
@@ -213,12 +215,15 @@ def extract_name_email() -> tuple[str, str]:
     return name, email
 
 
-def create_project_from_template(projectname: str, description: str) -> Path:
+def create_project_from_template(
+    projectname: str, description: str, temp_dir: Path
+) -> Path:
     """Creates a project from CookiCutter template.
 
     Args:
         projectname: Name of project
         description: Project description
+        temp_dir: Temporary directory path
 
     Returns:
         Path: Path of project.
@@ -226,7 +231,7 @@ def create_project_from_template(projectname: str, description: str) -> Path:
     Raises:
         ValueError: If the project directory already exists
     """
-    home_dir = DEFAULT_REPO_CREATE_PATH
+    home_dir = CURRENT_WORKING_DIRECTORY
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
         raise ValueError(f"Folder '{project_dir}' already exists.")
@@ -252,7 +257,7 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         quoted,
     ]
 
-    subprocess.run(argv, check=True, cwd=home_dir)  # noqa: S603 no untrusted input
+    subprocess.run(argv, check=True, cwd=temp_dir)  # noqa: S603 no untrusted input
 
     return project_dir
 
@@ -305,49 +310,60 @@ def create(
     if add_github and description == "":
         description = request_project_description()
 
-    create_project_from_template(project_name, description)
+    with TemporaryDirectory() as temp_dir:
 
-    git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
-    if add_github:
-        print("Creating an empty repo on Github")
-        repo_url = create_github(github_token, project_name, repo_privacy, description)
+        create_project_from_template(project_name, description, Path(temp_dir))
 
-        print("Creating a local repo, and pushing to Github")
-        make_git_repo_and_push(github_token, repo_url, git_repo_dir)
+        git_repo_dir = Path(Path(temp_dir).joinpath(project_name))
+        if add_github:
+            print("Creating an empty repo on Github")
+            repo_url = create_github(
+                github_token, project_name, repo_privacy, description
+            )
 
-        print("Setting branch protection rules")
-        set_branch_protection_rules(github_token, project_name)
+            print("Creating a local repo, and pushing to Github")
+            make_git_repo_and_push(github_token, repo_url, git_repo_dir)
 
-        print(f":white_check_mark: Created Github repo. View it here: {repo_url}")
-    else:
-        make_and_init_git_repo(git_repo_dir)
+            print("Setting branch protection rules")
+            set_branch_protection_rules(github_token, project_name)
 
-    print(
-        f":white_check_mark: Created project ({project_name}) in the folder {DEFAULT_REPO_CREATE_PATH}"
-    )
+            print(f":white_check_mark: Created Github repo. View it here: {repo_url}")
+        else:
+            make_and_init_git_repo(git_repo_dir)
 
-    build(path=project_name)
+        project_directory = CURRENT_WORKING_DIRECTORY / project_name
+        temp_project_directory = Path(temp_dir) / project_name
 
-    print(
-        ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
-    )
+        print(
+            f":white_check_mark: Created project ({project_name}) in the folder {project_directory}"
+        )
+
+        build(path=str(temp_project_directory))
+
+        copytree(temp_project_directory, project_directory)
+
+        print(
+            ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
+        )
 
 
 @app.command()
 def build(
     path: str = typer.Argument(  # noqa: B008
         "",
-        dir_okay=True,
-        help=f'Relative path to project from "{DEFAULT_REPO_CREATE_PATH}"',
+        help="Project path",
     ),
 ) -> None:
     """:wrench: Create a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
+    project_directory = Path(path)
+
+    project_name = CURRENT_WORKING_DIRECTORY.name
+
     if path == "":
         project_name = CURRENT_WORKING_DIRECTORY.name
         project_directory = CURRENT_WORKING_DIRECTORY
     else:
-        project_name = path
-        project_directory = DEFAULT_REPO_CREATE_PATH / path
+        project_name = project_directory.name
 
     poetry_install(project_directory)
 
@@ -363,7 +379,7 @@ def get_github_pat() -> dict[str, str]:
     Returns:
         dict[str, str]: A dict with user as key and PAT as value.
     """
-    git_credentials = DEFAULT_REPO_CREATE_PATH.joinpath(Path(".git-credentials"))
+    git_credentials = HOME_PATH.joinpath(Path(".git-credentials"))
     user_token_dict: dict[str, str] = {}
     if not git_credentials.exists():
         raise ValueError(
