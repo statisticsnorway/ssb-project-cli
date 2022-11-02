@@ -44,7 +44,7 @@ def is_github_repo(token: str, repo_name: str) -> bool:
         Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
     except ValueError:
         typer.echo(
-            "The provided Github credentials are invalid. Please check that your token is valid and not expired."
+            "The provided Github credentials are invalid. Please check that your personal access token is not expired."
         )
         exit(1)
     except GithubException:
@@ -263,7 +263,7 @@ class RepoPrivacy(str, Enum):
 @app.command()
 def create(
     project_name: str = typer.Argument(  # noqa: B008
-        ..., help="Project name. Only apha-numeric and underscores allowed."
+        ..., help="Project name. Only alpha-numeric and underscores allowed."
     ),
     description: str = typer.Argument(  # noqa: B008
         "", help="A short description of your project."
@@ -502,7 +502,7 @@ def create_error_log(log: str, calling_function: str) -> None:
                 )
                 f.close()
         except Exception as e:
-            typer.echo(f"Error while attempting to create log file: {e}")
+            typer.echo(f"Error while attempting to write the log file: {e}")
 
 
 # Function is deemed too complex, should probably be split up.
