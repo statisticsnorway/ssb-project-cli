@@ -281,12 +281,12 @@ def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
         ("rod-bip/ssb/dapla/dapla-jupyterlab:1.3.7", False),
     ],
 )
-def test_running_onprem(image_spec: str, expected_result: bool):
+def test_running_onprem(image_spec: str, expected_result: bool) -> None:
     assert running_onprem(image_spec) == expected_result
 
 
 @patch(f"{PKG}.subprocess.run")
-def test_poetry_source_add(mock_run):
+def test_poetry_source_add(mock_run: Mock) -> None:
     mock_run.side_effect = [
         Mock(
             returncode=0,
@@ -294,16 +294,15 @@ def test_poetry_source_add(mock_run):
         ),
         Mock(returncode=1, stderr=b"Some error"),
     ]
-    assert (
-        poetry_source_add("http://example.com", ".", source_name=NEXUS_SOURCE_NAME)
-        is None
-    )
+    poetry_source_add("http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME)
     with pytest.raises(ValueError):
-        poetry_source_add("http://example.com", ".", source_name=NEXUS_SOURCE_NAME)
+        poetry_source_add(
+            "http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME
+        )
 
 
 @patch(f"{PKG}.subprocess.run")
-def test_poetry_source_includes_source_name(mock_run):
+def test_poetry_source_includes_source_name(mock_run: Mock) -> None:
     mock_run.side_effect = [
         Mock(
             returncode=0,
@@ -312,14 +311,18 @@ def test_poetry_source_includes_source_name(mock_run):
         Mock(returncode=0, stdout=b"No sources configured for this project."),
         Mock(returncode=1, stderr=b"Some error"),
     ]
-    assert poetry_source_includes_source_name(".", source_name=NEXUS_SOURCE_NAME)
-    assert not poetry_source_includes_source_name(".", source_name=NEXUS_SOURCE_NAME)
+    assert poetry_source_includes_source_name(Path("."), source_name=NEXUS_SOURCE_NAME)
+    assert not poetry_source_includes_source_name(
+        Path("."), source_name=NEXUS_SOURCE_NAME
+    )
     with pytest.raises(ValueError):
-        poetry_source_add("http://example.com", ".", source_name=NEXUS_SOURCE_NAME)
+        poetry_source_add(
+            "http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME
+        )
 
 
 @patch(f"{PKG}.subprocess.run")
-def test_poetry_source_remove(mock_run):
+def test_poetry_source_remove(mock_run: Mock) -> None:
     mock_run.side_effect = [
         Mock(
             returncode=0,
@@ -327,9 +330,9 @@ def test_poetry_source_remove(mock_run):
         ),
         Mock(returncode=1, stderr=b"Some error"),
     ]
-    assert poetry_source_remove(".", source_name=NEXUS_SOURCE_NAME) is None
+    poetry_source_remove(Path("."), source_name=NEXUS_SOURCE_NAME)
     with pytest.raises(ValueError):
-        poetry_source_remove(".", source_name=NEXUS_SOURCE_NAME)
+        poetry_source_remove(Path("."), source_name=NEXUS_SOURCE_NAME)
 
 
 @patch(f"{PKG}.typer.echo", lambda x: "")

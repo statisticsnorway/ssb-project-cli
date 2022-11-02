@@ -502,7 +502,7 @@ def poetry_install(project_directory: Path) -> None:
 
 
 def poetry_source_add(
-    source_url: str, cwd: str, source_name: str = NEXUS_SOURCE_NAME
+    source_url: str, cwd: Path, source_name: str = NEXUS_SOURCE_NAME
 ) -> None:
     """Add a package installation source for this project.
 
@@ -524,7 +524,7 @@ def poetry_source_add(
 
 
 def poetry_source_includes_source_name(
-    cwd: str, source_name: str = NEXUS_SOURCE_NAME
+    cwd: Path, source_name: str = NEXUS_SOURCE_NAME
 ) -> bool:
     """Check whether this source is already added to the project.
 
@@ -551,7 +551,7 @@ def poetry_source_includes_source_name(
     return source_name in result.stdout.decode("utf-8")
 
 
-def poetry_source_remove(cwd: str, source_name: str = NEXUS_SOURCE_NAME) -> None:
+def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> None:
     """Remove a package installation source for this project.
 
     Args:
