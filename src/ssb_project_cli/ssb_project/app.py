@@ -461,9 +461,6 @@ def poetry_install(project_directory: Path) -> None:
 
     Args:
         project_directory: Path of project
-
-    Raises:
-        ValueError: If the process returns with error code
     """
     with Progress(
         SpinnerColumn(),
@@ -700,9 +697,6 @@ def workspace_uri_from_projectname(project_name: str) -> str:
 def get_kernels_dict() -> dict[str, str]:
     """Makes a dictionary of installed kernel specifications.
 
-    Raises:
-        ValueError: If the jupyter subprocess does not return 0
-
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """
@@ -713,9 +707,7 @@ def get_kernels_dict() -> dict[str, str]:
     if kernels_process.returncode == 0:
         kernels_str = kernels_process.stdout.decode("utf-8")
     else:
-        typer.echo(
-            "An error occured while listing the installed kernel specifications."
-        )
+        typer.echo("An error occured while looking for installed kernels.")
         exit(1)
     kernel_dict = {}
     for kernel in kernels_str.split("\n")[1:]:
