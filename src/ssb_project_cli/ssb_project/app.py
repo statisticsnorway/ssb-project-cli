@@ -34,7 +34,7 @@ app = typer.Typer(
 )
 GITHUB_ORG_NAME = "statisticsnorway"
 debug_without_create_repo = False
-DEFAULT_REPO_CREATE_PATH = Path.home()
+HOME_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()
 
 
@@ -231,7 +231,7 @@ def create_project_from_template(
     Raises:
         ValueError: If the project directory already exists
     """
-    home_dir = DEFAULT_REPO_CREATE_PATH
+    home_dir = CURRENT_WORKING_DIRECTORY
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
         raise ValueError(f"Folder '{project_dir}' already exists.")
@@ -379,7 +379,7 @@ def get_github_pat() -> dict[str, str]:
     Returns:
         dict[str, str]: A dict with user as key and PAT as value.
     """
-    git_credentials = DEFAULT_REPO_CREATE_PATH.joinpath(Path(".git-credentials"))
+    git_credentials = HOME_PATH.joinpath(Path(".git-credentials"))
     user_token_dict: dict[str, str] = {}
     if not git_credentials.exists():
         raise ValueError(
