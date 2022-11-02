@@ -443,7 +443,6 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         )
         if result.returncode != 0:
 
-
             calling_function = "install-kernel"
             log = str(result)
 
@@ -493,7 +492,7 @@ def create_error_log(log: str, calling_function: str) -> None:
         calling_function: The function in which the error occured. Used to give a more descriptive name to error log file.
     """
     confirm = questionary.confirm(
-        "Do you wish to create a log of the error? The log is a description of the error which can be sent to customer service for further assistance."
+        "Do you wish to create a log of the error? A log is a description of the error which can be sent to customer service for further assistance."
     ).ask()
 
     if confirm:
@@ -506,7 +505,7 @@ def create_error_log(log: str, calling_function: str) -> None:
                 )
                 f.close()
         except Exception as e:
-            typer.echo(f"Error when creating log file: {e}")
+            typer.echo(f"Error while attempting to create log file: {e}")
 
 
 # Function is deemed too complex, should probably be split up.
@@ -598,7 +597,10 @@ def clean(
 
     output = result.stderr.decode("utf-8").strip()
 
-    if result.returncode != 0 or output != f"[RemoveKernelSpec] Removed {kernels[project_name]}":
+    if (
+        result.returncode != 0
+        or output != f"[RemoveKernelSpec] Removed {kernels[project_name]}"
+    ):
 
         calling_function = "clean-kernel"
         log = str(result)
@@ -711,7 +713,9 @@ def get_kernels_dict() -> dict[str, str]:
     if kernels_process.returncode == 0:
         kernels_str = kernels_process.stdout.decode("utf-8")
     else:
-        typer.echo(f"An error occured while listing the installed kernel specifications.")
+        typer.echo(
+            "An error occured while listing the installed kernel specifications."
+        )
         exit(1)
     kernel_dict = {}
     for kernel in kernels_str.split("\n")[1:]:

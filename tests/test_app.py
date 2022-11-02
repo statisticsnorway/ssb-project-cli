@@ -219,7 +219,7 @@ def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
     mock_kernels.return_value = {}
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         clean(project_name)
 
     kernels = {project_name: "/kernel/path"}
@@ -235,6 +235,11 @@ def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
     clean(project_name)
 
     assert mock_run.call_count == 2
+
+
+@patch(f"{PKG}.create_error_log")
+def test_create_error_log(log: Mock) -> None:
+    pass
 
 
 @pytest.mark.parametrize(

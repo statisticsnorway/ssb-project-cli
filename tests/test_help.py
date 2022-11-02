@@ -12,7 +12,9 @@ def test_app_build_help() -> None:
     """Checks if the cli prints help description when supplied with build --help."""
     result = runner.invoke(app, ["build", "--help"])
     assert result.exit_code == 0
-    assert "Builds a virtual environment with Poetry and creates a kernel" in result.stdout
+    assert (
+        "Builds a virtual environment with Poetry and creates a kernel" in result.stdout
+    )
 
 
 def test_app_create_help() -> None:
