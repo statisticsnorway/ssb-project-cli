@@ -44,6 +44,10 @@ class TestCreateFunction(TestCase):
         _mock_kernel: Mock,
         _mock_install: Mock,
         mock_copy: Mock,
+        _mock_poetry_source_remove: Mock,
+        _mock_poetry_source_add: Mock,
+        _mock_poetry_source_includes_source_name: Mock,
+        _mock_running_onprem: Mock,
     ) -> None:
         """Check that copytree is not called when create_project_from_template raises an error."""
         mock_template.side_effect = ValueError("template failing")
@@ -58,6 +62,10 @@ class TestCreateFunction(TestCase):
         _mock_kernel: Mock,
         _mock_install: Mock,
         mock_copy: Mock,
+        _mock_poetry_source_remove: Mock,
+        _mock_poetry_source_add: Mock,
+        _mock_poetry_source_includes_source_name: Mock,
+        _mock_running_onprem: Mock,
     ) -> None:
         """Check that copytree is not called when make_and_init_git_repo raises an error."""
         mock_git.side_effect = ValueError("git failing")
