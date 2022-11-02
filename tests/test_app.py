@@ -275,7 +275,6 @@ def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
     assert mock_run.call_count == 2
 
 
-
 @pytest.mark.parametrize(
     "image_spec,expected_result",
     [
