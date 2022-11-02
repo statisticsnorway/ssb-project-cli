@@ -13,7 +13,7 @@ def test_app_build_help() -> None:
     result = runner.invoke(app, ["build", "--help"])
     assert result.exit_code == 0
     assert (
-        "Builds a virtual environment with Poetry and creates a kernel" in result.stdout
+        "Create a virtual environment and corresponding Jupyter kernel" in result.stdout
     )
 
 
@@ -22,4 +22,4 @@ def test_app_create_help() -> None:
     result = runner.invoke(app, ["create", "--help"])
     assert result.exit_code == 0
     assert "Project name" in result.stdout
-    assert "Your github PAT" in result.stdout
+    assert "Your Github " in result.stdout

@@ -119,6 +119,7 @@ def precommit(session: Session) -> None:
         "--hook-stage=manual",
         "--show-diff-on-failure",
     ]
+    session.install(".")
     session.install(
         "black",
         "darglint",
@@ -128,9 +129,11 @@ def precommit(session: Session) -> None:
         "flake8-docstrings",
         "flake8-rst-docstrings",
         "isort",
+        "mypy",
         "pep8-naming",
         "pre-commit",
         "pre-commit-hooks",
+        "pytest",  # Needed for type checking
         "pyupgrade",
     )
     session.run("pre-commit", *args)

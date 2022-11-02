@@ -1,33 +1,56 @@
-#!/usr/bin/python3
 """Command-line-interface for project-operations in dapla-jupterlab."""
 import json
-import os
 import re
 import subprocess  # noqa: S404
 import time
 from enum import Enum
 from pathlib import Path
+from shutil import copytree
+from tempfile import TemporaryDirectory
 from types import TracebackType
 from typing import Optional
 from typing import Type
 
 import questionary
-import toml
 import typer
 from git import Repo  # type: ignore[attr-defined]
 from github import Github
 from github import GithubException
-from rich import print
+from rich.console import Console
 from rich.progress import Progress
 from rich.progress import SpinnerColumn
 from rich.progress import TextColumn
 
+from .environment import JUPYTER_IMAGE_SPEC
+from .environment import PIP_INDEX_URL
 
-app = typer.Typer(rich_markup_mode="rich")
+
+# Don't print with color, it's difficult to read when run in Jupyter
+console = Console(color_system=None)
+print = console.print
+
+app = typer.Typer(
+    help="Usage instructions: https://statisticsnorway.github.io/dapla-manual/ssb-project.html",
+    rich_markup_mode="rich",
+    pretty_exceptions_show_locals=False,  # Locals can contain sensitive information
+)
 GITHUB_ORG_NAME = "statisticsnorway"
+NEXUS_SOURCE_NAME = "nexus"
 debug_without_create_repo = False
-DEFAULT_REPO_CREATE_PATH = Path.home()
+HOME_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()
+
+
+def running_onprem(image_spec: str) -> bool:
+    """Are we running in Jupyter on-prem?
+
+    Args:
+        image_spec: Value of the JUPYTER_IMAGE_SPEC environment variable
+
+    Returns:
+        True if running on-prem, else False.
+    """
+    return "onprem" in image_spec
 
 
 def is_github_repo(token: str, repo_name: str) -> bool:
@@ -89,7 +112,7 @@ class TempGitRemote:
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
-        """Deletes remote self.origen and creates a remote named origen with an url."""
+        """Deletes remote self.origin and creates a remote named origin with an url."""
         self.repo.delete_remote(self.origin)
         self.repo.create_remote("origin", self.restore_url)
 
@@ -131,7 +154,6 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
 
     with TempGitRemote(repo, credential_url, username_url):
         repo.git.push("--set-upstream", "origin", "main")
-    print(f"Repo successfully pushed to GitHub: {github_url}")
 
 
 def set_branch_protection_rules(github_token: str, repo_name: str) -> None:
@@ -176,7 +198,7 @@ def request_name_email() -> tuple[str, str]:
         tuple[str, str]: User supplied name and email
     """
     name = typer.prompt("Enter full name: ")
-    email = typer.prompt("Enter email    : ")
+    email = typer.prompt("Enter email: ")
     return name, email
 
 
@@ -188,7 +210,7 @@ def request_project_description() -> str:
     Returns:
          str: Project description
     """
-    description: str = typer.prompt("Fyll inn prosjektbeskrivelse")
+    description: str = typer.prompt("Project description:")
 
     if description == "":
         description = request_project_description()
@@ -208,17 +230,20 @@ def extract_name_email() -> tuple[str, str]:
     return name, email
 
 
-def create_project_from_template(projectname: str, description: str) -> Path:
+def create_project_from_template(
+    projectname: str, description: str, temp_dir: Path
+) -> Path:
     """Creates a project from CookiCutter template.
 
     Args:
         projectname: Name of project
         description: Project description
+        temp_dir: Temporary directory path
 
     Returns:
         Path: Path of project.
     """
-    home_dir = DEFAULT_REPO_CREATE_PATH
+    home_dir = CURRENT_WORKING_DIRECTORY
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
         typer.echo(
@@ -247,7 +272,7 @@ def create_project_from_template(projectname: str, description: str) -> Path:
         quoted,
     ]
 
-    subprocess.run(argv, check=True, cwd=home_dir)  # noqa: S603 no untrusted input
+    subprocess.run(argv, check=True, cwd=temp_dir)  # noqa: S603 no untrusted input
 
     return project_dir
 
@@ -262,27 +287,24 @@ class RepoPrivacy(str, Enum):
 
 @app.command()
 def create(
-    project_name: str = typer.Argument(  # noqa: B008
-        ..., help="Project name. Only alpha-numeric and underscores allowed."
-    ),
+    project_name: str = typer.Argument(..., help="Project name"),  # noqa: B008
     description: str = typer.Argument(  # noqa: B008
-        "", help="A short description of your project."
+        "", help="A short description of your project"
     ),
     repo_privacy: RepoPrivacy = typer.Argument(  # noqa: B008
-        RepoPrivacy.internal, help="Privacy settings for your repo."
+        RepoPrivacy.internal, help="Visibility of the Github repo"
     ),
     add_github: bool = typer.Option(  # noqa: B008
         False,
         "--github",
-        help="Add this flag if you wish to create a github repo.",
+        help="Create the repo on Github as well",
     ),
     github_token: str = typer.Option(  # noqa: B008
         "",
-        help="Your github PAT (Personal Access Token).",
-        # Link does not work in jupyter labs følg https://statistics-norway.atlassian.net/wiki/spaces/DAPLA/pages/1917779969/Oppstart+personlig+GitHub-bruker+personlig+kode+og+integrere+Jupyter+med+GitHub#Opprette-personlig-aksesskode-i-GitHubinstruksjonene her for å skape en
+        help="Your Github Personal Access Token, follow these instructions to create one: https://statisticsnorway.github.io/dapla-manual/ssb-project.html#personal-access-token-pat",
     ),
 ) -> None:
-    """:sparkles: Create a project locally and on Github (optional). Follows SSB best-practices. :sparkles:."""
+    """:sparkles:\tCreate a project locally, and optionally on Github with the flag --github. The project will follow SSB's best practice for development."""
     if not valid_repo_name(project_name):
         typer.echo(
             "Invalid repo name: Please choose a valid name. For example: 'my-fantastic-project'"
@@ -307,60 +329,69 @@ def create(
     if add_github and description == "":
         description = request_project_description()
 
-    create_project_from_template(project_name, description)
+    with TemporaryDirectory() as temp_dir:
 
-    git_repo_dir = DEFAULT_REPO_CREATE_PATH.joinpath(project_name)
-    if add_github:
-        print("Initialise empty repo on Github")
-        repo_url = create_github(github_token, project_name, repo_privacy, description)
+        create_project_from_template(project_name, description, Path(temp_dir))
 
-        print("Create local repo and push to Github")
-        make_git_repo_and_push(github_token, repo_url, git_repo_dir)
+        git_repo_dir = Path(Path(temp_dir).joinpath(project_name))
+        if add_github:
+            print("Creating an empty repo on Github")
+            repo_url = create_github(
+                github_token, project_name, repo_privacy, description
+            )
 
-        print("Set branch protection rules.")
-        set_branch_protection_rules(github_token, project_name)
-    else:
-        make_and_init_git_repo(git_repo_dir)
+            print("Creating a local repo, and pushing to Github")
+            make_git_repo_and_push(github_token, repo_url, git_repo_dir)
 
-    print(
-        f"Project {project_name} created in folder {DEFAULT_REPO_CREATE_PATH},"
-        + " you may move it if you want to."
-    )
+            print("Setting branch protection rules")
+            set_branch_protection_rules(github_token, project_name)
 
-    curr_path = project_name
-    project_directory = DEFAULT_REPO_CREATE_PATH / curr_path
+            print(f":white_check_mark:\tCreated Github repo. View it here: {repo_url}")
+        else:
+            make_and_init_git_repo(git_repo_dir)
 
-    poetry_install(project_directory)
+        project_directory = CURRENT_WORKING_DIRECTORY / project_name
+        temp_project_directory = Path(temp_dir) / project_name
 
-    install_ipykernel(project_directory, project_name)
+        build(path=str(temp_project_directory))
+        copytree(temp_project_directory, project_directory)
+        print(
+            f":white_check_mark: Created project ({project_name}) in the folder {project_directory}"
+        )
+        print(
+            ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
+        )
 
 
 @app.command()
 def build(
-    kernel: str = "python3",
     path: str = typer.Argument(  # noqa: B008
         "",
-        dir_okay=True,
-        help=f'Relative path to the project from "{DEFAULT_REPO_CREATE_PATH}"',
+        help="Project path",
     ),
 ) -> None:
-    """Builds a ssb project.
-
-    Builds a virtual environment with Poetry and creates a kernel. If no arguments are provided, the command will build from your current folder.
-    """
-    project_directory = DEFAULT_REPO_CREATE_PATH / path
-
-    project_name = CURRENT_WORKING_DIRECTORY.name
+    """:wrench:\tCreate a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
+    project_directory = Path(path)
 
     if path == "":
+        project_name = CURRENT_WORKING_DIRECTORY.name
         project_directory = CURRENT_WORKING_DIRECTORY
     else:
-        project_name = path
+        project_name = project_directory.name
+
+    if running_onprem(JUPYTER_IMAGE_SPEC):
+        print(
+            ":twisted_rightwards_arrows:\tDetected onprem environment, using proxy for package installation"
+        )
+        poetry_source_add(PIP_INDEX_URL, project_directory)
+    elif poetry_source_includes_source_name(project_directory):
+        print(
+            ":twisted_rightwards_arrows:\tDetected non-onprem environment, removing proxy for package installation"
+        )
+        poetry_source_remove(project_directory)
 
     poetry_install(project_directory)
-
-    if kernel == "python3":
-        install_ipykernel(project_directory, project_name)
+    install_ipykernel(project_directory, project_name)
 
 
 def get_github_pat() -> dict[str, str]:
@@ -369,7 +400,7 @@ def get_github_pat() -> dict[str, str]:
     Returns:
         dict[str, str]: A dict with user as key and PAT as value.
     """
-    git_credentials = DEFAULT_REPO_CREATE_PATH.joinpath(Path(".git-credentials"))
+    git_credentials = HOME_PATH.joinpath(Path(".git-credentials"))
     user_token_dict: dict[str, str] = {}
     if not git_credentials.exists():
         typer.echo(
@@ -416,7 +447,7 @@ def choose_login() -> str:
     user_token_dict: dict[str, str] = get_github_pat()
 
     choice = questionary.select(
-        "Hvilken GitHub konto skal brukes?", choices=user_token_dict.keys()  # type: ignore
+        "Select your GitHub account:", choices=user_token_dict.keys()  # type: ignore
     ).ask()
 
     return user_token_dict[choice]
@@ -434,7 +465,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         TextColumn("[progress.description]{task.description}"),
         transient=True,
     ) as progress:
-        progress.add_task(description=f"Creating kernel {project_name}...", total=None)
+        progress.add_task(description="Installing Jupyter kernel...", total=None)
         make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(
             " "
         ) + [project_name]
@@ -453,7 +484,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         output = result.stdout.decode("utf-8")
         print(output)
 
-    print(f"Kernel ({project_name}) successfully created.")
+    print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -467,7 +498,10 @@ def poetry_install(project_directory: Path) -> None:
         TextColumn("[progress.description]{task.description}"),
         transient=True,
     ) as progress:
-        progress.add_task(description="Installing dependencies...", total=None)
+        progress.add_task(
+            description="Installing dependencies... This may take a few minutes",
+            total=None,
+        )
         result = subprocess.run(  # noqa: S603 no untrusted input
             "poetry install".split(), capture_output=True, cwd=project_directory
         )
@@ -479,6 +513,8 @@ def poetry_install(project_directory: Path) -> None:
         typer.echo("Something went wrong when installing packages with Poetry.")
         create_error_log(log, calling_function)
         exit(1)
+    else:
+        print(":white_check_mark:\tInstalled dependencies in the virtual environment")
 
 
 def create_error_log(log: str, calling_function: str) -> None:
@@ -505,58 +541,75 @@ def create_error_log(log: str, calling_function: str) -> None:
             typer.echo(f"Error while attempting to write the log file: {e}")
 
 
-# Function is deemed too complex, should probably be split up.
-def delete() -> None:  # noqa C901
-    """Delete project.
+def poetry_source_add(
+    source_url: str, cwd: Path, source_name: str = NEXUS_SOURCE_NAME
+) -> None:
+    """Add a package installation source for this project.
 
-    1. Remove kernel
-    2. Remove venv / uninstall with poetry
-    3. Remove workspace, if exists?
+    Args:
+        source_url: URL of 'simple' package API of package server
+        cwd: Path of project to add source to
+        source_name: Name of source to add
+
+    Raises:
+        ValueError: If the process returns with error code
     """
-    project_name = projectname_from_currfolder(os.getcwd())
-    typer.echo("Remove kernel")
-    kernels_path = "/home/jovyan/.local/share/jupyter/kernels/"
-    for kernel in os.listdir(kernels_path):
-        if kernel.startswith(project_name):
-            os.remove(kernels_path + project_name)
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        f"poetry source add --default {source_name} {source_url}".split(),
+        capture_output=True,
+        cwd=cwd,
+    )
+    if result.returncode != 0:
+        raise ValueError(f'Error adding Poetry source: {result.stderr.decode("utf-8")}')
 
-    typer.echo("Remove venv / uninstall with poetry")
 
-    venvs = subprocess.run(["poetry", "env", "list"], capture_output=True)  # noqa S607
-    if venvs.returncode != 0:
-        calling_function = "poetry-env-list"
-        log = str(venvs)
-        typer.echo("Something went wrong while listing Poetry environments.")
-        create_error_log(log, calling_function)
-        exit(1)
+def poetry_source_includes_source_name(
+    cwd: Path, source_name: str = NEXUS_SOURCE_NAME
+) -> bool:
+    """Check whether this source is already added to the project.
 
-    venvs_str: str = venvs.stdout.decode("utf-8")
+    Args:
+        cwd: Path of project to add source to
+        source_name: Name of source to check
 
-    delete_cmds = []
-    for venv in venvs_str.split("\n"):
-        if venv:
-            print(venv)
-            if (venv.replace("-", "").replace("_", "")).startswith(
-                project_name.replace("-", "").replace("_", "")
-            ):
-                delete_cmds += [["poetry", "env", "remove", venv.split(" ")[0]]]
+    Returns:
+        True if the source exists in the list
 
-    for cmd in delete_cmds:
-        deletion = subprocess.run(  # noqa: S603 no untrusted input
-            cmd, capture_output=True
+    Raises:
+        ValueError: If the process returns with error code
+    """
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        "poetry source show".split(),
+        capture_output=True,
+        cwd=cwd,
+    )
+    if result.returncode != 0:
+        raise ValueError(
+            f'Error showing Poetry source: {result.stderr.decode("utf-8")}'
         )
-        if deletion.returncode != 0:
-            raise ValueError(deletion.stderr.decode("utf-8"))
-        # typer.echo?
-        print(deletion.stdout.decode("utf-8"))
 
-    typer.echo("Remove workspace, if it exist, based on project-name")
-    for workspace in os.listdir("/home/jovyan/.jupyter/lab/workspaces/"):
+    return source_name in result.stdout.decode("utf-8")
 
-        if rm_hyphen_and_underscore(workspace).startswith(
-            rm_hyphen_and_underscore(project_name)
-        ):
-            os.remove(f"/home/jovyan/.jupyter/lab/workspaces/{workspace}")
+
+def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> None:
+    """Remove a package installation source for this project.
+
+    Args:
+        cwd: Path of project to add source to
+        source_name: Name of source to be removed
+
+    Raises:
+        ValueError: If the process returns with error code
+    """
+    result = subprocess.run(  # noqa: S603 no untrusted input
+        f"poetry source remove {source_name}".split(),
+        capture_output=True,
+        cwd=cwd,
+    )
+    if result.returncode != 0:
+        raise ValueError(
+            f'Error removing Poetry source: {result.stderr.decode("utf-8")}'
+        )
 
 
 @app.command()
@@ -606,29 +659,7 @@ def clean(
         create_error_log(log, calling_function)
         exit(1)
 
-    typer.echo(f"Deleted kernel {project_name}.")
-
-
-def rm_hyphen_and_underscore(s: str) -> str:
-    """Remove hyphens and underscores.
-
-    Args:
-        s: input string
-
-    Returns:
-        str: without a hyphen and underscore
-    """
-    return s.replace("-", "").replace("_", "")
-
-
-def workspace() -> None:
-    """Prints uri used to create/clone a workspace."""
-    typer.echo(workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd())))
-    typer.echo("To create/clone the workspace:")
-    typer.echo(
-        workspace_uri_from_projectname(projectname_from_currfolder(os.getcwd()))
-        + "?clone"
-    )
+    print(f"Deleted Jupyter kernel {project_name}.")
 
 
 def create_github(
@@ -657,41 +688,7 @@ def create_github(
         )
     repo_url = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").clone_url
     g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").replace_topics(["ssb-project"])
-    typer.echo(f"GitHub repo created: {repo_url}")
     return repo_url
-
-
-def projectname_from_currfolder(curr_path: str) -> str:
-    """Retrives project name from poetry's toml-config in cwd.
-
-    Args:
-        curr_path: Optional string of current path.
-
-    Returns:
-        str: Project name from poetry`s toml-config
-    """
-    curr_dir = os.getcwd()
-    while "pyproject.toml" not in os.listdir():
-        os.chdir("../")
-    pyproject = toml.load("./pyproject.toml")
-    name: str = pyproject["tool"]["poetry"]["name"]
-    os.chdir(curr_dir)
-    return name
-
-
-def workspace_uri_from_projectname(project_name: str) -> str:
-    """Generates workspace uri based on project name.
-
-    Args:
-         project_name: Project name
-
-    Returns:
-        str: Workspace uri
-    """
-    return (
-        "https://jupyter.dapla.ssb.no/user/"
-        + f"{os.environ['JUPYTERHUB_USER']}/lab/workspaces/{project_name}"
-    )
 
 
 def get_kernels_dict() -> dict[str, str]:
