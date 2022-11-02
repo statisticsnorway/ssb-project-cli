@@ -154,7 +154,7 @@ def test_create_project_from_template(
     """
     mock_extract.return_value = ("Name", "")
     mock_request.return_value = ("Name2", "email@email.com")
-    with patch(f"{PKG}.DEFAULT_REPO_CREATE_PATH", tmp_path):
+    with patch(f"{PKG}.CURRENT_WORKING_DIRECTORY", tmp_path):
         create_project_from_template("testname", "test description", tmp_path)
 
         assert mock_extract.call_count == 1
