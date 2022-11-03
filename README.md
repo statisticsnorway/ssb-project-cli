@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/ssb-project-cli)][pypi status]
 [![License](https://img.shields.io/pypi/l/ssb-project-cli)][license]
 
-[![Read the documentation at https://ssb-project-cli.readthedocs.io/](https://img.shields.io/readthedocs/ssb-project-cli/latest.svg?label=Read%20the%20Docs)][read the docs]
+[![Read the documentation](https://img.shields.io/badge/docs-Github%20Pages-purple)](https://statisticsnorway.github.io/ssb-project-cli/)
 [![Tests](https://github.com/statisticsnorway/ssb-project-cli/workflows/Tests/badge.svg)][tests]
 [![Codecov](https://codecov.io/gh/statisticsnorway/ssb-project-cli/branch/main/graph/badge.svg)][codecov]
 
