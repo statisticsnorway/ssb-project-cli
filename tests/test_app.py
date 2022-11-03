@@ -249,10 +249,9 @@ def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
     assert mock_run.call_count == 2
 
 
-@patch(f"{PKG}.questionary")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
-def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
+def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
     mock_kernels.return_value = {}
