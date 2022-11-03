@@ -225,7 +225,7 @@ def test_install_ipykernel(mock_run: Mock, tmp_path: Path) -> None:
     """Check that install_ipykernel runs correct command and fails as expected."""
     name = "testproject"
     mock_run.return_value = Mock(returncode=1, stderr=b"some error")
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         install_ipykernel(tmp_path, name)
     assert (
         " ".join(mock_run.call_args[0][0])
@@ -241,20 +241,23 @@ def test_install_ipykernel(mock_run: Mock, tmp_path: Path) -> None:
 def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
     """Check if function runs and fails correctly."""
     mock_run.return_value = Mock(returncode=1, stderr=b"some error")
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         poetry_install(tmp_path)
     assert mock_run.call_args[0][0] == "poetry install".split()
     mock_run.return_value = Mock(returncode=0)
     poetry_install(tmp_path)
     assert mock_run.call_count == 2
 
-
+@patch(f"{PKG}.questionary.confirm")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
-def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
+def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
     mock_kernels.return_value = {}
+
+    mock_confirm.ask.return_value = True
+
     with pytest.raises(SystemExit):
         clean(project_name)
 
