@@ -1,7 +1,9 @@
 """Command-line-interface for project-operations in dapla-jupterlab."""
 import json
+import os
 import re
 import subprocess  # noqa: S404
+import time
 from enum import Enum
 from pathlib import Path
 from shutil import copytree
@@ -13,7 +15,6 @@ from typing import Type
 import questionary
 import typer
 from git import Repo  # type: ignore[attr-defined]
-from github import BadCredentialsException
 from github import Github
 from github import GithubException
 from rich.console import Console
@@ -62,14 +63,14 @@ def is_github_repo(token: str, repo_name: str) -> bool:
 
     Returns:
         True if the repository exists, else false.
-
-    Raises:
-        ValueError: when supplied with bad GitHub credentials.
     """
     try:
         Github(token).get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
-    except BadCredentialsException as ex:
-        raise ValueError("Invalid Github credentials") from ex
+    except ValueError:
+        typer.echo(
+            "The provided Github credentials are invalid. Please check that your personal access token is not expired."
+        )
+        exit(1)
     except GithubException:
         return False
     else:
@@ -242,14 +243,14 @@ def create_project_from_template(
 
     Returns:
         Path: Path of project.
-
-    Raises:
-        ValueError: If the project directory already exists
     """
     home_dir = CURRENT_WORKING_DIRECTORY
     project_dir = home_dir.joinpath(projectname)
     if project_dir.exists():
-        raise ValueError(f"Folder '{project_dir}' already exists.")
+        typer.echo(
+            f"A project with name '{projectname}' already exists. Please choose another name."
+        )
+        exit(1)
 
     name, email = extract_name_email()
     if not (name and email):
@@ -306,21 +307,25 @@ def create(
 ) -> None:
     """:sparkles:\tCreate a project locally, and optionally on Github with the flag --github. The project will follow SSB's best practice for development."""
     if not valid_repo_name(project_name):
-        raise ValueError(
-            "Invalid repo name, please choose a name in the form 'my-fantastic-project'"
+        typer.echo(
+            "Invalid repo name: Please choose a valid name. For example: 'my-fantastic-project'"
         )
+
+        exit(1)
 
     if add_github and not github_token:
         github_token = choose_login()
 
     if add_github and not github_token:
-        raise ValueError(
-            "Github token needed, please supply it with '--github-token xxxx'"
-        )
+        typer.echo("Needs GitHub token, please specify with --github-token")
+        exit(1)
 
     if not debug_without_create_repo:
         if add_github and is_github_repo(github_token, project_name):
-            raise ValueError(f"A repo called {project_name} already exists on GitHub.")
+            typer.echo(
+                f"A repo with the name {project_name} already exists on GitHub. Please choose another name."
+            )
+            exit(1)
 
     if add_github and description == "":
         description = request_project_description()
@@ -393,18 +398,16 @@ def build(
 def get_github_pat() -> dict[str, str]:
     """Gets GitHub users and PAT from .gitconfig.
 
-    Raises:
-        ValueError: If .git-credentials does not exist.
-
     Returns:
         dict[str, str]: A dict with user as key and PAT as value.
     """
     git_credentials = HOME_PATH.joinpath(Path(".git-credentials"))
     user_token_dict: dict[str, str] = {}
     if not git_credentials.exists():
-        raise ValueError(
-            "Couldn't find .git-credentials, supply your Github token with '--github-token xxxx'"
+        typer.echo(
+            "Could not find your github token. Please add it manually with the --github-token <TOKEN> option."
         )
+        exit(1)
 
     with open(git_credentials) as f:
         lines = f.readlines()
@@ -457,9 +460,6 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
     Args:
         project_directory: Path of project
         project_name: Name of project
-
-    Raises:
-        ValueError: If the process returns with error code
     """
     with Progress(
         SpinnerColumn(),
@@ -474,9 +474,16 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             make_kernel_cmd, capture_output=True, cwd=project_directory
         )
         if result.returncode != 0:
-            raise ValueError(
-                f'Error during installation of the Jupyter kernel: {result.stderr.decode("utf-8")}'
-            )
+
+            calling_function = "install-kernel"
+            log = str(result)
+
+            typer.echo("Something went wrong while installing ipykernel.")
+            create_error_log(log, calling_function)
+            exit(1)
+
+        output = result.stdout.decode("utf-8")
+        print(output)
 
     print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")
 
@@ -486,9 +493,6 @@ def poetry_install(project_directory: Path) -> None:
 
     Args:
         project_directory: Path of project
-
-    Raises:
-        ValueError: If the process returns with error code
     """
     with Progress(
         SpinnerColumn(),
@@ -503,11 +507,37 @@ def poetry_install(project_directory: Path) -> None:
             "poetry install".split(), capture_output=True, cwd=project_directory
         )
     if result.returncode != 0:
-        raise ValueError(
-            f'Error during installation of dependencies: {result.stderr.decode("utf-8")}'
-        )
+
+        calling_function = "poetry-install"
+        log = str(result)
+
+        typer.echo("Something went wrong when installing packages with Poetry.")
+        create_error_log(log, calling_function)
+        exit(1)
     else:
         print(":white_check_mark:\tInstalled dependencies in the virtual environment")
+
+
+def create_error_log(log: str, calling_function: str) -> None:
+    """Creates a file with log of error in the current folder.
+
+    Args:
+        log: The content of the error log.
+        calling_function: The function in which the error occured. Used to give a more descriptive name to error log file.
+    """
+    try:
+        error_logs_path = f"{HOME_PATH}/ssb-project-cli/.error_logs"
+        if not os.path.exists(error_logs_path):
+            os.makedirs(error_logs_path)
+        filename = f"{calling_function}-error-{int(time.time())}.txt"
+        with open(f"{error_logs_path}/{filename}", "w+") as f:
+            f.write(log)
+            typer.echo(
+                f"A file with the name {filename} was created in your current directory. It contains a description of your error."
+            )
+            f.close()
+    except Exception as e:
+        typer.echo(f"Error while attempting to write the log file: {e}")
 
 
 def poetry_source_add(
@@ -584,18 +614,29 @@ def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> Non
 @app.command()
 def clean(
     project_name: str = typer.Argument(  # noqa: B008
-        ..., help="Name of the kernel to be deleted"
+        ..., help="The name of the project/kernel you want to delete."
     )
 ) -> None:
-    """:broom:\tDelete the project's Jupyter kernel."""
+    """Deletes the kernel corresponding to the provided project name."""
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
-        raise ValueError(
-            f'Could not find Jupyter kernel "{project_name}". Is the name correct?'
+        typer.echo(
+            f'Could not find kernel "{project_name}". Is the project name spelled correctly?'
         )
 
-    print(f"Deleting Jupyter kernel {project_name}...")
+        exit(1)
+
+    confirmation = questionary.confirm(
+        f"Are you sure you want to delete the kernel '{project_name}'. This action will delete the kernel associated with the virtual environment and leave all other files untouched."
+    ).ask()
+
+    if not confirmation:
+        exit(1)
+
+    typer.echo(
+        f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually."
+    )
 
     clean_cmd = f"jupyter kernelspec remove -f {project_name}".split()
 
@@ -603,16 +644,19 @@ def clean(
         clean_cmd, capture_output=True
     )
 
-    if result.returncode != 0:
-        raise ValueError(
-            f'Error while deleting the Jupyter kernel: {result.stderr.decode("utf-8")}'
-        )
-
     output = result.stderr.decode("utf-8").strip()
-    if output != f"[RemoveKernelSpec] Removed {kernels[project_name]}":
-        raise ValueError(
-            f'Error while deleting the Jupyter kernel: {result.stderr.decode("utf-8")}'
-        )
+
+    if (
+        result.returncode != 0
+        or output != f"[RemoveKernelSpec] Removed {kernels[project_name]}"
+    ):
+
+        calling_function = "clean-kernel"
+        log = str(result)
+
+        typer.echo("Something went wrong while removing the jupyter kernel.")
+        create_error_log(log, calling_function)
+        exit(1)
 
     print(f"Deleted Jupyter kernel {project_name}.")
 
@@ -649,9 +693,6 @@ def create_github(
 def get_kernels_dict() -> dict[str, str]:
     """Makes a dictionary of installed kernel specifications.
 
-    Raises:
-        ValueError: If the jupyter subprocess does not return 0
-
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """
@@ -662,7 +703,8 @@ def get_kernels_dict() -> dict[str, str]:
     if kernels_process.returncode == 0:
         kernels_str = kernels_process.stdout.decode("utf-8")
     else:
-        raise ValueError(kernels_process.stderr.decode("utf-8"))
+        typer.echo("An error occured while looking for installed kernels.")
+        exit(1)
     kernel_dict = {}
     for kernel in kernels_str.split("\n")[1:]:
         line = " ".join(kernel.strip().split())

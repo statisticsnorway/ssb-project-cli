@@ -72,8 +72,6 @@ def test_is_github_repo(mock_get_repo: Mock) -> None:
     ]
     assert is_github_repo("", "")
     assert not is_github_repo("", "")
-    with pytest.raises(ValueError):
-        is_github_repo("", "")
 
 
 @patch(f"{PKG}.Repo")
@@ -171,7 +169,8 @@ def test_create_project_from_template(
         pyproject = project_dir.joinpath("pyproject.toml")
         assert pyproject.exists()
 
-        with pytest.raises(ValueError):
+        with pytest.raises(SystemExit):
+            # Should tmp_path be added?
             create_project_from_template("testname", "test description", tmp_path)
 
 
@@ -226,7 +225,7 @@ def test_install_ipykernel(mock_run: Mock, tmp_path: Path) -> None:
     """Check that install_ipykernel runs correct command and fails as expected."""
     name = "testproject"
     mock_run.return_value = Mock(returncode=1, stderr=b"some error")
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         install_ipykernel(tmp_path, name)
     assert (
         " ".join(mock_run.call_args[0][0])
@@ -242,7 +241,7 @@ def test_install_ipykernel(mock_run: Mock, tmp_path: Path) -> None:
 def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
     """Check if function runs and fails correctly."""
     mock_run.return_value = Mock(returncode=1, stderr=b"some error")
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         poetry_install(tmp_path)
     assert mock_run.call_args[0][0] == "poetry install".split()
     mock_run.return_value = Mock(returncode=0)
@@ -250,25 +249,30 @@ def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
     assert mock_run.call_count == 2
 
 
+@patch(f"{PKG}.questionary.confirm")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
-def test_clean(mock_run: Mock, mock_kernels: Mock) -> None:
+def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
     mock_kernels.return_value = {}
-    with pytest.raises(ValueError):
+
+    mock_confirm.ask.return_value = True
+
+    with pytest.raises(SystemExit):
         clean(project_name)
 
     kernels = {project_name: "/kernel/path"}
     mock_kernels.return_value = kernels
     mock_run.return_value = Mock(returncode=1, stderr=b"Some error")
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         clean(project_name)
 
     mock_run.return_value = Mock(
         returncode=0,
         stderr=f"[RemoveKernelSpec] Removed {kernels[project_name]}".encode(),
     )
+
     clean(project_name)
 
     assert mock_run.call_count == 2
@@ -363,5 +367,5 @@ def test_get_kernels_dict(mock_run: Mock) -> None:
         Mock(returncode=1, stderr=b"Some error"),
     ]
     assert get_kernels_dict() == {"python": "/some/path", "R": "/other/path"}
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         get_kernels_dict()
