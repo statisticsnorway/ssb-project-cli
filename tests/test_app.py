@@ -248,6 +248,7 @@ def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
     poetry_install(tmp_path)
     assert mock_run.call_count == 2
 
+
 @patch(f"{PKG}.questionary.confirm")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
