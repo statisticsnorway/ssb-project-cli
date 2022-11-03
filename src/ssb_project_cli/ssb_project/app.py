@@ -11,6 +11,8 @@ from types import TracebackType
 from typing import Optional
 from typing import Type
 
+
+import platform
 import questionary
 import typer
 from git import Repo  # type: ignore[attr-defined]
@@ -524,9 +526,12 @@ def create_error_log(log: str, calling_function: str) -> None:
         log: The content of the error log.
         calling_function: The function in which the error occured. Used to give a more descriptive name to error log file.
     """
-    confirm = questionary.confirm(
-        "Do you wish to create a log of the error? A log is a description of the error which can be sent to customer service for further assistance."
-    ).ask()
+    if platform.system() == "windows":
+        confirm = questionary.confirm(
+            "Do you wish to create a log of the error? A log is a description of the error which can be sent to customer service for further assistance."
+        ).ask()
+    else:
+        confirm = True
 
     if confirm:
         try:
