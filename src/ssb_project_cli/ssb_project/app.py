@@ -540,6 +540,7 @@ def create_error_log(log: str, calling_function: str) -> None:
         typer.echo(f"Error while attempting to write the log file: {e}")
 
 
+
 def poetry_source_add(
     source_url: str, cwd: Path, source_name: str = NEXUS_SOURCE_NAME
 ) -> None:
@@ -658,8 +659,41 @@ def clean(
         create_error_log(log, calling_function)
         exit(1)
 
+
+    clean_virtual_env(project_name)
+
     print(f"Deleted Jupyter kernel {project_name}.")
 
+
+
+def clean_virtual_env(project_name: str) -> None:
+
+    typer.echo(f"Removing virtual environment for {project_name}...")
+
+    #find_envs_cmd = f"ls /home/jovyan/.cache/pypoetry/virtualenvs/{project_name}*"
+    find_envs_cmd =  f"ls /Users/damirmedakovic/Library/Caches/pypoetry/virtualenvs/{project_name}*"
+
+    poetry_environments_process = subprocess.run(find_envs_cmd, capture_output=True, shell=True) # noqa: S603 no untrusted input
+
+    results = poetry_environments_process.stdout.decode("utf-8")
+
+    results = results.splitlines()
+
+    if not results:
+        typer.echo("No virtual environments found for this kernel. It may have been removed manually. Skipping...")
+    else:
+        shortest_len = float("inf")
+        for line in results: 
+            if line.startswith("/"):
+                if len(line) < shortest_len:
+                    best_match = line[:-1]
+        
+        remove_venv_cmd = f"rm -rf {best_match}"
+        subprocess.run(remove_venv_cmd, capture_output=True, shell=True)
+
+        typer.echo(f"Successfully removed virtualenv located at {best_match}")
+
+            
 
 def create_github(
     github_token: str, repo_name: str, repo_privacy: str, repo_description: str
