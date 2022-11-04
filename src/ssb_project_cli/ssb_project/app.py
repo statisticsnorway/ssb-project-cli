@@ -670,8 +670,7 @@ def clean_virtual_env(project_name: str) -> None:
 
     typer.echo(f"Removing virtual environment for {project_name}...")
 
-    #find_envs_cmd = f"ls /home/jovyan/.cache/pypoetry/virtualenvs/{project_name}*"
-    find_envs_cmd =  f"ls /Users/damirmedakovic/Library/Caches/pypoetry/virtualenvs/{project_name}*"
+    find_envs_cmd = f"ls /home/jovyan/.cache/pypoetry/virtualenvs/{project_name}*"
 
     poetry_environments_process = subprocess.run(find_envs_cmd, capture_output=True, shell=True) # noqa: S603 no untrusted input
 
