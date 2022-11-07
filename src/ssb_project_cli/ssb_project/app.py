@@ -438,7 +438,6 @@ def get_github_pat_from_gitcredentials() -> dict[str, str]:
         for line in lines:
             p = re.compile("https://([A-Za-z0-9_-]+):([A-Za-z0-9_]+)@github.com")
             res = p.match(line)
-            print(line)
 
             if res:
                 user = res.group(1)
