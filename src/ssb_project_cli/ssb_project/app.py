@@ -540,7 +540,6 @@ def create_error_log(log: str, calling_function: str) -> None:
         typer.echo(f"Error while attempting to write the log file: {e}")
 
 
-
 def poetry_source_add(
     source_url: str, cwd: Path, source_name: str = NEXUS_SOURCE_NAME
 ) -> None:
@@ -641,7 +640,6 @@ def clean(
 
     clean_virtual_env(project_name)
 
-
     clean_cmd = f"jupyter kernelspec remove -f {project_name}".split()
 
     result = subprocess.run(  # noqa: S603 no untrusted input
@@ -662,47 +660,54 @@ def clean(
         create_error_log(log, calling_function)
         exit(1)
 
-
     print(f"Deleted Jupyter kernel {project_name}.")
-
 
 
 def clean_virtual_env(project_name: str) -> None:
     """Removes virtual environment associated to a specific project name.
 
     Args:
-        project_name: The project the virtual environment is associated to. 
+        project_name: The project the virtual environment is associated to.
     """
     typer.echo(f"Removing virtual environment for {project_name}...")
 
     find_envs_cmd = f"ls -d /home/jovyan/.cache/pypoetry/virtualenvs/{project_name}*"
 
-    poetry_environments_process = subprocess.run(find_envs_cmd, capture_output=True, shell=True) # noqa: S603 no untrusted input
+    poetry_environments_process = subprocess.run(  # noqa: S603 no untrusted input
+        find_envs_cmd, capture_output=True, shell=True
+    )
 
     results = poetry_environments_process.stdout.decode("utf-8")
 
-    results = results.splitlines()
+    results_list = results.splitlines()
 
-    best_match = str()
+    best_match = ""
 
     if not results:
-        typer.echo("No virtual environments found for this kernel. It may have been removed manually. Skipping...")
+        typer.echo(
+            "No virtual environments found for this kernel. It may have been removed manually. Skipping..."
+        )
         exit(1)
     else:
         shortest_len = float("inf")
-        for line in results: 
+        for line in results_list:
             if len(line) < shortest_len:
                 best_match = line[:-1]
-        
+
         remove_venv_cmd = f"rm -rf {best_match}"
-        remove_venv_result = subprocess.run(remove_venv_cmd, capture_output=True, shell=True)
+        remove_venv_result = subprocess.run(
+            remove_venv_cmd,
+            capture_output=True,
+            shell=True,  # noqa: S603 no untrusted input
+        )
 
         if remove_venv_result.stderr:
-            typer.echo(f"Something went wrong while removing virtual environment located at {best_match}")
+            typer.echo(
+                f"Something went wrong while removing virtual environment located at {best_match}"
+            )
         else:
             typer.echo(f"Successfully removed virtualenv located at {best_match}")
 
-            
 
 def create_github(
     github_token: str, repo_name: str, repo_privacy: str, repo_description: str
