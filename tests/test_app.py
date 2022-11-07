@@ -419,20 +419,20 @@ def test_get_github_pat_from_netrc(
 @pytest.mark.parametrize(
     "data,result,truth",
     [
-        ("https://br_kari:ghp_token@github.com", {"br_kari": "ghp_token"}, True),
+        ("https://br_kari:ghp_token@test.com", {"br_kari": "ghp_token"}, True),
         (
-            "https://brukernavn:ghp_1231@github.com",
+            "https://brukernavn:ghp_1231@test.com",
             {"brukernavn": "ghp_1231"},
             True,
         ),
         ("", {"SSB-kari": "ghp_faketok13"}, False),
         (
-            "https://bruker:ghp_123123@github.com",
+            "https://bruker:ghp_123123@test.com",
             {"brukernavn": "ghp_123123"},
             False,
         ),
         (
-            "https:/brukernavn:ghp_1ads@github.com",
+            "https:/brukernavn:ghp_1ads@test.com",
             {"brukernavn": "ghp_123123"},
             False,
         ),
