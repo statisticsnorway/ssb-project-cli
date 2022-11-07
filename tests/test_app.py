@@ -8,7 +8,7 @@ import pytest
 from github import BadCredentialsException
 from github import GithubException
 
-from ssb_project_cli.ssb_project.app import NEXUS_SOURCE_NAME
+from ssb_project_cli.ssb_project.app import NEXUS_SOURCE_NAME, choose_login
 from ssb_project_cli.ssb_project.app import build
 from ssb_project_cli.ssb_project.app import clean
 from ssb_project_cli.ssb_project.app import create_github
@@ -369,3 +369,9 @@ def test_get_kernels_dict(mock_run: Mock) -> None:
     assert get_kernels_dict() == {"python": "/some/path", "R": "/other/path"}
     with pytest.raises(SystemExit):
         get_kernels_dict()
+@patch(f"{PKG}.get_github_pat")
+@patch(f"{PKG}.questionary.password")
+def test_prompt_pat(q_password_mock: Mock, mock_get_pat: Mock):
+    mock_get_pat.return_value = None
+    choose_login()
+    assert q_password_mock.call_count == 1
