@@ -396,27 +396,65 @@ def build(
 
 
 def get_github_pat() -> dict[str, str]:
-    """Gets GitHub users and PAT from .gitconfig.
+    """Gets GitHub users and PAT from .gitconfig and .netrc.
 
     Returns:
         dict[str, str]: A dict with user as key and PAT as value.
     """
-    git_credentials = HOME_PATH.joinpath(Path(".git-credentials"))
-    user_token_dict: dict[str, str] = {}
-    if not git_credentials.exists():
+    user_token_dict = get_github_pat_from_gitcredentials() | get_github_pat_from_netrc()
+
+    if not user_token_dict:
         typer.echo(
             "Could not find your github token. Please add it manually with the --github-token <TOKEN> option."
         )
         exit(1)
+    return user_token_dict
 
-    with open(git_credentials) as f:
+
+def get_github_pat_from_gitcredentials() -> dict[str, str]:
+    """Gets GitHub users and PAT from .gitconfig."""
+    git_credentials_file = HOME_PATH.joinpath(Path(".git-credentials"))
+    user_token_dict: dict[str, str] = {}
+
+    if not git_credentials_file.exists():
+        return user_token_dict
+
+    with open(git_credentials_file) as f:
         lines = f.readlines()
-
         for line in lines:
-            user_token_split = line.split(":")
-            user = re.sub(r".*//", "", user_token_split[1])
-            token = re.sub(r"@.*", "", user_token_split[2]).strip()
-            user_token_dict[user] = token
+            p = re.compile("https://([A-Za-z0-9_-]+):([A-Za-z0-9_]+)@github.com")
+            res = p.match(line)
+            print(line)
+
+            if res:
+                user = res.group(1)
+                token = res.group(2)
+                user_token_dict[user] = token
+
+    return user_token_dict
+
+
+def get_github_pat_from_netrc() -> dict[str, str]:
+    """Gets GitHub users and PAT from .netrc.
+
+    Returns:
+        dict[str, str]: A dict with user as key and PAT as value.
+    """
+    credentials_netrc_file = HOME_PATH.joinpath(Path(".netrc"))
+    user_token_dict: dict[str, str] = {}
+
+    with open(credentials_netrc_file) as f:
+        lines = f.readlines()
+        for line in lines:
+            p = re.compile(
+                "machine github.com login ([A-Za-z0-9_-]+) password ([A-Za-z0-9_]+)"
+            )
+            res = p.match(line)
+
+            if res:
+                user = res.group(1)
+                token = res.group(2)
+                user_token_dict[user] = token
 
     return user_token_dict
 
@@ -480,7 +518,6 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             make_kernel_cmd, capture_output=True, cwd=project_directory
         )
         if result.returncode != 0:
-
             calling_function = "install-kernel"
             log = str(result)
 
@@ -656,7 +693,6 @@ def clean(
         result.returncode != 0
         or output != f"[RemoveKernelSpec] Removed {kernels[project_name]}"
     ):
-
         calling_function = "clean-kernel"
         log = str(result)
 
