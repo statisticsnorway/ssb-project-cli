@@ -1,15 +1,15 @@
 """Tests for src/ssb_project_cli/ssb_project/app.py."""
 
 from pathlib import Path
-from unittest.mock import Mock, mock_open
+from unittest.mock import Mock
+from unittest.mock import mock_open
 from unittest.mock import patch
 
 import pytest
 from github import BadCredentialsException
 from github import GithubException
 
-from ssb_project_cli.ssb_project.app import NEXUS_SOURCE_NAME, get_github_pat_from_gitcredentials, \
-    get_github_pat_from_netrc
+from ssb_project_cli.ssb_project.app import NEXUS_SOURCE_NAME
 from ssb_project_cli.ssb_project.app import build
 from ssb_project_cli.ssb_project.app import choose_login
 from ssb_project_cli.ssb_project.app import clean
@@ -17,6 +17,8 @@ from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
 from ssb_project_cli.ssb_project.app import get_gitconfig_element
+from ssb_project_cli.ssb_project.app import get_github_pat_from_gitcredentials
+from ssb_project_cli.ssb_project.app import get_github_pat_from_netrc
 from ssb_project_cli.ssb_project.app import get_kernels_dict
 from ssb_project_cli.ssb_project.app import install_ipykernel
 from ssb_project_cli.ssb_project.app import is_github_repo
