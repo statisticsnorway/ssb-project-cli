@@ -8,6 +8,7 @@ from enum import Enum
 from pathlib import Path
 from shutil import copytree
 from tempfile import TemporaryDirectory
+from traceback import format_exc
 from types import TracebackType
 from typing import Optional
 from typing import Type
@@ -15,6 +16,7 @@ from typing import Type
 import questionary
 import typer
 from git import Repo  # type: ignore[attr-defined]
+from github import BadCredentialsException
 from github import Github
 from github import GithubException
 from rich.console import Console
@@ -40,6 +42,10 @@ NEXUS_SOURCE_NAME = "nexus"
 debug_without_create_repo = False
 HOME_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()
+STAT_TEMPLATE_REPO_URL = (
+    "https://github.com/statisticsnorway/stat-hurtigstart-template-master"
+)
+STAT_TEMPLATE_DEFAULT_REFERENCE = "0.2.0"
 
 
 def running_onprem(image_spec: str) -> bool:
@@ -232,23 +238,29 @@ def extract_name_email() -> tuple[str, str]:
 
 
 def create_project_from_template(
-    projectname: str, description: str, temp_dir: Path
+    project_name: str,
+    description: str,
+    temp_dir: Path,
+    template_repo_url: str = STAT_TEMPLATE_REPO_URL,
+    template_reference: str = STAT_TEMPLATE_DEFAULT_REFERENCE,
 ) -> Path:
     """Creates a project from CookiCutter template.
 
     Args:
-        projectname: Name of project
+        project_name: Name of project
         description: Project description
         temp_dir: Temporary directory path
+        template_repo_url: URL for the chosen template
+        template_reference: Git reference to the template repository
 
     Returns:
         Path: Path of project.
     """
     home_dir = CURRENT_WORKING_DIRECTORY
-    project_dir = home_dir.joinpath(projectname)
+    project_dir = home_dir.joinpath(project_name)
     if project_dir.exists():
         typer.echo(
-            f"A project with name '{projectname}' already exists. Please choose another name."
+            f"A project with name '{project_name}' already exists. Please choose another name."
         )
         exit(1)
 
@@ -257,7 +269,7 @@ def create_project_from_template(
         name, email = request_name_email()
 
     template_info = {
-        "project_name": projectname,
+        "project_name": project_name,
         "description": description,
         "full_name": name,
         "email": email,
@@ -267,8 +279,10 @@ def create_project_from_template(
     argv = [
         "cruft",
         "create",
-        "https://github.com/statisticsnorway/stat-hurtigstart-template-master",
+        template_repo_url,
         "--no-input",
+        "--checkout",
+        template_reference,
         "--extra-context",
         quoted,
     ]
@@ -357,7 +371,7 @@ def create(
         build(path=str(temp_project_directory))
         copytree(temp_project_directory, project_directory)
         print(
-            f":white_check_mark: Created project ({project_name}) in the folder {project_directory}"
+            f":white_check_mark:\tCreated project ({project_name}) in the folder {project_directory}"
         )
         print(
             ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
@@ -525,9 +539,6 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             create_error_log(log, calling_function)
             exit(1)
 
-        output = result.stdout.decode("utf-8")
-        print(output)
-
     print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")
 
 
@@ -554,7 +565,7 @@ def poetry_install(project_directory: Path) -> None:
         calling_function = "poetry-install"
         log = str(result)
 
-        typer.echo("Something went wrong when installing packages with Poetry.")
+        typer.echo("Error: Something went wrong when installing packages with Poetry.")
         create_error_log(log, calling_function)
         exit(1)
     else:
@@ -576,7 +587,7 @@ def create_error_log(log: str, calling_function: str) -> None:
         with open(f"{error_logs_path}/{filename}", "w+") as f:
             f.write(log)
             typer.echo(
-                f"A file with the name {filename} was created in your current directory. It contains a description of your error."
+                f"Detailed error information saved to {error_logs_path}/{filename}"
             )
             f.close()
     except Exception as e:
@@ -696,7 +707,7 @@ def clean(
         calling_function = "clean-kernel"
         log = str(result)
 
-        typer.echo("Something went wrong while removing the jupyter kernel.")
+        typer.echo("Error: Something went wrong while removing the jupyter kernel.")
         create_error_log(log, calling_function)
         exit(1)
 
@@ -721,12 +732,21 @@ def create_github(
 
     g = Github(github_token)
     if not debug_without_create_repo:
-        g.get_organization(GITHUB_ORG_NAME).create_repo(
-            repo_name,
-            private=private_repo,
-            auto_init=False,
-            description=repo_description,
-        )
+        try:
+            g.get_organization(GITHUB_ORG_NAME).create_repo(
+                repo_name,
+                private=private_repo,
+                auto_init=False,
+                description=repo_description,
+            )
+        except BadCredentialsException:
+            print("Error: Invalid Github credentials")
+            create_error_log(
+                "".join(format_exc()),
+                "create_github",
+            )
+            exit(1)
+
     repo_url = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").clone_url
     g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").replace_topics(["ssb-project"])
     return repo_url
