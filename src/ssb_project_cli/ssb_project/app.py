@@ -673,8 +673,8 @@ def clean_virtual_env(project_name: str) -> None:
 
     find_envs_cmd = f"ls -d /home/jovyan/.cache/pypoetry/virtualenvs/{project_name}*"
 
-    poetry_environments_process = subprocess.run(  # noqa: S603 no untrusted input
-        find_envs_cmd, capture_output=True, shell=True
+    poetry_environments_process = subprocess.run(
+        find_envs_cmd, capture_output=True, shell=True  # noqa: S602
     )
 
     results = poetry_environments_process.stdout.decode("utf-8")
@@ -698,7 +698,7 @@ def clean_virtual_env(project_name: str) -> None:
         remove_venv_result = subprocess.run(
             remove_venv_cmd,
             capture_output=True,
-            shell=True,  # noqa: S603 no untrusted input
+            shell=True,  # noqa: S602
         )
 
         if remove_venv_result.stderr:
