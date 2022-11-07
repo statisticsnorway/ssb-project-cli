@@ -24,6 +24,7 @@ from rich.progress import TextColumn
 
 from .environment import JUPYTER_IMAGE_SPEC
 from .environment import PIP_INDEX_URL
+from .environment import STAT_TEMPLATE_DEFAULT_REFERENCE
 
 
 # Don't print with color, it's difficult to read when run in Jupyter
@@ -40,6 +41,9 @@ NEXUS_SOURCE_NAME = "nexus"
 debug_without_create_repo = False
 HOME_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()
+STAT_TEMPLATE_REPO_URL = (
+    "https://github.com/statisticsnorway/stat-hurtigstart-template-master"
+)
 
 
 def running_onprem(image_spec: str) -> bool:
@@ -232,23 +236,29 @@ def extract_name_email() -> tuple[str, str]:
 
 
 def create_project_from_template(
-    projectname: str, description: str, temp_dir: Path
+    project_name: str,
+    description: str,
+    temp_dir: Path,
+    template_repo_url: str = STAT_TEMPLATE_REPO_URL,
+    template_reference: str = STAT_TEMPLATE_DEFAULT_REFERENCE,
 ) -> Path:
     """Creates a project from CookiCutter template.
 
     Args:
-        projectname: Name of project
+        project_name: Name of project
         description: Project description
         temp_dir: Temporary directory path
+        template_repo_url: URL for the chosen template
+        template_reference: Git reference to the template repository
 
     Returns:
         Path: Path of project.
     """
     home_dir = CURRENT_WORKING_DIRECTORY
-    project_dir = home_dir.joinpath(projectname)
+    project_dir = home_dir.joinpath(project_name)
     if project_dir.exists():
         typer.echo(
-            f"A project with name '{projectname}' already exists. Please choose another name."
+            f"A project with name '{project_name}' already exists. Please choose another name."
         )
         exit(1)
 
@@ -257,7 +267,7 @@ def create_project_from_template(
         name, email = request_name_email()
 
     template_info = {
-        "project_name": projectname,
+        "project_name": project_name,
         "description": description,
         "full_name": name,
         "email": email,
@@ -267,8 +277,10 @@ def create_project_from_template(
     argv = [
         "cruft",
         "create",
-        "https://github.com/statisticsnorway/stat-hurtigstart-template-master",
+        template_repo_url,
         "--no-input",
+        "--checkout",
+        template_reference,
         "--extra-context",
         quoted,
     ]
