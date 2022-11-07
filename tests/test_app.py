@@ -17,7 +17,6 @@ from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
 from ssb_project_cli.ssb_project.app import get_gitconfig_element
-from ssb_project_cli.ssb_project.app import get_github_pat_from_gitcredentials
 from ssb_project_cli.ssb_project.app import get_github_pat_from_netrc
 from ssb_project_cli.ssb_project.app import get_kernels_dict
 from ssb_project_cli.ssb_project.app import install_ipykernel
