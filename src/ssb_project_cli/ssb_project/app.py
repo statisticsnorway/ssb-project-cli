@@ -24,7 +24,6 @@ from rich.progress import TextColumn
 
 from .environment import JUPYTER_IMAGE_SPEC
 from .environment import PIP_INDEX_URL
-from .environment import STAT_TEMPLATE_DEFAULT_REFERENCE
 
 
 # Don't print with color, it's difficult to read when run in Jupyter
@@ -44,6 +43,7 @@ CURRENT_WORKING_DIRECTORY = Path.cwd()
 STAT_TEMPLATE_REPO_URL = (
     "https://github.com/statisticsnorway/stat-hurtigstart-template-master"
 )
+STAT_TEMPLATE_DEFAULT_REFERENCE = "0.1.0"
 
 
 def running_onprem(image_spec: str) -> bool:
