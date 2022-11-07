@@ -211,7 +211,7 @@ def request_project_description() -> str:
     Returns:
          str: Project description
     """
-    description: str = typer.prompt("Project description:")
+    description: str = typer.prompt("Project description")
 
     if description == "":
         description = request_project_description()
@@ -442,16 +442,22 @@ def valid_repo_name(name: str) -> bool:
 def choose_login() -> str:
     """Asks the user to pick between stored GitHub usernames.
 
+    If GitHub credentials are not found users is promoted to input PAT.
+
     Returns:
         str: GitHub personal access token
     """
     user_token_dict: dict[str, str] = get_github_pat()
-
-    choice = questionary.select(
-        "Select your GitHub account:", choices=user_token_dict.keys()  # type: ignore
-    ).ask()
-
-    return user_token_dict[choice]
+    if user_token_dict:
+        choice = questionary.select(
+            "Select your GitHub account:", choices=user_token_dict.keys()  # type: ignore
+        ).ask()
+        return user_token_dict[choice]
+    else:
+        pat: str = questionary.password(
+            "Enter your GitHub personal access token:"
+        ).ask()
+        return pat
 
 
 def install_ipykernel(project_directory: Path, project_name: str) -> None:
