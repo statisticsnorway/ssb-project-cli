@@ -679,34 +679,37 @@ def clean_virtual_env(project_name: str) -> None:
 
     results = poetry_environments_process.stdout.decode("utf-8")
 
-    results_list = results.splitlines()
-
-    best_match = ""
-
     if not results:
         typer.echo(
             "No virtual environments found for this kernel. It may have been removed manually. Skipping..."
         )
         exit(1)
-    else:
-        shortest_len = float("inf")
-        for line in results_list:
-            if len(line) < shortest_len:
-                best_match = line[:-1]
 
-        remove_venv_cmd = f"rm -rf {best_match}"
-        remove_venv_result = subprocess.run(
-            remove_venv_cmd,
-            capture_output=True,
-            shell=True,  # noqa: S602
+    results_list = results.splitlines()
+
+    best_match = ""
+    shortest_len = float("inf")
+
+    for line in results_list:
+        if len(line) < shortest_len:
+            best_match = line[:-1]
+            shortest_len = len(line)
+
+    remove_venv_cmd = f"rm -rf {best_match}"
+    remove_venv_result = subprocess.run(
+        remove_venv_cmd,
+        capture_output=True,
+        shell=True,  # noqa: S602
+    )
+
+    if remove_venv_result.stderr:
+        typer.echo(
+            f"Something went wrong while removing virtual environment located at {best_match}"
         )
+        exit(1)
 
-        if remove_venv_result.stderr:
-            typer.echo(
-                f"Something went wrong while removing virtual environment located at {best_match}"
-            )
-        else:
-            typer.echo(f"Successfully removed virtualenv located at {best_match}")
+    else:
+        typer.echo(f"Successfully removed virtualenv located at {best_match}")
 
 
 def create_github(

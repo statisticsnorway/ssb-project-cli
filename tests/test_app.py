@@ -252,7 +252,10 @@ def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
 @patch(f"{PKG}.questionary.confirm")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
-def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
+@patch(f"{PKG}.subprocess.run")
+def test_clean(
+    mock_run: Mock, mock_run_venv: Mock, mock_kernels: Mock, mock_confirm: Mock
+) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
     mock_kernels.return_value = {}
@@ -265,6 +268,7 @@ def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
     kernels = {project_name: "/kernel/path"}
     mock_kernels.return_value = kernels
     mock_run.return_value = Mock(returncode=1, stderr=b"Some error")
+    mock_run_venv.stdout.return_value = ["/some/path", "/other/path"]
     with pytest.raises(SystemExit):
         clean(project_name)
 
@@ -273,9 +277,12 @@ def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
         stderr=f"[RemoveKernelSpec] Removed {kernels[project_name]}".encode(),
     )
 
-    clean(project_name)
+    mock_run_venv.stdout.return_value = ["/some/path", "/other/path"]
 
-    assert mock_run.call_count == 2
+    with pytest.raises(SystemExit):
+        clean(project_name)
+
+    assert mock_run.call_count == 0
 
 
 @pytest.mark.parametrize(
