@@ -639,6 +639,9 @@ def clean(
         f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually."
     )
 
+    clean_virtual_env(project_name)
+
+
     clean_cmd = f"jupyter kernelspec remove -f {project_name}".split()
 
     result = subprocess.run(  # noqa: S603 no untrusted input
@@ -660,8 +663,6 @@ def clean(
         exit(1)
 
 
-    clean_virtual_env(project_name)
-
     print(f"Deleted Jupyter kernel {project_name}.")
 
 
@@ -674,7 +675,7 @@ def clean_virtual_env(project_name: str) -> None:
     """
     typer.echo(f"Removing virtual environment for {project_name}...")
 
-    find_envs_cmd = f"ls /home/jovyan/.cache/pypoetry/virtualenvs/{project_name}*"
+    find_envs_cmd = f"ls -d /home/jovyan/.cache/pypoetry/virtualenvs/{project_name}*"
 
     poetry_environments_process = subprocess.run(find_envs_cmd, capture_output=True, shell=True) # noqa: S603 no untrusted input
 
@@ -690,14 +691,8 @@ def clean_virtual_env(project_name: str) -> None:
     else:
         shortest_len = float("inf")
         for line in results: 
-            if line.startswith("/home"):
-                if len(line) < shortest_len:
-                    best_match = line[:-1]
-
-        if best_match == "":
-            typer.echo(f"Could not find a matching virtual enironment for {project_name}")
-            exit(1)
-
+            if len(line) < shortest_len:
+                best_match = line[:-1]
         
         remove_venv_cmd = f"rm -rf {best_match}"
         remove_venv_result = subprocess.run(remove_venv_cmd, capture_output=True, shell=True)
