@@ -671,6 +671,12 @@ def clean_virtual_env(project_name: str) -> None:
     """
     typer.echo(f"Removing virtual environment for {project_name}...")
 
+    virtual_envs_path_command = "poetry config virtualenvs.path"
+
+    poetry_environments_process = subprocess.run(
+        virtual_envs_path_command, capture_output=True, shell=True  # noqa: S602
+    )
+    
     find_envs_cmd = f"ls -d /home/jovyan/.cache/pypoetry/virtualenvs/{project_name}*"
 
     poetry_environments_process = subprocess.run(
@@ -680,15 +686,20 @@ def clean_virtual_env(project_name: str) -> None:
     results = poetry_environments_process.stdout.decode("utf-8")
 
     if not results:
-        typer.echo(
+        print(
             "No virtual environments found for this kernel. It may have been removed manually. Skipping..."
         )
         exit(1)
 
     results_list = results.splitlines()
 
+
     best_match = ""
     shortest_len = float("inf")
+
+    # Finds the correct virtualenv to remove. Example: A user has two ssb projects, 'test' and 'test-ssb'. The command
+    # find_envs_command above will yield two virtual environment paths given project_name = "test" ; one for test 
+    # and another one for test-ssb. The correct one is the shortest, therefore this is the one we are after.
 
     for line in results_list:
         if len(line) < shortest_len:
