@@ -12,7 +12,7 @@ packages = [
     { include = "ssb_project_cli", from = "src" },
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
 ]
 
 [tool.poetry.urls]
