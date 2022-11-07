@@ -482,9 +482,6 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             create_error_log(log, calling_function)
             exit(1)
 
-        output = result.stdout.decode("utf-8")
-        print(output)
-
     print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")
 
 
