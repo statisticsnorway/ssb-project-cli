@@ -357,7 +357,7 @@ def create(
         build(path=str(temp_project_directory))
         copytree(temp_project_directory, project_directory)
         print(
-            f":white_check_mark: Created project ({project_name}) in the folder {project_directory}"
+            f":white_check_mark:\tCreated project ({project_name}) in the folder {project_directory}"
         )
         print(
             ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
