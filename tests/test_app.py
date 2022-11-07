@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from unittest.mock import Mock
+from unittest.mock import mock_open
 from unittest.mock import patch
 
 import pytest
@@ -16,6 +17,8 @@ from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
 from ssb_project_cli.ssb_project.app import get_gitconfig_element
+from ssb_project_cli.ssb_project.app import get_github_pat_from_gitcredentials
+from ssb_project_cli.ssb_project.app import get_github_pat_from_netrc
 from ssb_project_cli.ssb_project.app import get_kernels_dict
 from ssb_project_cli.ssb_project.app import install_ipykernel
 from ssb_project_cli.ssb_project.app import is_github_repo
@@ -378,3 +381,57 @@ def test_prompt_pat(q_password_mock: Mock, mock_get_pat: Mock) -> None:
     mock_get_pat.return_value = None
     choose_login()
     assert q_password_mock.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "data,result,truth",
+    [
+        (
+            "machine github.com login SSB-ola password ghp_4ak3tok",
+            {"SSB-ola": "ghp_4ak3tok"},
+            True,
+        ),
+        (
+            "machine github.com login SSB-kari password ghp_faketok13",
+            {"SSB-kari": "ghp_faketok13"},
+            True,
+        ),
+        ("", {"SSB-kari": "ghp_faketok13"}, False),
+        (
+            "machine github.com login only-kari password ghp_faketok13",
+            {"SSB-kari": "ghp_faketok13"},
+            False,
+        ),
+        (
+            "machine github.com login SSB-kari password ghp_token77",
+            {"SSB-kari": "ghp_token"},
+            False,
+        ),
+    ],
+)
+def test_get_github_pat_from_netrc(data, result, truth) -> None:
+    with patch(f"{PKG}.open", mock_open(read_data=data)):
+        assert (get_github_pat_from_netrc() == result) == truth
+
+
+@pytest.mark.parametrize(
+    "data,result,truth",
+    [
+        (
+            "https://bruker_kari:ghp_token@github.com",
+            {"bruker_kari": "ghp_token"},
+            True,
+        ),
+        (
+            "https://brukernavn:ghp_123123@github.com",
+            {"brukernavn": "ghp_123123"},
+            True,
+        ),
+        ("", {"SSB-kari": "ghp_faketok13"}, False),
+        ("https://bruker:ghp_123123@github.com", {"brukernavn": "ghp_123123"}, False),
+        ("https:/brukernavn:ghp_1ads@github.com", {"brukernavn": "ghp_123123"}, False),
+    ],
+)
+def test_get_github_pat_from_gitcredentials(data, result, truth) -> None:
+    with patch(f"{PKG}.open", mock_open(read_data=data)):
+        assert (get_github_pat_from_gitcredentials() == result) == truth
