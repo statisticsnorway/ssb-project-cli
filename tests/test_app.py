@@ -26,6 +26,7 @@ from ssb_project_cli.ssb_project.app import poetry_source_includes_source_name
 from ssb_project_cli.ssb_project.app import poetry_source_remove
 from ssb_project_cli.ssb_project.app import request_name_email
 from ssb_project_cli.ssb_project.app import running_onprem
+from ssb_project_cli.ssb_project.app import clean_virtual_env
 from ssb_project_cli.ssb_project.app import set_branch_protection_rules
 from ssb_project_cli.ssb_project.app import valid_repo_name
 
@@ -276,6 +277,9 @@ def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
     clean(project_name)
 
     assert mock_run.call_count == 2
+
+
+@test_clean_virtual_env()
 
 
 @pytest.mark.parametrize(

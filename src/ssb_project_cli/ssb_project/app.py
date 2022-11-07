@@ -667,7 +667,11 @@ def clean(
 
 
 def clean_virtual_env(project_name: str) -> None:
+    """Removes virtual environment associated to a specific project name.
 
+    Args:
+        project_name: The project the virtual environment is associated to. 
+    """
     typer.echo(f"Removing virtual environment for {project_name}...")
 
     find_envs_cmd = f"ls /home/jovyan/.cache/pypoetry/virtualenvs/{project_name}*"
@@ -678,19 +682,30 @@ def clean_virtual_env(project_name: str) -> None:
 
     results = results.splitlines()
 
+    best_match = str()
+
     if not results:
         typer.echo("No virtual environments found for this kernel. It may have been removed manually. Skipping...")
+        exit(1)
     else:
         shortest_len = float("inf")
         for line in results: 
-            if line.startswith("/"):
+            if line.startswith("/home"):
                 if len(line) < shortest_len:
                     best_match = line[:-1]
+
+        if best_match == "":
+            typer.echo(f"Could not find a matching virtual enironment for {project_name}")
+            exit(1)
+
         
         remove_venv_cmd = f"rm -rf {best_match}"
-        subprocess.run(remove_venv_cmd, capture_output=True, shell=True)
+        remove_venv_result = subprocess.run(remove_venv_cmd, capture_output=True, shell=True)
 
-        typer.echo(f"Successfully removed virtualenv located at {best_match}")
+        if remove_venv_result.stderr:
+            typer.echo(f"Something went wrong while removing virtual environment located at {best_match}")
+        else:
+            typer.echo(f"Successfully removed virtualenv located at {best_match}")
 
             
 
