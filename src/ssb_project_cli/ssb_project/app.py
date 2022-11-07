@@ -8,6 +8,7 @@ from enum import Enum
 from pathlib import Path
 from shutil import copytree
 from tempfile import TemporaryDirectory
+from traceback import format_exc
 from types import TracebackType
 from typing import Optional
 from typing import Type
@@ -15,6 +16,7 @@ from typing import Type
 import questionary
 import typer
 from git import Repo  # type: ignore[attr-defined]
+from github import BadCredentialsException
 from github import Github
 from github import GithubException
 from rich.console import Console
@@ -211,7 +213,7 @@ def request_project_description() -> str:
     Returns:
          str: Project description
     """
-    description: str = typer.prompt("Project description:")
+    description: str = typer.prompt("Project description")
 
     if description == "":
         description = request_project_description()
@@ -508,7 +510,7 @@ def poetry_install(project_directory: Path) -> None:
         calling_function = "poetry-install"
         log = str(result)
 
-        typer.echo("Something went wrong when installing packages with Poetry.")
+        typer.echo("Error: Something went wrong when installing packages with Poetry.")
         create_error_log(log, calling_function)
         exit(1)
     else:
@@ -530,7 +532,7 @@ def create_error_log(log: str, calling_function: str) -> None:
         with open(f"{error_logs_path}/{filename}", "w+") as f:
             f.write(log)
             typer.echo(
-                f"A file with the name {filename} was created in your current directory. It contains a description of your error."
+                f"Detailed error information saved to {error_logs_path}/{filename}"
             )
             f.close()
     except Exception as e:
@@ -651,7 +653,7 @@ def clean(
         calling_function = "clean-kernel"
         log = str(result)
 
-        typer.echo("Something went wrong while removing the jupyter kernel.")
+        typer.echo("Error: Something went wrong while removing the jupyter kernel.")
         create_error_log(log, calling_function)
         exit(1)
 
@@ -676,12 +678,21 @@ def create_github(
 
     g = Github(github_token)
     if not debug_without_create_repo:
-        g.get_organization(GITHUB_ORG_NAME).create_repo(
-            repo_name,
-            private=private_repo,
-            auto_init=False,
-            description=repo_description,
-        )
+        try:
+            g.get_organization(GITHUB_ORG_NAME).create_repo(
+                repo_name,
+                private=private_repo,
+                auto_init=False,
+                description=repo_description,
+            )
+        except BadCredentialsException:
+            print("Error: Invalid Github credentials")
+            create_error_log(
+                "".join(format_exc()),
+                "create_github",
+            )
+            exit(1)
+
     repo_url = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").clone_url
     g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").replace_topics(["ssb-project"])
     return repo_url
