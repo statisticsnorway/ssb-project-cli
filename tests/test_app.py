@@ -33,6 +33,7 @@ from ssb_project_cli.ssb_project.app import running_onprem
 from ssb_project_cli.ssb_project.app import set_branch_protection_rules
 from ssb_project_cli.ssb_project.app import valid_repo_name
 
+
 PKG = "ssb_project_cli.ssb_project.app"
 
 
@@ -81,7 +82,7 @@ def test_is_github_repo(mock_get_repo: Mock) -> None:
 @patch(f"{PKG}.Github.get_user")
 @patch(f"{PKG}.Github.get_repo")
 def test_make_git_repo_and_push(
-        mock_getrepo: Mock, mock_getuser: Mock, mock_repo: Mock
+    mock_getrepo: Mock, mock_getuser: Mock, mock_repo: Mock
 ) -> None:
     """Checks that make_git_repo_and_push works.
 
@@ -152,7 +153,7 @@ def test_set_branch_protection_rules(mock_github: Mock) -> None:
 @patch(f"{PKG}.extract_name_email")
 @patch(f"{PKG}.request_name_email")
 def test_create_project_from_template(
-        mock_request: Mock, mock_extract: Mock, tmp_path: Path
+    mock_request: Mock, mock_extract: Mock, tmp_path: Path
 ) -> None:
     """Checks if create_project_from_template works for a temporary path.
 
@@ -193,18 +194,18 @@ def test_create_project_from_template(
     ],
 )
 def test_build(
-        mock_poetry_source_remove: Mock,
-        mock_poetry_source_add: Mock,
-        mock_poetry_source_includes_source_name: Mock,
-        mock_install_ipykernel: Mock,
-        mock_poetry_install: Mock,
-        mock_running_onprem: Mock,
-        running_onprem_return: bool,
-        poetry_source_includes_source_name_return: bool,
-        calls_to_poetry_source_includes_source_name: int,
-        calls_to_poetry_source_add: int,
-        calls_to_poetry_source_remove: int,
-        tmp_path: Path,
+    mock_poetry_source_remove: Mock,
+    mock_poetry_source_add: Mock,
+    mock_poetry_source_includes_source_name: Mock,
+    mock_install_ipykernel: Mock,
+    mock_poetry_install: Mock,
+    mock_running_onprem: Mock,
+    running_onprem_return: bool,
+    poetry_source_includes_source_name_return: bool,
+    calls_to_poetry_source_includes_source_name: int,
+    calls_to_poetry_source_add: int,
+    calls_to_poetry_source_remove: int,
+    tmp_path: Path,
 ) -> None:
     """Check that build calls poetry_install, install_ipykernel and poetry_source_includes_source_name."""
     mock_running_onprem.return_value = running_onprem_return
@@ -216,8 +217,8 @@ def test_build(
     assert mock_install_ipykernel.call_count == 1
     assert mock_running_onprem.call_count == 1
     assert (
-            mock_poetry_source_includes_source_name.call_count
-            == calls_to_poetry_source_includes_source_name
+        mock_poetry_source_includes_source_name.call_count
+        == calls_to_poetry_source_includes_source_name
     )
     assert mock_poetry_source_add.call_count == calls_to_poetry_source_add
     assert mock_poetry_source_remove.call_count == calls_to_poetry_source_remove
@@ -231,8 +232,8 @@ def test_install_ipykernel(mock_run: Mock, tmp_path: Path) -> None:
     with pytest.raises(SystemExit):
         install_ipykernel(tmp_path, name)
     assert (
-            " ".join(mock_run.call_args[0][0])
-            == f"poetry run python3 -m ipykernel install --user --name {name}"
+        " ".join(mock_run.call_args[0][0])
+        == f"poetry run python3 -m ipykernel install --user --name {name}"
     )
     mock_run.return_value = Mock(returncode=0, stdout=b"No error")
 
@@ -386,29 +387,31 @@ def test_prompt_pat(q_password_mock: Mock, mock_get_pat: Mock) -> None:
     "data,result,truth",
     [
         (
-                "machine github.com login SSB-ola password ghp_4ak3tok",
-                {"SSB-ola": "ghp_4ak3tok"},
-                True,
+            "machine github.com login SSB-ola password ghp_4ak3tok",
+            {"SSB-ola": "ghp_4ak3tok"},
+            True,
         ),
         (
-                "machine github.com login SSB-kari password ghp_faketok13",
-                {"SSB-kari": "ghp_faketok13"},
-                True,
+            "machine github.com login SSB-kari password ghp_faketok13",
+            {"SSB-kari": "ghp_faketok13"},
+            True,
         ),
         ("", {"SSB-kari": "ghp_faketok13"}, False),
         (
-                "machine github.com login only-kari password ghp_faketok13",
-                {"SSB-kari": "ghp_faketok13"},
-                False,
+            "machine github.com login only-kari password ghp_faketok13",
+            {"SSB-kari": "ghp_faketok13"},
+            False,
         ),
         (
-                "machine github.com login SSB-kari password ghp_token77",
-                {"SSB-kari": "ghp_token"},
-                False,
+            "machine github.com login SSB-kari password ghp_token77",
+            {"SSB-kari": "ghp_token"},
+            False,
         ),
     ],
 )
-def test_get_github_pat_from_netrc(data: str, result: dict[str, str], truth: bool) -> None:
+def test_get_github_pat_from_netrc(
+    data: str, result: dict[str, str], truth: bool
+) -> None:
     with patch(f"{PKG}.open", mock_open(read_data=data)):
         assert (get_github_pat_from_netrc() == result) == truth
 
@@ -416,21 +419,15 @@ def test_get_github_pat_from_netrc(data: str, result: dict[str, str], truth: boo
 @pytest.mark.parametrize(
     "data,result,truth",
     [
-        (
-                "https://bruker_kari:ghp_token@github.com",
-                {"bruker_kari": "ghp_token"},
-                True,
-        ),
-        (
-                "https://brukernavn:ghp_123123@github.com",
-                {"brukernavn": "ghp_123123"},
-                True,
-        ),
+        ("https://br_kari:ghp_token@github.com", {"br_kari": "ghp_token"}, True),
+        ("https://brukernavn:ghp_1231@github.com", {"brukernavn": "ghp_1231"}, True),
         ("", {"SSB-kari": "ghp_faketok13"}, False),
         ("https://bruker:ghp_123123@github.com", {"brukernavn": "ghp_123123"}, False),
         ("https:/brukernavn:ghp_1ads@github.com", {"brukernavn": "ghp_123123"}, False),
     ],
 )
-def test_get_github_pat_from_gitcredentials(data: str, result: dict[str, str], truth: bool) -> None:
+def test_get_github_pat_from_gitcredentials(
+    data: str, result: dict[str, str], truth: bool
+) -> None:
     with patch(f"{PKG}.open", mock_open(read_data=data)):
         assert (get_github_pat_from_gitcredentials() == result) == truth
