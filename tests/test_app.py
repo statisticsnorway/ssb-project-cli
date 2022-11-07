@@ -11,7 +11,6 @@ from github import GithubException
 from ssb_project_cli.ssb_project.app import NEXUS_SOURCE_NAME
 from ssb_project_cli.ssb_project.app import build
 from ssb_project_cli.ssb_project.app import clean
-from ssb_project_cli.ssb_project.app import clean_virtual_env
 from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
