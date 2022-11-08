@@ -674,6 +674,9 @@ def clean(
     )
 ) -> None:
     """Deletes the kernel corresponding to the provided project name."""
+
+    clean_venv()
+
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
@@ -715,6 +718,33 @@ def clean(
         exit(1)
 
     print(f"Deleted Jupyter kernel {project_name}.")
+
+
+
+def clean_venv() ->  None:
+    """Removes the virtual environment for project if it exists in current directory.
+    """
+    if Path('.venv').is_dir():
+        confirm = questionary.confirm("Do you also wish to delete the virtual environment for this project?").ask()
+        if confirm:
+            clean_venv_cmd = "rm -rf .venv"
+            clean_venv_run = subprocess.run(clean_venv_cmd, capture_output=True, shell=True)
+
+            if clean_venv_run.stderr:
+                print("Something went wrong while removing virtual environment. A log of the issue was created...")
+
+                calling_function = "clean-virtualenv"
+                log = str(clean_venv_run.stderr)
+
+                create_error_log(log, calling_function)
+                exit(1)
+            else:
+                print("Virtual environment successfully removed.")
+        else:
+            print("Skipping virtual environment removal...")
+
+    else:
+        print("No virtual environment found in current directory. Skipping...")
 
 
 def create_github(
