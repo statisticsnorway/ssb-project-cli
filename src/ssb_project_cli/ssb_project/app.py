@@ -4,6 +4,7 @@ import os
 import re
 import subprocess  # noqa: S404
 import time
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from shutil import copytree
@@ -26,6 +27,7 @@ from rich.progress import TextColumn
 
 from .environment import JUPYTER_IMAGE_SPEC
 from .environment import PIP_INDEX_URL
+from .environment import STAT_TEMPLATE_DEFAULT_REFERENCE
 
 
 # Don't print with color, it's difficult to read when run in Jupyter
@@ -42,10 +44,7 @@ NEXUS_SOURCE_NAME = "nexus"
 debug_without_create_repo = False
 HOME_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()
-STAT_TEMPLATE_REPO_URL = (
-    "https://github.com/statisticsnorway/stat-hurtigstart-template-master"
-)
-STAT_TEMPLATE_DEFAULT_REFERENCE = "0.2.0"
+STAT_TEMPLATE_REPO_URL = "https://github.com/statisticsnorway/ssb-project-template-stat"
 
 
 def running_onprem(image_spec: str) -> bool:
@@ -241,6 +240,7 @@ def create_project_from_template(
     project_name: str,
     description: str,
     temp_dir: Path,
+    license_year: Optional[str] = None,
     template_repo_url: str = STAT_TEMPLATE_REPO_URL,
     template_reference: str = STAT_TEMPLATE_DEFAULT_REFERENCE,
 ) -> Path:
@@ -250,6 +250,7 @@ def create_project_from_template(
         project_name: Name of project
         description: Project description
         temp_dir: Temporary directory path
+        license_year: Year to be inserted into the LICENSE
         template_repo_url: URL for the chosen template
         template_reference: Git reference to the template repository
 
@@ -273,6 +274,7 @@ def create_project_from_template(
         "description": description,
         "full_name": name,
         "email": email,
+        "license_year": license_year or str(datetime.now().year),
     }
     quoted = json.dumps(template_info).replace('"', '"')
 
