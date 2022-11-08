@@ -1,6 +1,7 @@
 """Tests for src/ssb_project_cli/ssb_project/app.py."""
 
 from pathlib import Path
+from random import randint
 from unittest.mock import Mock
 from unittest.mock import mock_open
 from unittest.mock import patch
@@ -175,6 +176,20 @@ def test_create_project_from_template(
         with pytest.raises(SystemExit):
             # Should tmp_path be added?
             create_project_from_template("testname", "test description", tmp_path)
+
+
+@patch(f"{PKG}.extract_name_email")
+@patch(f"{PKG}.request_name_email")
+@patch(f"{PKG}.subprocess.run")
+def test_create_project_from_template_license_year(
+    mock_run: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+) -> None:
+    """Verify that we supply the license year to Cruft"""
+    mock_extract.return_value = ("Name", "")
+    mock_request.return_value = ("Name2", "email@email.com")
+    license_year = str(randint(1000, 3000))  # noqa: S311 non-cryptographic use
+    create_project_from_template("testname", "test description", tmp_path, license_year)
+    assert f'"license_year": "{license_year}"' in mock_run.call_args.args[-1][-1]
 
 
 @patch(f"{PKG}.running_onprem")
