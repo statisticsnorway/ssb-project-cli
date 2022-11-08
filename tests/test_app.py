@@ -267,10 +267,11 @@ def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
     assert mock_run.call_count == 2
 
 
+@patch(f"{PKG}.clean_venv")
 @patch(f"{PKG}.questionary.confirm")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
-def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
+def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock, mock_clean_venv: Mock) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
     mock_kernels.return_value = {}
@@ -279,6 +280,8 @@ def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
 
     with pytest.raises(SystemExit):
         clean(project_name)
+
+    mock_clean_venv.assert_called == True
 
     kernels = {project_name: "/kernel/path"}
     mock_kernels.return_value = kernels
