@@ -769,7 +769,7 @@ def clean_venv() -> None:
 
             else:
                 print("No virtual environment found at that path. Skipping...")
-        
+
     else:
         print(
             "Skipping removal of virtual environment. The virtual environment can also be removed manually by deleting the .venv folder in your ssb project directory."
