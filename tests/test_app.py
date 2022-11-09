@@ -284,7 +284,7 @@ def test_clean(
     with pytest.raises(SystemExit):
         clean(project_name)
 
-    mock_clean_venv.assert_called == True
+    mock_clean_venv.assert_called = True
 
     kernels = {project_name: "/kernel/path"}
     mock_kernels.return_value = kernels
@@ -301,17 +301,18 @@ def test_clean(
 
     assert mock_run.call_count == 2
 
+
 @patch(f"{PKG}.Path")
 @patch(f"{PKG}.subprocess.run")
 @patch(f"{PKG}.questionary")
 def test_clean_venv(confirm_mock: bool, run_mock: int, path_mock: int) -> None:
-    
-    confirm_mock.return_value == True
+
+    confirm_mock.return_value = True
     path_mock.is_dir.return_value = True
 
     with pytest.raises(SystemExit):
         clean_venv()
-    
+
     assert run_mock.call_count == 1
 
 
