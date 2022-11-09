@@ -238,8 +238,9 @@ def test_build(
     assert mock_poetry_source_remove.call_count == calls_to_poetry_source_remove
 
 
+@patch(f"{PKG}.create_error_log")
 @patch(f"{PKG}.subprocess.run")
-def test_install_ipykernel(mock_run: Mock, tmp_path: Path) -> None:
+def test_install_ipykernel(mock_run: Mock, _mock_log: Mock, tmp_path: Path) -> None:
     """Check that install_ipykernel runs correct command and fails as expected."""
     name = "testproject"
     mock_run.return_value = Mock(returncode=1, stderr=b"some error")
@@ -255,8 +256,9 @@ def test_install_ipykernel(mock_run: Mock, tmp_path: Path) -> None:
     assert mock_run.call_count == 2
 
 
+@patch(f"{PKG}.create_error_log")
 @patch(f"{PKG}.subprocess.run")
-def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
+def test_poetry_install(mock_run: Mock, _mock_log: Mock, tmp_path: Path) -> None:
     """Check if function runs and fails correctly."""
     mock_run.return_value = Mock(returncode=1, stderr=b"some error")
     with pytest.raises(SystemExit):
@@ -267,10 +269,13 @@ def test_poetry_install(mock_run: Mock, tmp_path: Path) -> None:
     assert mock_run.call_count == 2
 
 
+@patch(f"{PKG}.create_error_log")
 @patch(f"{PKG}.questionary.confirm")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
-def test_clean(mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock) -> None:
+def test_clean(
+    mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock, _mock_log: Mock
+) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
     mock_kernels.return_value = {}
