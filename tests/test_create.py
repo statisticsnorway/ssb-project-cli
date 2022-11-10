@@ -31,7 +31,7 @@ class TestCreateFunction(TestCase):
         _mock_poetry_source_includes_source_name: Mock,
         _mock_running_onprem: Mock,
     ) -> None:
-        """Check if copytree is called when no sub functions raises an error."""
+        """Check that rmtree is not called when no sub functions raises an error."""
         create("test_project", "description", add_github=False)
         assert mock_rmtree.call_count == 0
 
@@ -47,7 +47,7 @@ class TestCreateFunction(TestCase):
         _mock_poetry_source_includes_source_name: Mock,
         _mock_running_onprem: Mock,
     ) -> None:
-        """Check that copytree is not called when create_project_from_template raises an error."""
+        """Check that rmtree is called when create_project_from_template calls SystemExit."""
         mock_template.side_effect = SystemExit(1)
         with patch(f"{PKG}.Path.is_dir", return_value=True):
             create("test_project", "description", add_github=False)
@@ -65,7 +65,7 @@ class TestCreateFunction(TestCase):
         _mock_poetry_source_includes_source_name: Mock,
         _mock_running_onprem: Mock,
     ) -> None:
-        """Check that copytree is not called when make_and_init_git_repo raises an error."""
+        """Check that rmtree is called when make_and_init_git_repo calls SystemExit."""
         mock_git.side_effect = SystemExit(1)
         with patch(f"{PKG}.Path.is_dir", return_value=True):
             create("test_project", "description", add_github=False)
