@@ -162,7 +162,7 @@ def test_create_project_from_template(
     mock_extract.return_value = ("Name", "")
     mock_request.return_value = ("Name2", "email@email.com")
     with patch(f"{PKG}.CURRENT_WORKING_DIRECTORY", tmp_path):
-        create_project_from_template("testname", "test description", tmp_path)
+        create_project_from_template("testname", "test description")
 
         assert mock_extract.call_count == 1
         assert mock_request.call_count == 1
@@ -175,7 +175,7 @@ def test_create_project_from_template(
 
         with pytest.raises(SystemExit):
             # Should tmp_path be added?
-            create_project_from_template("testname", "test description", tmp_path)
+            create_project_from_template("testname", "test description")
 
 
 @patch(f"{PKG}.extract_name_email")
@@ -188,7 +188,8 @@ def test_create_project_from_template_license_year(
     mock_extract.return_value = ("Name", "")
     mock_request.return_value = ("Name2", "email@email.com")
     license_year = str(randint(1000, 3000))  # noqa: S311 non-cryptographic use
-    create_project_from_template("testname", "test description", tmp_path, license_year)
+    with patch(f"{PKG}.CURRENT_WORKING_DIRECTORY", tmp_path):
+        create_project_from_template("testname", "test description", license_year)
     assert f'"license_year": "{license_year}"' in mock_run.call_args.args[-1][-1]
 
 
