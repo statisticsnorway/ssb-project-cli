@@ -381,7 +381,11 @@ def create(  # noqa: C901
 
 
 def delete_folder(folder: Path) -> None:
-    """Deletes directory if it exists."""
+    """Deletes directory if it exists.
+
+    Args:
+        folder: Path of folder to delete
+    """
     if folder.is_dir():
         try:
             rmtree(folder)
