@@ -2,6 +2,7 @@
 import json
 import os
 import re
+import shutil
 import subprocess  # noqa: S404
 import time
 from datetime import datetime
@@ -348,7 +349,6 @@ def create(  # noqa: C901
 
     try:
         create_project_from_template(project_name, description)
-
         git_repo_dir = Path(CURRENT_WORKING_DIRECTORY.joinpath(project_name))
         if add_github:
             print("Creating an empty repo on Github")
@@ -373,9 +373,24 @@ def create(  # noqa: C901
         print(
             ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
         )
-    except BaseException:
-        if project_directory.is_dir():
-            rmtree(project_directory)
+    except Exception as e:
+        create_error_log(str(e), "create")
+        delete_folder(project_directory)
+    except (SystemExit, KeyboardInterrupt):
+        delete_folder(project_directory)
+
+
+def delete_folder(folder: Path) -> None:
+    """Deletes directory if it exists.
+
+    Args:
+        folder: Path of folder to delete
+    """
+    if folder.is_dir():
+        try:
+            rmtree(folder)
+        except shutil.Error as e:
+            create_error_log(str(e), "delete_dir")
 
 
 @app.command()
@@ -531,7 +546,6 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             make_kernel_cmd, capture_output=True, cwd=project_directory
         )
         if result.returncode != 0:
-
             calling_function = "install-kernel"
             log = str(result)
 
@@ -704,7 +718,6 @@ def clean(
         result.returncode != 0
         or output != f"[RemoveKernelSpec] Removed {kernels[project_name]}"
     ):
-
         calling_function = "clean-kernel"
         log = str(result)
 

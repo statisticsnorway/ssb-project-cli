@@ -7,6 +7,7 @@ from ssb_project_cli.ssb_project.app import create
 from tests.test_app import PKG
 
 
+@patch(f"{PKG}.create_error_log")
 @patch(f"{PKG}.running_onprem", return_value=False)
 @patch(f"{PKG}.poetry_source_includes_source_name", return_value=False)
 @patch(f"{PKG}.poetry_source_add")
@@ -30,6 +31,7 @@ class TestCreateFunction(TestCase):
         _mock_poetry_source_add: Mock,
         _mock_poetry_source_includes_source_name: Mock,
         _mock_running_onprem: Mock,
+        _mock_log: Mock,
     ) -> None:
         """Check that rmtree is not called when no sub functions raises an error."""
         create("test_project", "description", add_github=False)
@@ -46,12 +48,14 @@ class TestCreateFunction(TestCase):
         _mock_poetry_source_add: Mock,
         _mock_poetry_source_includes_source_name: Mock,
         _mock_running_onprem: Mock,
+        mock_log: Mock,
     ) -> None:
-        """Check that rmtree is called when create_project_from_template calls SystemExit."""
-        mock_template.side_effect = SystemExit(1)
+        """Check that rmtree and create_error_log is called when create_project_from_template raises an Exception."""
+        mock_template.side_effect = Exception("Test exception")
         with patch(f"{PKG}.Path.is_dir", return_value=True):
             create("test_project", "description", add_github=False)
         assert mock_rmtree.call_count == 1
+        assert mock_log.call_count == 1
 
     def test_rmtree_git_error(
         self,
@@ -64,6 +68,7 @@ class TestCreateFunction(TestCase):
         _mock_poetry_source_add: Mock,
         _mock_poetry_source_includes_source_name: Mock,
         _mock_running_onprem: Mock,
+        _mock_log: Mock,
     ) -> None:
         """Check that rmtree is called when make_and_init_git_repo calls SystemExit."""
         mock_git.side_effect = SystemExit(1)

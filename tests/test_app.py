@@ -1,5 +1,4 @@
 """Tests for src/ssb_project_cli/ssb_project/app.py."""
-
 from pathlib import Path
 from random import randint
 from unittest.mock import Mock
