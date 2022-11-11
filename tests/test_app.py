@@ -241,12 +241,13 @@ def test_build(
 
 @patch(f"{PKG}.create_error_log")
 @patch(f"{PKG}.subprocess.run")
-def test_install_ipykernel(mock_run: Mock, _mock_log: Mock, tmp_path: Path) -> None:
+def test_install_ipykernel(mock_run: Mock, mock_log: Mock, tmp_path: Path) -> None:
     """Check that install_ipykernel runs correct command and fails as expected."""
     name = "testproject"
     mock_run.return_value = Mock(returncode=1, stderr=b"some error")
     with pytest.raises(SystemExit):
         install_ipykernel(tmp_path, name)
+    assert mock_log.call_count == 1
     assert (
         " ".join(mock_run.call_args[0][0])
         == f"poetry run python3 -m ipykernel install --user --name {name}"
@@ -255,19 +256,22 @@ def test_install_ipykernel(mock_run: Mock, _mock_log: Mock, tmp_path: Path) -> N
 
     install_ipykernel(tmp_path, name)
     assert mock_run.call_count == 2
+    assert mock_log.call_count == 1
 
 
 @patch(f"{PKG}.create_error_log")
 @patch(f"{PKG}.subprocess.run")
-def test_poetry_install(mock_run: Mock, _mock_log: Mock, tmp_path: Path) -> None:
+def test_poetry_install(mock_run: Mock, mock_log: Mock, tmp_path: Path) -> None:
     """Check if function runs and fails correctly."""
     mock_run.return_value = Mock(returncode=1, stderr=b"some error")
     with pytest.raises(SystemExit):
         poetry_install(tmp_path)
+    assert mock_log.call_count == 1
     assert mock_run.call_args[0][0] == "poetry install".split()
     mock_run.return_value = Mock(returncode=0)
     poetry_install(tmp_path)
     assert mock_run.call_count == 2
+    assert mock_log.call_count == 1
 
 
 @patch(f"{PKG}.create_error_log")
@@ -275,7 +279,7 @@ def test_poetry_install(mock_run: Mock, _mock_log: Mock, tmp_path: Path) -> None
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
 def test_clean(
-    mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock, _mock_log: Mock
+    mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock, mock_log: Mock
 ) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
@@ -285,12 +289,13 @@ def test_clean(
 
     with pytest.raises(SystemExit):
         clean(project_name)
-
+    assert mock_log.call_count == 0
     kernels = {project_name: "/kernel/path"}
     mock_kernels.return_value = kernels
     mock_run.return_value = Mock(returncode=1, stderr=b"Some error")
     with pytest.raises(SystemExit):
         clean(project_name)
+    assert mock_log.call_count == 1
 
     mock_run.return_value = Mock(
         returncode=0,
@@ -300,6 +305,7 @@ def test_clean(
     clean(project_name)
 
     assert mock_run.call_count == 2
+    assert mock_log.call_count == 1
 
 
 @pytest.mark.parametrize(
