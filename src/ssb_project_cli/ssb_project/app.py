@@ -688,6 +688,8 @@ def clean(
     )
 ) -> None:
     """Deletes the kernel corresponding to the provided project name."""
+    clean_venv()
+
     kernels = get_kernels_dict()
 
     if project_name not in kernels:
@@ -728,6 +730,63 @@ def clean(
         exit(1)
 
     print(f"Deleted Jupyter kernel {project_name}.")
+
+
+def clean_venv() -> None:
+    """Removes the virtual environment for project if it exists in current directory. If not, user is prompted for path to ssb project."""
+    confirm = questionary.confirm(
+        "Do you also wish to delete the virtual environment for this project?"
+    ).ask()
+    if confirm:
+        if Path(".venv").is_dir():
+            clean_venv_cmd = "rm -rf .venv"
+            clean_venv_run = subprocess.run(
+                clean_venv_cmd, capture_output=True, shell=True  # noqa: S602
+            )
+
+            if clean_venv_run.stderr:
+                print(
+                    "Something went wrong while removing virtual environment in current directory. A log of the issue was created..."
+                )
+
+                calling_function = "clean-virtualenv"
+                log = str(clean_venv_run.stderr)
+
+                create_error_log(log, calling_function)
+                exit(1)
+            else:
+                print("Virtual environment successfully removed.")
+        else:
+            print("No virtual environment found in current directory...")
+            path = questionary.path(
+                "Please provide the path to the ssb project you wish to delete the virtual environment for:"
+            ).ask()
+            if Path(f"{path}/.venv").is_dir():
+                clean_venv_cmd = f"rm -rf {path}/.venv"
+                clean_venv_run = subprocess.run(
+                    clean_venv_cmd, capture_output=True, shell=True  # noqa: S602
+                )
+
+                if clean_venv_run.stderr:
+                    print(
+                        f"Something went wrong while removing virtual environment at {path}."
+                    )
+
+                    calling_function = "clean-virtualenv"
+                    log = str(clean_venv_run.stderr)
+
+                    create_error_log(log, calling_function)
+                    exit(1)
+                else:
+                    print("Virtual environment successfully removed.")
+
+            else:
+                print("No virtual environment found at that path. Skipping...")
+
+    else:
+        print(
+            "Skipping removal of virtual environment. The virtual environment can also be removed manually by deleting the .venv folder in your ssb project directory."
+        )
 
 
 def create_github(

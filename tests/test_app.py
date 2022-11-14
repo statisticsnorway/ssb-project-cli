@@ -13,6 +13,7 @@ from ssb_project_cli.ssb_project.app import NEXUS_SOURCE_NAME
 from ssb_project_cli.ssb_project.app import build
 from ssb_project_cli.ssb_project.app import choose_login
 from ssb_project_cli.ssb_project.app import clean
+from ssb_project_cli.ssb_project.app import clean_venv
 from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
@@ -273,12 +274,17 @@ def test_poetry_install(mock_run: Mock, mock_log: Mock, tmp_path: Path) -> None:
     assert mock_log.call_count == 1
 
 
+@patch(f"{PKG}.clean_venv")
 @patch(f"{PKG}.create_error_log")
 @patch(f"{PKG}.questionary.confirm")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
 def test_clean(
-    mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock, mock_log: Mock
+    mock_run: Mock,
+    mock_kernels: Mock,
+    mock_confirm: Mock,
+    mock_log: Mock,
+    mock_clean_venv: Mock,
 ) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
@@ -305,6 +311,20 @@ def test_clean(
 
     assert mock_run.call_count == 2
     assert mock_log.call_count == 1
+
+
+@patch(f"{PKG}.Path")
+@patch(f"{PKG}.subprocess.run")
+@patch(f"{PKG}.questionary")
+def test_clean_venv(confirm_mock: Mock, run_mock: Mock, path_mock: Mock) -> None:
+
+    confirm_mock.return_value = True
+    path_mock.is_dir.return_value = True
+
+    with pytest.raises(SystemExit):
+        clean_venv()
+
+    assert run_mock.call_count == 1
 
 
 @pytest.mark.parametrize(
