@@ -349,6 +349,9 @@ def create(  # noqa: C901
 
     try:
         create_project_from_template(project_name, description)
+
+        build(path=str(project_directory))
+
         git_repo_dir = Path(CURRENT_WORKING_DIRECTORY.joinpath(project_name))
         if add_github:
             print("Creating an empty repo on Github")
@@ -366,7 +369,6 @@ def create(  # noqa: C901
         else:
             make_and_init_git_repo(git_repo_dir)
 
-        build(path=str(project_directory))
         print(
             f":white_check_mark:\tCreated project ({project_name}) in the folder {project_directory}"
         )
