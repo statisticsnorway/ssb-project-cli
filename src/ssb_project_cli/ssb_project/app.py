@@ -2,13 +2,13 @@
 import json
 import os
 import re
+import shutil
 import subprocess  # noqa: S404
 import time
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from shutil import copytree
-from tempfile import TemporaryDirectory
+from shutil import rmtree
 from traceback import format_exc
 from types import TracebackType
 from typing import Optional
@@ -239,7 +239,6 @@ def extract_name_email() -> tuple[str, str]:
 def create_project_from_template(
     project_name: str,
     description: str,
-    temp_dir: Path,
     license_year: Optional[str] = None,
     template_repo_url: str = STAT_TEMPLATE_REPO_URL,
     template_reference: str = STAT_TEMPLATE_DEFAULT_REFERENCE,
@@ -249,7 +248,6 @@ def create_project_from_template(
     Args:
         project_name: Name of project
         description: Project description
-        temp_dir: Temporary directory path
         license_year: Year to be inserted into the LICENSE
         template_repo_url: URL for the chosen template
         template_reference: Git reference to the template repository
@@ -257,8 +255,7 @@ def create_project_from_template(
     Returns:
         Path: Path of project.
     """
-    home_dir = CURRENT_WORKING_DIRECTORY
-    project_dir = home_dir.joinpath(project_name)
+    project_dir = CURRENT_WORKING_DIRECTORY.joinpath(project_name)
     if project_dir.exists():
         typer.echo(
             f"A project with name '{project_name}' already exists. Please choose another name."
@@ -289,7 +286,9 @@ def create_project_from_template(
         quoted,
     ]
 
-    subprocess.run(argv, check=True, cwd=temp_dir)  # noqa: S603 no untrusted input
+    subprocess.run(  # noqa: S603 no untrusted input
+        argv, check=True, cwd=CURRENT_WORKING_DIRECTORY
+    )
 
     return project_dir
 
@@ -303,7 +302,7 @@ class RepoPrivacy(str, Enum):
 
 
 @app.command()
-def create(
+def create(  # noqa: C901
     project_name: str = typer.Argument(..., help="Project name"),  # noqa: B008
     description: str = typer.Argument(  # noqa: B008
         "", help="A short description of your project"
@@ -346,11 +345,14 @@ def create(
     if add_github and description == "":
         description = request_project_description()
 
-    with TemporaryDirectory() as temp_dir:
+    project_directory = CURRENT_WORKING_DIRECTORY / project_name
 
-        create_project_from_template(project_name, description, Path(temp_dir))
+    try:
+        create_project_from_template(project_name, description)
 
-        git_repo_dir = Path(Path(temp_dir).joinpath(project_name))
+        build(path=str(project_directory))
+
+        git_repo_dir = Path(CURRENT_WORKING_DIRECTORY.joinpath(project_name))
         if add_github:
             print("Creating an empty repo on Github")
             repo_url = create_github(
@@ -367,17 +369,30 @@ def create(
         else:
             make_and_init_git_repo(git_repo_dir)
 
-        project_directory = CURRENT_WORKING_DIRECTORY / project_name
-        temp_project_directory = Path(temp_dir) / project_name
-
-        build(path=str(temp_project_directory))
-        copytree(temp_project_directory, project_directory)
         print(
             f":white_check_mark:\tCreated project ({project_name}) in the folder {project_directory}"
         )
         print(
             ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
         )
+    except Exception as e:
+        create_error_log(str(e), "create")
+        delete_folder(project_directory)
+    except (SystemExit, KeyboardInterrupt):
+        delete_folder(project_directory)
+
+
+def delete_folder(folder: Path) -> None:
+    """Deletes directory if it exists.
+
+    Args:
+        folder: Path of folder to delete
+    """
+    if folder.is_dir():
+        try:
+            rmtree(folder)
+        except shutil.Error as e:
+            create_error_log(str(e), "delete_dir")
 
 
 @app.command()
@@ -533,7 +548,6 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             make_kernel_cmd, capture_output=True, cwd=project_directory
         )
         if result.returncode != 0:
-
             calling_function = "install-kernel"
             log = str(result)
 
@@ -708,7 +722,6 @@ def clean(
         result.returncode != 0
         or output != f"[RemoveKernelSpec] Removed {kernels[project_name]}"
     ):
-
         calling_function = "clean-kernel"
         log = str(result)
 
