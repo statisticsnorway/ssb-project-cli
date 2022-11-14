@@ -273,13 +273,18 @@ def test_poetry_install(mock_run: Mock, mock_log: Mock, tmp_path: Path) -> None:
     assert mock_run.call_count == 2
     assert mock_log.call_count == 1
 
+
 @patch(f"{PKG}.clean_venv")
 @patch(f"{PKG}.create_error_log")
 @patch(f"{PKG}.questionary.confirm")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
 def test_clean(
-    mock_run: Mock, mock_kernels: Mock, mock_confirm: Mock, mock_log: Mock, mock_clean_venv: Mock
+    mock_run: Mock,
+    mock_kernels: Mock,
+    mock_confirm: Mock,
+    mock_log: Mock,
+    mock_clean_venv: Mock,
 ) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
