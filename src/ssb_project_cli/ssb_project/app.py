@@ -20,10 +20,6 @@ from git import Repo  # type: ignore[attr-defined]
 from github import BadCredentialsException
 from github import Github
 from github import GithubException
-from rich.console import Console
-from rich.progress import Progress
-from rich.progress import SpinnerColumn
-from rich.progress import TextColumn
 
 from .environment import JUPYTER_IMAGE_SPEC
 from .environment import PIP_INDEX_URL
@@ -31,9 +27,6 @@ from .environment import STAT_TEMPLATE_DEFAULT_REFERENCE
 
 
 # Don't print with color, it's difficult to read when run in Jupyter
-console = Console(color_system=None)
-print = console.print
-
 app = typer.Typer(
     help="Usage instructions: https://statisticsnorway.github.io/dapla-manual/ssb-project.html",
     rich_markup_mode="rich",
