@@ -313,10 +313,13 @@ def test_clean(
     assert mock_log.call_count == 1
 
 
+@patch(f"{PKG}.create_error_log")
 @patch(f"{PKG}.Path")
 @patch(f"{PKG}.subprocess.run")
 @patch(f"{PKG}.questionary")
-def test_clean_venv(confirm_mock: Mock, run_mock: Mock, path_mock: Mock) -> None:
+def test_clean_venv(
+    confirm_mock: Mock, run_mock: Mock, path_mock: Mock, mock_log: Mock
+) -> None:
 
     confirm_mock.return_value = True
     path_mock.is_dir.return_value = True
@@ -325,6 +328,7 @@ def test_clean_venv(confirm_mock: Mock, run_mock: Mock, path_mock: Mock) -> None
         clean_venv()
 
     assert run_mock.call_count == 1
+    assert mock_log.call_count == 1
 
 
 @pytest.mark.parametrize(
@@ -421,11 +425,17 @@ def test_get_kernels_dict(mock_run: Mock) -> None:
 
 
 @patch(f"{PKG}.get_github_pat")
-@patch(f"{PKG}.questionary.password")
-def test_prompt_pat(q_password_mock: Mock, mock_get_pat: Mock) -> None:
-    mock_get_pat.return_value = None
-    choose_login()
-    assert q_password_mock.call_count == 1
+@patch(f"{PKG}.questionary")
+def test_prompt_pat(mock_questionary: Mock, mock_get_pat: Mock) -> None:
+    mock_get_pat.return_value = {"user": "pat", "user2": "pat2"}
+    mock_questionary.select().ask.return_value = "user2"
+    assert choose_login() == "pat2"
+
+
+@patch(f"{PKG}.get_github_pat")
+def test_prompt_pat_single_login(mock_get_pat: Mock) -> None:
+    mock_get_pat.return_value = {"user": "pat"}
+    assert choose_login() == "pat"
 
 
 @pytest.mark.parametrize(

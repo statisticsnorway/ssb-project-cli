@@ -516,6 +516,9 @@ def choose_login() -> str:
         str: GitHub personal access token
     """
     user_token_dict: dict[str, str] = get_github_pat()
+
+    if len(user_token_dict) == 1:
+        return list(user_token_dict.values())[0]
     if user_token_dict:
         choice = questionary.select(
             "Select your GitHub account:", choices=user_token_dict.keys()  # type: ignore
