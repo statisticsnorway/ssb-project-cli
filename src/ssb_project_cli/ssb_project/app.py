@@ -523,7 +523,6 @@ def choose_login() -> str:
         choice = questionary.select(
             "Select your GitHub account:", choices=user_token_dict.keys()  # type: ignore
         ).ask()
-        print(choice)
         return user_token_dict[choice]
     else:
         pat: str = questionary.password(
