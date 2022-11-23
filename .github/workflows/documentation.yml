@@ -1,8 +1,11 @@
 name: Documentation
 
 on:
-  release:
-    types: [published]
+  pull_request:
+    types:
+      - closed
+    branches:
+      - "release"
 
 jobs:
   deploy:
