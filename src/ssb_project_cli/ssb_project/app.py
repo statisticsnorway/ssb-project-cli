@@ -9,15 +9,14 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from shutil import rmtree
-from traceback import format_exc
 from types import TracebackType
 from typing import Optional
 from typing import Type
 
 import questionary
+import requests
 import typer
 from git import Repo  # type: ignore[attr-defined]
-from github import BadCredentialsException
 from github import Github
 from github import GithubException
 from rich.console import Console
@@ -806,23 +805,26 @@ def create_github(
     Returns:
         str: Repository url
     """
-    private_repo = True if repo_privacy != "public" else False
-
     g = Github(github_token)
+
     if not debug_without_create_repo:
-        try:
-            g.get_organization(GITHUB_ORG_NAME).create_repo(
-                repo_name,
-                private=private_repo,
-                auto_init=False,
-                description=repo_description,
-            )
-        except BadCredentialsException:
+        url = f"https://api.github.com/orgs/{GITHUB_ORG_NAME}/repos"
+
+        params = dict(
+            name=repo_name,
+            auto_init=False,
+            description=repo_description,
+            visibility=repo_privacy,
+        )
+        headers = {
+            "Authorization": "Bearer " + github_token,
+            "Content-Type": "application/vnd.github+json",
+        }
+        response = requests.post(url, params, headers)
+
+        if response.status_code != 201:
             print("Error: Invalid Github credentials")
-            create_error_log(
-                "".join(format_exc()),
-                "create_github",
-            )
+            create_error_log(str(response), "create_github")
             exit(1)
 
     repo_url = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").clone_url
