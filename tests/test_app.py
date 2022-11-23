@@ -317,7 +317,9 @@ def test_clean(
 @patch(f"{PKG}.Path")
 @patch(f"{PKG}.subprocess.run")
 @patch(f"{PKG}.questionary")
-def test_clean_venv(confirm_mock: Mock, run_mock: Mock, path_mock: Mock, mock_log: Mock) -> None:
+def test_clean_venv(
+    confirm_mock: Mock, run_mock: Mock, path_mock: Mock, mock_log: Mock
+) -> None:
 
     confirm_mock.return_value = True
     path_mock.is_dir.return_value = True
