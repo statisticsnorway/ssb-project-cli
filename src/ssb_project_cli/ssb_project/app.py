@@ -518,6 +518,7 @@ def choose_login() -> str:
     user_token_dict: dict[str, str] = get_github_pat()
 
     if len(user_token_dict) == 1:
+        print(f"Using GitHub account: {list(user_token_dict.keys())[0]}")
         return list(user_token_dict.values())[0]
     if user_token_dict:
         choice = questionary.select(
