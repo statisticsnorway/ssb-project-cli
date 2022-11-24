@@ -827,9 +827,10 @@ def create_github(
             create_error_log(str(response), "create_github")
             exit(1)
 
-    repo_url = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").clone_url
-    g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").replace_topics(["ssb-project"])
-    return repo_url
+    repo = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
+    repo.replace_topics(["ssb-project"])
+
+    return repo.clone_url
 
 
 def get_kernels_dict() -> dict[str, str]:
