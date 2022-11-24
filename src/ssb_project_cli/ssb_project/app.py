@@ -9,14 +9,15 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from shutil import rmtree
+from traceback import format_exc
 from types import TracebackType
 from typing import Optional
 from typing import Type
 
 import questionary
-import requests
 import typer
 from git import Repo  # type: ignore[attr-defined]
+from github import BadCredentialsException
 from github import Github
 from github import GithubException
 from rich.console import Console
@@ -808,24 +809,21 @@ def create_github(
     g = Github(github_token)
 
     if not debug_without_create_repo:
-        url = f"https://api.github.com/orgs/{GITHUB_ORG_NAME}/repos"
-
-        payload = dict(
-            name=repo_name,
-            auto_init=False,
-            description=repo_description,
-            visibility=repo_privacy,
-        )
-        headers = {
-            "Content-Type": "application/vnd.github+json",
-            "Authorization": f"Bearer {github_token}",
-        }
-        response = requests.post(url, json.dumps(payload), headers=headers)
-
-        if response.status_code != 201:
-            print("Error: Invalid Github credentials")
-            create_error_log(str(response.json), "create_github")
-            exit(1)
+        if not debug_without_create_repo:
+            try:
+                g.get_organization(GITHUB_ORG_NAME).create_repo(  # type: ignore
+                    repo_name,
+                    visibility=repo_privacy,
+                    auto_init=False,
+                    description=repo_description,
+                )
+            except BadCredentialsException:
+                print("Error: Invalid Github credentials")
+                create_error_log(
+                    "".join(format_exc()),
+                    "create_github",
+                )
+                exit(1)
 
     repo = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
     repo.replace_topics(["ssb-project"])
