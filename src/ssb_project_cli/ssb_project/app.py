@@ -811,6 +811,7 @@ def create_github(
     if not debug_without_create_repo:
         if not debug_without_create_repo:
             try:
+                # Ignoring mypy warning: Unexpected keyword argument "visibility" for "create_repo" of "Organization"  [call-arg]
                 g.get_organization(GITHUB_ORG_NAME).create_repo(  # type: ignore
                     repo_name,
                     visibility=repo_privacy,
