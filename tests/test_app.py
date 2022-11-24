@@ -391,7 +391,6 @@ def test_poetry_source_remove(mock_run: Mock) -> None:
         poetry_source_remove(Path("."), source_name=NEXUS_SOURCE_NAME)
 
 
-@patch(f"{PKG}.typer.echo", lambda x: "")
 @patch(f"{PKG}.Github")
 def test_create_github(mock_github: Mock) -> None:
     """Checks if create_github works."""
@@ -406,6 +405,21 @@ def test_create_github(mock_github: Mock) -> None:
 
     assert mock_github.call_count == 2
     assert instance_github.get_repo.call_count == 2
+
+
+@patch(f"{PKG}.create_error_log")
+@patch(f"{PKG}.Github.get_repo")
+def test_create_github_bad_credentials(
+    mock_github_create_repo: Mock, mock_log: Mock
+) -> None:
+    """Checks if create_github works."""
+    mock_github_create_repo.return_value = BadCredentialsException(
+        Mock(), Mock(), Mock()
+    )
+
+    with pytest.raises(SystemExit):
+        create_github("token", "repo", "privacy", "desc")
+    assert mock_log.call_count == 1
 
 
 @patch(f"{PKG}.subprocess.run")
