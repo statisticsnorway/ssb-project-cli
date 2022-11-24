@@ -824,7 +824,7 @@ def create_github(
 
         if response.status_code != 201:
             print("Error: Invalid Github credentials")
-            create_error_log(str(response), "create_github")
+            create_error_log(str(response.json), "create_github")
             exit(1)
 
     repo = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
