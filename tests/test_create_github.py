@@ -24,10 +24,10 @@ def mock_response(status_code: int, mock_request: Mock) -> None:
 class TestCreateGithubFunction(TestCase):
     """Test class create_github function."""
 
-    def test_create_github_(
+    def test_create_github_created(
         self, mock_github_get_repo: Mock, mock_request: Mock, mock_log: Mock
     ) -> None:
-        """Checks if create_github works."""
+        """Checks if create_github calls get_repo when response is 201."""
         mock_response(201, mock_request)
 
         create_github("token", "name", RepoPrivacy.internal, "desc")
@@ -35,7 +35,7 @@ class TestCreateGithubFunction(TestCase):
         assert mock_log.call_count == 0
         assert mock_github_get_repo.call_count == 1
 
-    def test_create_github(
+    def test_create_github_not_found(
         self, mock_github_get_repo: Mock, mock_request: Mock, mock_log: Mock
     ) -> None:
         """Checks if create_github exits and logs when response is not 201."""
