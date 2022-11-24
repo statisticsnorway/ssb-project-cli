@@ -817,10 +817,10 @@ def create_github(
             visibility=repo_privacy,
         )
         headers = {
-            "Authorization": "Bearer " + github_token,
+            "Authorization": f"Bearer {github_token}",
             "Content-Type": "application/vnd.github+json",
         }
-        response = requests.post(url=url, json=json.dumps(payload), headers=headers)
+        response = requests.post(url, json.dumps(payload), headers=headers)
 
         if response.status_code != 201:
             print("Error: Invalid Github credentials")
