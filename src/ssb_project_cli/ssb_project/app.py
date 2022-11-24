@@ -806,28 +806,30 @@ def create_github(
     Returns:
         str: Repository url
     """
-    private_repo = True if repo_privacy != "public" else False
-
     g = Github(github_token)
-    if not debug_without_create_repo:
-        try:
-            g.get_organization(GITHUB_ORG_NAME).create_repo(
-                repo_name,
-                private=private_repo,
-                auto_init=False,
-                description=repo_description,
-            )
-        except BadCredentialsException:
-            print("Error: Invalid Github credentials")
-            create_error_log(
-                "".join(format_exc()),
-                "create_github",
-            )
-            exit(1)
 
-    repo_url = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").clone_url
-    g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}").replace_topics(["ssb-project"])
-    return repo_url
+    if not debug_without_create_repo:
+        if not debug_without_create_repo:
+            try:
+                # Ignoring mypy warning: Unexpected keyword argument "visibility" for "create_repo" of "Organization"  [call-arg]
+                g.get_organization(GITHUB_ORG_NAME).create_repo(  # type: ignore
+                    repo_name,
+                    visibility=repo_privacy,
+                    auto_init=False,
+                    description=repo_description,
+                )
+            except BadCredentialsException:
+                print("Error: Invalid Github credentials")
+                create_error_log(
+                    "".join(format_exc()),
+                    "create_github",
+                )
+                exit(1)
+
+    repo = g.get_repo(f"{GITHUB_ORG_NAME}/{repo_name}")
+    repo.replace_topics(["ssb-project"])
+
+    return repo.clone_url
 
 
 def get_kernels_dict() -> dict[str, str]:
