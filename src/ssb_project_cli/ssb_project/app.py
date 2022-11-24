@@ -817,8 +817,8 @@ def create_github(
             visibility=repo_privacy,
         )
         headers = {
-            "Authorization": f"Bearer {github_token}",
             "Content-Type": "application/vnd.github+json",
+            "Authorization": f"Bearer {github_token}",
         }
         response = requests.post(url, json.dumps(payload), headers=headers)
 
