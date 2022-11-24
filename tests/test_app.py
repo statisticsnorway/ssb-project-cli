@@ -14,7 +14,6 @@ from ssb_project_cli.ssb_project.app import build
 from ssb_project_cli.ssb_project.app import choose_login
 from ssb_project_cli.ssb_project.app import clean
 from ssb_project_cli.ssb_project.app import clean_venv
-from ssb_project_cli.ssb_project.app import create_github
 from ssb_project_cli.ssb_project.app import create_project_from_template
 from ssb_project_cli.ssb_project.app import extract_name_email
 from ssb_project_cli.ssb_project.app import get_gitconfig_element
@@ -390,23 +389,6 @@ def test_poetry_source_remove(mock_run: Mock) -> None:
     poetry_source_remove(Path("."), source_name=NEXUS_SOURCE_NAME)
     with pytest.raises(ValueError):
         poetry_source_remove(Path("."), source_name=NEXUS_SOURCE_NAME)
-
-
-@patch(f"{PKG}.typer.echo", lambda x: "")
-@patch(f"{PKG}.Github")
-def test_create_github(mock_github: Mock) -> None:
-    """Checks if create_github works."""
-    instance_github = Mock()
-    mock_github.return_value = instance_github
-    with patch(f"{PKG}.debug_without_create_repo", False):
-        create_github("token", "repo", "privacy", "desc")
-    assert instance_github.get_organization.called
-
-    with patch(f"{PKG}.debug_without_create_repo", True):
-        create_github("token", "repo", "privacy", "desc")
-
-    assert mock_github.call_count == 2
-    assert instance_github.get_repo.call_count == 4
 
 
 @patch(f"{PKG}.subprocess.run")
