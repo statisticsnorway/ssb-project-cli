@@ -810,7 +810,7 @@ def create_github(
     if not debug_without_create_repo:
         url = f"https://api.github.com/orgs/{GITHUB_ORG_NAME}/repos"
 
-        params = dict(
+        payload = dict(
             name=repo_name,
             auto_init=False,
             description=repo_description,
@@ -820,7 +820,7 @@ def create_github(
             "Authorization": "Bearer " + github_token,
             "Content-Type": "application/vnd.github+json",
         }
-        response = requests.post(url, params, headers)
+        response = requests.post(url=url, json=json.dumps(payload), headers=headers)
 
         if response.status_code != 201:
             print("Error: Invalid Github credentials")
