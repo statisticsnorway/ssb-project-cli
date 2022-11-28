@@ -314,7 +314,7 @@ def test_clean(
 
 
 @patch(f"{PKG}.create_error_log")
-@patch(f"{PKG}.Path")
+@patch(f"{PKG}.Path.is_dir")
 @patch(f"{PKG}.subprocess.run")
 @patch(f"{PKG}.questionary")
 def test_clean_venv(
