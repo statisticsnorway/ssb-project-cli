@@ -276,7 +276,7 @@ def test_poetry_install(mock_run: Mock, mock_log: Mock, tmp_path: Path) -> None:
 
 @patch(f"{PKG}.clean_venv")
 @patch(f"{PKG}.create_error_log")
-@patch(f"{PKG}.questionary.confirm")
+@patch(f"{PKG}.questionary")
 @patch(f"{PKG}.get_kernels_dict")
 @patch(f"{PKG}.subprocess.run")
 def test_clean(
@@ -290,7 +290,7 @@ def test_clean(
     project_name = "test-project"
     mock_kernels.return_value = {}
 
-    mock_confirm.ask.return_value = True
+    mock_confirm.confirm().ask.return_value = True
 
     with pytest.raises(SystemExit):
         clean(project_name)
@@ -314,13 +314,13 @@ def test_clean(
 
 
 @patch(f"{PKG}.create_error_log")
-@patch(f"{PKG}.Path")
+@patch(f"{PKG}.Path.is_dir")
 @patch(f"{PKG}.subprocess.run")
 @patch(f"{PKG}.questionary")
 def test_clean_venv(
     confirm_mock: Mock, run_mock: Mock, path_mock: Mock, mock_log: Mock
 ) -> None:
-    confirm_mock.return_value = True
+    confirm_mock.confirm().ask.return_value = True
     path_mock.is_dir.return_value = True
 
     with pytest.raises(SystemExit):
