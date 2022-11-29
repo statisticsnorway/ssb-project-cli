@@ -1,1 +1,1 @@
-"""ssb-project."""
+"""ssb-project package."""
