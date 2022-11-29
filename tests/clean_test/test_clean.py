@@ -45,13 +45,10 @@ def test_clean(
     assert mock_run.call_count == 2
 
 
-
 @patch(f"{CLEAN}.Path")
 @patch(f"{CLEAN}.subprocess.run")
 @patch(f"{CLEAN}.questionary")
-def test_clean_venv(
-    confirm_mock: Mock, run_mock: Mock, path_mock: Mock
-) -> None:
+def test_clean_venv(confirm_mock: Mock, run_mock: Mock, path_mock: Mock) -> None:
     confirm_mock.return_value = True
     path_mock.is_dir.return_value = True
 
@@ -59,4 +56,3 @@ def test_clean_venv(
         clean_venv()
 
     assert run_mock.call_count == 1
-

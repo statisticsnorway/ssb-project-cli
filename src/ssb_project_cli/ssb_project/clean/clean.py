@@ -1,11 +1,10 @@
 """Clean command module."""
-import subprocess  # noqa: S404
 from pathlib import Path
 
 import questionary
 from rich import print
 
-from ssb_project_cli.ssb_project.util import execute_command, create_error_log
+from ssb_project_cli.ssb_project.util import execute_command
 
 
 def clean_project(project_name: str) -> None:
@@ -83,8 +82,15 @@ def clean_venv() -> None:
         if Path(".venv").is_dir():
             clean_venv_cmd = "rm -rf .venv"
 
-            execute_command(clean_venv_cmd, "clean-virtualenv", "Virtual environment successfully removed!", "Something went wrong while removing virtual environment in current directory. A log of the issue was created...", None, True)
-         
+            execute_command(
+                clean_venv_cmd,
+                "clean-virtualenv",
+                "Virtual environment successfully removed!",
+                "Something went wrong while removing virtual environment in current directory. A log of the issue was created...",
+                None,
+                True,
+            )
+
         else:
             print("No virtual environment found in current directory...")
             path = questionary.path(
@@ -92,9 +98,15 @@ def clean_venv() -> None:
             ).ask()
             if Path(f"{path}/.venv").is_dir():
                 clean_venv_cmd = f"rm -rf {path}/.venv"
-                
-                execute_command(clean_venv_cmd, "clean-virtualenv", "Virtual environment successfully removed!", "Something went wrong while removing virtual environment in current directory. A log of the issue was created...", None, True)
 
+                execute_command(
+                    clean_venv_cmd,
+                    "clean-virtualenv",
+                    "Virtual environment successfully removed!",
+                    "Something went wrong while removing virtual environment at provided path. A log of the issue was created...",
+                    None,
+                    True,
+                )
 
             else:
                 print("No virtual environment found at that path. Skipping...")

@@ -3,7 +3,8 @@ import os
 import subprocess  # noqa: S404
 import time
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
 from rich import print
 
