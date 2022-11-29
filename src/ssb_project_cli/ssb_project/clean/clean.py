@@ -47,21 +47,24 @@ def clean_project(project_name: str) -> None:
     )
 
 
-
 def get_kernels_dict() -> dict[str, str]:
     """Makes a dictionary of installed kernel specifications.
+
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """
-    kernels_process = subprocess.run(  # noqa S607
-        ["jupyter", "kernelspec", "list"], capture_output=True
+    get_kernels_cmd = "jupyter kernelspec list".split(" ")
+
+    result = execute_command(
+        get_kernels_cmd,
+        "get-kernels",
+        None,
+        "An error occured while looking for installed kernels.",
+        None,
     )
-    kernels_str = ""
-    if kernels_process.returncode == 0:
-        kernels_str = kernels_process.stdout.decode("utf-8")
-    else:
-        print("An error occured while looking for installed kernels.")
-        exit(1)
+
+    kernels_str = result.stdout.decode("utf-8")
+
     kernel_dict = {}
     for kernel in kernels_str.split("\n")[1:]:
         line = " ".join(kernel.strip().split())
@@ -79,22 +82,9 @@ def clean_venv() -> None:
     if confirm:
         if Path(".venv").is_dir():
             clean_venv_cmd = "rm -rf .venv"
-            clean_venv_run = subprocess.run(
-                clean_venv_cmd, capture_output=True, shell=True  # noqa: S602
-            )
 
-            if clean_venv_run.stderr:
-                print(
-                    "Something went wrong while removing virtual environment in current directory. A log of the issue was created..."
-                )
-
-                calling_function = "clean-virtualenv"
-                log = str(clean_venv_run.stderr)
-
-                create_error_log(log, calling_function)
-                exit(1)
-            else:
-                print("Virtual environment successfully removed.")
+            execute_command(clean_venv_cmd, "clean-virtualenv", "Virtual environment successfully removed!", "Something went wrong while removing virtual environment in current directory. A log of the issue was created...", None, True)
+         
         else:
             print("No virtual environment found in current directory...")
             path = questionary.path(
@@ -102,22 +92,9 @@ def clean_venv() -> None:
             ).ask()
             if Path(f"{path}/.venv").is_dir():
                 clean_venv_cmd = f"rm -rf {path}/.venv"
-                clean_venv_run = subprocess.run(
-                    clean_venv_cmd, capture_output=True, shell=True  # noqa: S602
-                )
+                
+                execute_command(clean_venv_cmd, "clean-virtualenv", "Virtual environment successfully removed!", "Something went wrong while removing virtual environment in current directory. A log of the issue was created...", None, True)
 
-                if clean_venv_run.stderr:
-                    print(
-                        f"Something went wrong while removing virtual environment at {path}."
-                    )
-
-                    calling_function = "clean-virtualenv"
-                    log = str(clean_venv_run.stderr)
-
-                    create_error_log(log, calling_function)
-                    exit(1)
-                else:
-                    print("Virtual environment successfully removed.")
 
             else:
                 print("No virtual environment found at that path. Skipping...")

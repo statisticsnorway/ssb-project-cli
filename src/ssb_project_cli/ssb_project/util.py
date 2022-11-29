@@ -3,7 +3,7 @@ import os
 import subprocess  # noqa: S404
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from rich import print
 
@@ -34,7 +34,7 @@ def create_error_log(
 
 
 def execute_command(
-    command: str,
+    command: Union[str, list[str]],
     command_shortname: str,
     success_desc: Optional[str],
     failure_desc: str,
