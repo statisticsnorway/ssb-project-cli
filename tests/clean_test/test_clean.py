@@ -13,7 +13,7 @@ CLEAN = "ssb_project_cli.ssb_project.clean.clean"
 
 @patch(f"{CLEAN}.clean_venv")
 @patch(f"{CLEAN}.create_error_log")
-@patch(f"{CLEAN}.questionary")
+@patch(f"{CLEAN}.questionary.confirm")
 @patch(f"{CLEAN}.get_kernels_dict")
 @patch(f"{CLEAN}.subprocess.run")
 def test_clean(
@@ -27,7 +27,7 @@ def test_clean(
     project_name = "test-project"
     mock_kernels.return_value = {}
 
-    mock_confirm.confirm().ask.return_value = True
+    mock_confirm.ask.return_value = True
 
     with pytest.raises(SystemExit):
         clean_project(project_name)
@@ -51,14 +51,14 @@ def test_clean(
 
 
 @patch(f"{CLEAN}.create_error_log")
-@patch(f"{CLEAN}.Path.is_dir")
+@patch(f"{CLEAN}.Path")
 @patch(f"{CLEAN}.subprocess.run")
 @patch(f"{CLEAN}.questionary")
 def test_clean_venv(
     confirm_mock: Mock, run_mock: Mock, path_mock: Mock, mock_log: Mock
 ) -> None:
-    confirm_mock.confirm().ask.return_value = True
-    path_mock.return_value = True
+    confirm_mock.return_value = True
+    path_mock.is_dir.return_value = True
 
     with pytest.raises(SystemExit):
         clean_venv()
