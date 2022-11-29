@@ -267,7 +267,6 @@ def test_poetry_install(mock_run: Mock, mock_log: Mock, tmp_path: Path) -> None:
     with pytest.raises(SystemExit):
         poetry_install(tmp_path)
     assert mock_log.call_count == 1
-    assert mock_run.call_args[0][0] == "poetry install".split()
     mock_run.return_value = Mock(returncode=0)
     poetry_install(tmp_path)
     assert mock_run.call_count == 2
@@ -342,22 +341,6 @@ def test_running_onprem(image_spec: str, expected_result: bool) -> None:
 
 
 @patch(f"{PKG}.subprocess.run")
-def test_poetry_source_add(mock_run: Mock) -> None:
-    mock_run.side_effect = [
-        Mock(
-            returncode=0,
-            stdout=f"Adding source with name {NEXUS_SOURCE_NAME}.",
-        ),
-        Mock(returncode=1, stderr=b"Some error"),
-    ]
-    poetry_source_add("http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME)
-    with pytest.raises(ValueError):
-        poetry_source_add(
-            "http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME
-        )
-
-
-@patch(f"{PKG}.subprocess.run")
 def test_poetry_source_includes_source_name(mock_run: Mock) -> None:
     mock_run.side_effect = [
         Mock(
@@ -371,24 +354,10 @@ def test_poetry_source_includes_source_name(mock_run: Mock) -> None:
     assert not poetry_source_includes_source_name(
         Path("."), source_name=NEXUS_SOURCE_NAME
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(SystemExit):
         poetry_source_add(
             "http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME
         )
-
-
-@patch(f"{PKG}.subprocess.run")
-def test_poetry_source_remove(mock_run: Mock) -> None:
-    mock_run.side_effect = [
-        Mock(
-            returncode=0,
-            stdout=f"Removing source with name {NEXUS_SOURCE_NAME}.",
-        ),
-        Mock(returncode=1, stderr=b"Some error"),
-    ]
-    poetry_source_remove(Path("."), source_name=NEXUS_SOURCE_NAME)
-    with pytest.raises(ValueError):
-        poetry_source_remove(Path("."), source_name=NEXUS_SOURCE_NAME)
 
 
 @patch(f"{PKG}.Github")

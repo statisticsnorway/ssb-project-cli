@@ -547,18 +547,14 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(
             " "
         ) + [project_name]
-        result = subprocess.run(  # noqa: S603 no untrusted input
-            make_kernel_cmd, capture_output=True, cwd=project_directory
+
+        execute_command(
+            make_kernel_cmd,
+            "install-kernel",
+            f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})",
+            "Something went wrong while installing ipykernel.",
+            project_directory,
         )
-        if result.returncode != 0:
-            calling_function = "install-kernel"
-            log = str(result)
-
-            typer.echo("Something went wrong while installing ipykernel.")
-            create_error_log(log, calling_function)
-            exit(1)
-
-    print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -576,19 +572,59 @@ def poetry_install(project_directory: Path) -> None:
             description="Installing dependencies... This may take a few minutes",
             total=None,
         )
-        result = subprocess.run(  # noqa: S603 no untrusted input
-            "poetry install".split(), capture_output=True, cwd=project_directory
+
+        execute_command(
+            "poetry install",
+            "poetry-install",
+            ":white_check_mark:\tInstalled dependencies in the virtual environment",
+            "Error: Something went wrong when installing packages with Poetry.",
+            project_directory,
         )
+
+
+def execute_command(
+    command: str,
+    command_shortname: str,
+    success_desc: str,
+    failure_desc: str,
+    cwd: str = None,
+    shell: bool = False,
+) -> None:
+    """Execute command and handle failure/success cases.
+
+    Args:
+        command: The command to be executed. For example "poetry install".
+        command_shortname: For example: "poetry-install". Used to create descriptive error log file.
+        success_desc: For example: "Poetry install ran successfully".
+        failure_desc: For example: "Something went wrong while running poetry install".
+        cwd: The current working directory. 
+        shell: 
+
+    Returns:
+        The result of the of the subprocess
+ 
+    """
+    if cwd:
+        result = subprocess.run(
+            command, capture_output=True, cwd=cwd, shell=shell
+        )  # noqa: S603 no untrusted input
+    else:
+        result = subprocess.run(
+            command, capture_output=True, shell=shell
+        )  # noqa: S603 no untrusted input
+
     if result.returncode != 0:
 
-        calling_function = "poetry-install"
+        calling_function = command_shortname
         log = str(result)
 
-        typer.echo("Error: Something went wrong when installing packages with Poetry.")
+        print(failure_desc)
         create_error_log(log, calling_function)
         exit(1)
     else:
-        print(":white_check_mark:\tInstalled dependencies in the virtual environment")
+        print(success_desc)
+
+    return result
 
 
 def create_error_log(log: str, calling_function: str) -> None:
@@ -626,13 +662,14 @@ def poetry_source_add(
     Raises:
         ValueError: If the process returns with error code
     """
-    result = subprocess.run(  # noqa: S603 no untrusted input
-        f"poetry source add --default {source_name} {source_url}".split(),
-        capture_output=True,
+    print("Adding package installation source for poetry...")
+    execute_command(
+        f"poetry source add --default {source_name} {source_url}",
+        "poetry-source-add",
+        "Poetry source successfully added!",
+        f"Failed to add poetry source.",
         cwd=cwd,
     )
-    if result.returncode != 0:
-        raise ValueError(f'Error adding Poetry source: {result.stderr.decode("utf-8")}')
 
 
 def poetry_source_includes_source_name(
@@ -650,15 +687,14 @@ def poetry_source_includes_source_name(
     Raises:
         ValueError: If the process returns with error code
     """
-    result = subprocess.run(  # noqa: S603 no untrusted input
-        "poetry source show".split(),
-        capture_output=True,
+
+    result = execute_command(
+        "poetry source show",
+        "poetry-source-show",
+        "",
+        "Error showing Poetry source.",
         cwd=cwd,
     )
-    if result.returncode != 0:
-        raise ValueError(
-            f'Error showing Poetry source: {result.stderr.decode("utf-8")}'
-        )
 
     return source_name in result.stdout.decode("utf-8")
 
@@ -673,15 +709,13 @@ def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> Non
     Raises:
         ValueError: If the process returns with error code
     """
-    result = subprocess.run(  # noqa: S603 no untrusted input
-        f"poetry source remove {source_name}".split(),
-        capture_output=True,
+    print("Removing Poetry source...")
+    execute_command(
+        f"poetry source remove {source_name}",
+        "Poetry source successfully removed!",
+        "Failed to remove Poetry source.",
         cwd=cwd,
     )
-    if result.returncode != 0:
-        raise ValueError(
-            f'Error removing Poetry source: {result.stderr.decode("utf-8")}'
-        )
 
 
 @app.command()
@@ -743,22 +777,15 @@ def clean_venv() -> None:
     if confirm:
         if Path(".venv").is_dir():
             clean_venv_cmd = "rm -rf .venv"
-            clean_venv_run = subprocess.run(
-                clean_venv_cmd, capture_output=True, shell=True  # noqa: S602
+
+            execute_command(
+                clean_venv_cmd,
+                "clean-venv",
+                "Virtual environment successfully removed!",
+                "Something went wrong while removing virtual environment in current directory. A log of the issue was created...",
+                shell=True,
             )
 
-            if clean_venv_run.stderr:
-                print(
-                    "Something went wrong while removing virtual environment in current directory. A log of the issue was created..."
-                )
-
-                calling_function = "clean-virtualenv"
-                log = str(clean_venv_run.stderr)
-
-                create_error_log(log, calling_function)
-                exit(1)
-            else:
-                print("Virtual environment successfully removed.")
         else:
             print("No virtual environment found in current directory...")
             path = questionary.path(
@@ -766,22 +793,14 @@ def clean_venv() -> None:
             ).ask()
             if Path(f"{path}/.venv").is_dir():
                 clean_venv_cmd = f"rm -rf {path}/.venv"
-                clean_venv_run = subprocess.run(
-                    clean_venv_cmd, capture_output=True, shell=True  # noqa: S602
+
+                execute_command(
+                    clean_venv_cmd,
+                    "clean-venv",
+                    "Virtual environment successfully removed!",
+                    "Error removing virtual environment",
+                    shell=True,
                 )
-
-                if clean_venv_run.stderr:
-                    print(
-                        f"Something went wrong while removing virtual environment at {path}."
-                    )
-
-                    calling_function = "clean-virtualenv"
-                    log = str(clean_venv_run.stderr)
-
-                    create_error_log(log, calling_function)
-                    exit(1)
-                else:
-                    print("Virtual environment successfully removed.")
 
             else:
                 print("No virtual environment found at that path. Skipping...")
