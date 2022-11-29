@@ -25,18 +25,14 @@ def poetry_install(project_directory: Path) -> None:
             description="Installing dependencies... This may take a few minutes",
             total=None,
         )
-        result = subprocess.run(  # noqa: S603 no untrusted input
-            "poetry install".split(), capture_output=True, cwd=project_directory
-        )
-    if result.returncode != 0:
-        calling_function = "poetry-install"
-        log = str(result)
 
-        print("Error: Something went wrong when installing packages with Poetry.")
-        create_error_log(log, calling_function)
-        exit(1)
-    else:
-        print(":white_check_mark:\tInstalled dependencies in the virtual environment")
+        execute_command(
+            "poetry install",
+            "poetry-install",
+            ":white_check_mark:\tInstalled dependencies in the virtual environment",
+            "Error: Something went wrong when installing packages with Poetry.",
+            project_directory,
+        )
 
 
 def poetry_source_includes_source_name(
@@ -50,19 +46,14 @@ def poetry_source_includes_source_name(
 
     Returns:
         True if the source exists in the list
-
-    Raises:
-        ValueError: If the process returns with error code
     """
-    result = subprocess.run(  # noqa: S603 no untrusted input
-        "poetry source show".split(),
-        capture_output=True,
+    result = execute_command(
+        "poetry source show",
+        "poetry-source-show",
+        "",
+        "Error showing Poetry source.",
         cwd=cwd,
     )
-    if result.returncode != 0:
-        raise ValueError(
-            f'Error showing Poetry source: {result.stderr.decode("utf-8")}'
-        )
 
     return source_name in result.stdout.decode("utf-8")
 
@@ -97,19 +88,15 @@ def poetry_source_add(
         source_url: URL of 'simple' package API of package server
         cwd: Path of project to add source to
         source_name: Name of source to add
-
-    Raises:
-        ValueError: If the process returns with error code
     """
     print("Adding package installation source for poetry...")
     execute_command(
         f"poetry source add --default {source_name} {source_url}",
         "poetry-source-add",
         "Poetry source successfully added!",
-        f"Failed to add poetry source.",
+        "Failed to add poetry source.",
         cwd=cwd,
     )
-
 
 
 def install_ipykernel(project_directory: Path, project_name: str) -> None:
@@ -125,18 +112,14 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         transient=True,
     ) as progress:
         progress.add_task(description="Installing Jupyter kernel...", total=None)
-        make_kernel_cmd = "poetry run python3 -m ipykernel install --user --name".split(
-            " "
-        ) + [project_name]
-        result = subprocess.run(  # noqa: S603 no untrusted input
-            make_kernel_cmd, capture_output=True, cwd=project_directory
+        kernel_cmd = (
+            f"poetry run python3 -m ipykernel install --user --name {project_name}"
         )
-        if result.returncode != 0:
-            calling_function = "install-kernel"
-            log = str(result)
 
-            print("Something went wrong while installing ipykernel.")
-            create_error_log(log, calling_function)
-            exit(1)
-
-    print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")
+        execute_command(
+            kernel_cmd,
+            "install-ipykernel",
+            f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})",
+            "Something went wrong while installing ipykernel.",
+            project_directory,
+        )
