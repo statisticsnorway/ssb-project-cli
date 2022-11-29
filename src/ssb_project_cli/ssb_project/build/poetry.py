@@ -1,5 +1,4 @@
 """This module contains functions used to install poetry dependecies and kernels."""
-import subprocess  # noqa: S404
 from pathlib import Path
 from rich.progress import Progress
 from rich.progress import SpinnerColumn
@@ -64,18 +63,15 @@ def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> Non
     Args:
         cwd: Path of project to add source to
         source_name: Name of source to be removed
-
-    Raises:
-        ValueError: If the process returns with error code
     """
     print("Removing Poetry source...")
     execute_command(
         f"poetry source remove {source_name}",
+        "source-remove",
         "Poetry source successfully removed!",
         "Failed to remove Poetry source.",
         cwd=cwd,
     )
-
 
 
 def poetry_source_add(

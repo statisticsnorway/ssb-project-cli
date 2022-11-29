@@ -1,8 +1,9 @@
 """SSB-project utils."""
 import os
-import subprocess
+import subprocess  # noqa: S404
 import time
 from pathlib import Path
+from typing import Optional
 
 from rich import print
 
@@ -37,9 +38,9 @@ def execute_command(
     command_shortname: str,
     success_desc: str,
     failure_desc: str,
-    cwd: str = None,
+    cwd: Optional[Path],
     shell: bool = False,
-) -> None:
+) -> subprocess.CompletedProcess[bytes]:
     """Execute command and handle failure/success cases.
 
     Args:
