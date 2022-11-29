@@ -6,7 +6,6 @@ from unittest.mock import patch
 import pytest
 
 from ssb_project_cli.ssb_project.build.environment import NEXUS_SOURCE_NAME
-from ssb_project_cli.ssb_project.build.poetry import poetry_source_add
 from ssb_project_cli.ssb_project.build.poetry import poetry_source_includes_source_name
 from ssb_project_cli.ssb_project.clean.clean import get_kernels_dict
 
@@ -14,7 +13,7 @@ from ssb_project_cli.ssb_project.clean.clean import get_kernels_dict
 POETRY = "ssb_project_cli.ssb_project.build.poetry"
 
 
-@patch(f"{POETRY}.subprocess.run")
+@patch(f"{POETRY}.execute_command")
 def test_poetry_source_includes_source_name(mock_run: Mock) -> None:
     mock_run.side_effect = [
         Mock(
@@ -28,13 +27,9 @@ def test_poetry_source_includes_source_name(mock_run: Mock) -> None:
     assert not poetry_source_includes_source_name(
         Path("."), source_name=NEXUS_SOURCE_NAME
     )
-    with pytest.raises(SystemExit):
-        poetry_source_add(
-            "http://example.com", Path("."), source_name=NEXUS_SOURCE_NAME
-        )
 
 
-@patch(f"{POETRY}.subprocess.run")
+@patch(f"{POETRY}.execute_command")
 def test_get_kernels_dict(mock_run: Mock) -> None:
     """Checks that get_kernels_dict correctly parses jupyter output."""
     mock_run.side_effect = [

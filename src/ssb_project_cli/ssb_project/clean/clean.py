@@ -5,7 +5,7 @@ from pathlib import Path
 import questionary
 from rich import print
 
-from ssb_project_cli.ssb_project.util import create_error_log
+from ssb_project_cli.ssb_project.util import execute_command, create_error_log
 
 
 def clean_project(project_name: str) -> None:
@@ -36,31 +36,20 @@ def clean_project(project_name: str) -> None:
         f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually."
     )
 
-    clean_cmd = f"jupyter kernelspec remove -f {project_name}".split()
+    clean_cmd = f"jupyter kernelspec remove -f {project_name}"
 
-    result = subprocess.run(  # noqa: S603 no untrusted input
-        clean_cmd, capture_output=True
+    execute_command(
+        clean_cmd,
+        "clean-cmd",
+        f"Deleted Jupyter kernel {project_name}.",
+        "Error: Something went wrong while removing the jupyter kernel.",
+        None,
     )
 
-    output = result.stderr.decode("utf-8").strip()
-
-    if (
-        result.returncode != 0
-        or output != f"[RemoveKernelSpec] Removed {kernels[project_name]}"
-    ):
-        calling_function = "clean-kernel"
-        log = str(result)
-
-        print("Error: Something went wrong while removing the jupyter kernel.")
-        create_error_log(log, calling_function)
-        exit(1)
-
-    print(f"Deleted Jupyter kernel {project_name}.")
 
 
 def get_kernels_dict() -> dict[str, str]:
     """Makes a dictionary of installed kernel specifications.
-
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """

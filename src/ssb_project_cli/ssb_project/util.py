@@ -36,7 +36,7 @@ def create_error_log(
 def execute_command(
     command: str,
     command_shortname: str,
-    success_desc: str,
+    success_desc: Optional[str],
     failure_desc: str,
     cwd: Optional[Path],
     shell: bool = False,
