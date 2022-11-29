@@ -7,7 +7,7 @@ from rich.progress import TextColumn
 from rich import print
 
 from .environment import NEXUS_SOURCE_NAME
-from ssb_project_cli.ssb_project.util import create_error_log
+from ssb_project_cli.ssb_project.util import execute_command
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -101,13 +101,15 @@ def poetry_source_add(
     Raises:
         ValueError: If the process returns with error code
     """
-    result = subprocess.run(  # noqa: S603 no untrusted input
-        f"poetry source add --default {source_name} {source_url}".split(),
-        capture_output=True,
+    print("Adding package installation source for poetry...")
+    execute_command(
+        f"poetry source add --default {source_name} {source_url}",
+        "poetry-source-add",
+        "Poetry source successfully added!",
+        f"Failed to add poetry source.",
         cwd=cwd,
     )
-    if result.returncode != 0:
-        raise ValueError(f'Error adding Poetry source: {result.stderr.decode("utf-8")}')
+
 
 
 def install_ipykernel(project_directory: Path, project_name: str) -> None:

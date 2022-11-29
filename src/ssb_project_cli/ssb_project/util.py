@@ -2,6 +2,7 @@
 import os
 import time
 from pathlib import Path
+import subprocess
 
 from rich import print
 
@@ -29,3 +30,47 @@ def create_error_log(
             f.close()
     except Exception as e:
         print(f"Error while attempting to write the log file: {e}")
+
+
+
+def execute_command(
+    command: str,
+    command_shortname: str,
+    success_desc: str,
+    failure_desc: str,
+    cwd: str = None,
+    shell: bool = False,
+) -> None:
+    """Execute command and handle failure/success cases.
+    Args:
+        command: The command to be executed. For example "poetry install".
+        command_shortname: For example: "poetry-install". Used to create descriptive error log file.
+        success_desc: For example: "Poetry install ran successfully".
+        failure_desc: For example: "Something went wrong while running poetry install".
+        cwd: The current working directory. 
+        shell: 
+    Returns:
+        The result of the of the subprocess
+ 
+    """
+    if cwd:
+        result = subprocess.run(
+            command, capture_output=True, cwd=cwd, shell=shell
+        )  # noqa: S603 no untrusted input
+    else:
+        result = subprocess.run(
+            command, capture_output=True, shell=shell
+        )  # noqa: S603 no untrusted input
+
+    if result.returncode != 0:
+
+        calling_function = command_shortname
+        log = str(result)
+
+        print(failure_desc)
+        create_error_log(log, calling_function)
+        exit(1)
+    else:
+        print(success_desc)
+
+    return result
