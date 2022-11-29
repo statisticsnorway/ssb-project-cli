@@ -69,7 +69,7 @@ def get_github_pat(path: Path) -> dict[str, str]:
 
     if not user_token_dict:
         print(
-            "Could not find your github token. Please add it manually with the --github-token <TOKEN> option."
+            "Could not find your github token. Add it manually with the --github-token <TOKEN> option\n or fix it by following this guide: https://manual.dapla.ssb.no/git-github.html#sec-pat"
         )
         exit(1)
     return user_token_dict
