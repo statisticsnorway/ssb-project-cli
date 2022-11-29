@@ -68,15 +68,14 @@ def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> Non
     Raises:
         ValueError: If the process returns with error code
     """
-    result = subprocess.run(  # noqa: S603 no untrusted input
-        f"poetry source remove {source_name}".split(),
-        capture_output=True,
+    print("Removing Poetry source...")
+    execute_command(
+        f"poetry source remove {source_name}",
+        "Poetry source successfully removed!",
+        "Failed to remove Poetry source.",
         cwd=cwd,
     )
-    if result.returncode != 0:
-        raise ValueError(
-            f'Error removing Poetry source: {result.stderr.decode("utf-8")}'
-        )
+
 
 
 def poetry_source_add(
