@@ -1,4 +1,5 @@
 """Clean command module."""
+import subprocess  # noqa: S404
 from pathlib import Path
 
 import questionary
@@ -52,18 +53,15 @@ def get_kernels_dict() -> dict[str, str]:
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """
-    get_kernels_cmd = "jupyter kernelspec list".split(" ")
-
-    result = execute_command(
-        get_kernels_cmd,
-        "get-kernels",
-        None,
-        "An error occured while looking for installed kernels.",
-        None,
+    kernels_process = subprocess.run(  # noqa S607
+        ["jupyter", "kernelspec", "list"], capture_output=True
     )
-
-    kernels_str = result.stdout.decode("utf-8")
-
+    kernels_str = ""
+    if kernels_process.returncode == 0:
+        kernels_str = kernels_process.stdout.decode("utf-8")
+    else:
+        print("An error occured while looking for installed kernels.")
+        exit(1)
     kernel_dict = {}
     for kernel in kernels_str.split("\n")[1:]:
         line = " ".join(kernel.strip().split())
