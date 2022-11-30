@@ -8,7 +8,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -131,3 +130,5 @@ dmypy.json
 # Custom ignores
 *.log
 .idea
+.DS_Store
+.error_logs

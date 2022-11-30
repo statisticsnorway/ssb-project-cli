@@ -5,13 +5,15 @@ from unittest import TestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
-from ssb_project_cli.ssb_project.app import delete_folder
-from tests.test_app import PKG
+from ssb_project_cli.ssb_project.create.create import delete_folder
 
 
-@patch(f"{PKG}.create_error_log")
-@patch(f"{PKG}.Path.is_dir")
-@patch(f"{PKG}.rmtree")
+CREATE = "ssb_project_cli.ssb_project.create.create"
+
+
+@patch(f"{CREATE}.create_error_log")
+@patch(f"{CREATE}.Path.is_dir")
+@patch(f"{CREATE}.rmtree")
 class TestCreateFunction(TestCase):
     """Test class for delete_folder function."""
 
