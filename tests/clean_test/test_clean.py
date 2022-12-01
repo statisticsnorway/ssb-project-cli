@@ -13,31 +13,24 @@ CLEAN = "ssb_project_cli.ssb_project.clean.clean"
 
 
 @patch(f"{CLEAN}.clean_venv")
-@patch(f"{CLEAN}.questionary")
 @patch(f"{CLEAN}.get_kernels_dict")
 def test_clean(
     mock_kernels: Mock,
-    mock_confirm: Mock,
     mock_clean_venv: Mock,
 ) -> None:
     """Check if the function works correctly and raises the expected errors."""
     project_name = "test-project"
     mock_kernels.return_value = {}
 
-    mock_confirm.confirm().ask.return_value = True
-
     with pytest.raises(SystemExit):
         clean_project(project_name)
-
-    kernels = {project_name: "/kernel/path"}
-    mock_kernels.return_value = kernels
 
     assert mock_clean_venv.call_count == 1
 
 
-@patch(f"{CLEAN}.questionary.confirm")
-@patch(f"{CLEAN}.Path.is_dir")
 @patch(f"{CLEAN}.execute_command")
+@patch(f"{CLEAN}.Path.is_dir")
+@patch(f"{CLEAN}.questionary")
 def test_clean_venv(mock_confirm: Mock, mock_path: Mock, mock_execute: Mock) -> None:
     """Check that execute command runs"""
     mock_confirm.confirm().ask.return_value = True
