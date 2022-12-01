@@ -56,7 +56,6 @@ def execute_command(
         The result of the of the subprocess.
 
     """
-    print("COMMAND ", command, "CWD ", cwd, "SHELL ", shell)
     if cwd:
         result = subprocess.run(
             command,
