@@ -8,6 +8,9 @@ from rich import print
 from ssb_project_cli.ssb_project.util import create_error_log
 
 from ..build.build import build_project
+from ..build.environment import JUPYTER_IMAGE_SPEC
+from ..build.environment import running_onprem
+
 from .github import create_github
 from .github import is_github_repo
 from .github import set_branch_protection_rules
@@ -85,8 +88,10 @@ def create_project(
         git_repo_dir = Path(working_directory.joinpath(project_name))
         if add_github:
             print("Creating an empty repo on Github")
+            verify_ssl = not running_onprem(JUPYTER_IMAGE_SPEC)
+
             repo_url = create_github(
-                github_token, project_name, repo_privacy, description, github_org_name
+                github_token, project_name, repo_privacy, description, github_org_name, verify_ssl
             )
 
             print("Creating a local repo, and pushing to Github")

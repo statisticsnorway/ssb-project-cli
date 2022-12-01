@@ -16,6 +16,7 @@ def create_github(
     repo_privacy: str,
     repo_description: str,
     github_org_name: str,
+    verify_ssl: bool = True,
 ) -> str:
     """Creates a GitHub repository with name, description and privacy setting.
 
@@ -25,11 +26,12 @@ def create_github(
         repo_privacy: Repository privacy setting, see RepoPrivacy for more information
         repo_description: Repository description
         github_org_name: Name of GitHub organization
+        verify_ssl: whether the SSL connection to GitHub should verify SSL certificates
 
     Returns:
         str: Repository url
     """
-    g = Github(github_token)
+    g = Github(github_token, verify=verify_ssl)
 
     try:
         # Ignoring mypy warning: Unexpected keyword argument "visibility"
