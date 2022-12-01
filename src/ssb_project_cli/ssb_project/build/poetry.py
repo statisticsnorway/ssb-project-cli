@@ -26,7 +26,7 @@ def poetry_install(project_directory: Path) -> None:
         )
 
         execute_command(
-            "poetry install",
+            "poetry install".split(" "),
             "poetry-install",
             ":white_check_mark:\tInstalled dependencies in the virtual environment",
             "Error: Something went wrong when installing packages with Poetry.",
@@ -47,7 +47,7 @@ def poetry_source_includes_source_name(
         True if the source exists in the list
     """
     result = execute_command(
-        "poetry source show",
+        "poetry source show".split(" "),
         "poetry-source-show",
         "",
         "Error showing Poetry source.",
@@ -66,7 +66,7 @@ def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> Non
     """
     print("Removing Poetry source...")
     execute_command(
-        f"poetry source remove {source_name}",
+        f"poetry source remove {source_name}".split(" "),
         "source-remove",
         "Poetry source successfully removed!",
         "Failed to remove Poetry source.",
@@ -86,7 +86,7 @@ def poetry_source_add(
     """
     print("Adding package installation source for poetry...")
     execute_command(
-        f"poetry source add --default {source_name} {source_url}",
+        f"poetry source add --default {source_name} {source_url}".split(" "),
         "poetry-source-add",
         "Poetry source successfully added!",
         "Failed to add poetry source.",
@@ -107,8 +107,8 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
         transient=True,
     ) as progress:
         progress.add_task(description="Installing Jupyter kernel...", total=None)
-        kernel_cmd = (
-            f"poetry run python3 -m ipykernel install --user --name {project_name}"
+        kernel_cmd = f"poetry run python3 -m ipykernel install --user --name {project_name}".split(
+            " "
         )
 
         execute_command(

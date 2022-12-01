@@ -36,7 +36,7 @@ def clean_project(project_name: str) -> None:
         f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually."
     )
 
-    clean_cmd = f"jupyter kernelspec remove -f {project_name}"
+    clean_cmd = f"jupyter kernelspec remove -f {project_name}".split(" ")
 
     execute_command(
         clean_cmd,
@@ -78,7 +78,7 @@ def clean_venv() -> None:
     ).ask()
     if confirm:
         if Path(".venv").is_dir():
-            clean_venv_cmd = "rm -rf .venv"
+            clean_venv_cmd = "rm -rf .venv".split(" ")
 
             execute_command(
                 clean_venv_cmd,
@@ -95,7 +95,7 @@ def clean_venv() -> None:
                 "Please provide the path to the ssb project you wish to delete the virtual environment for:"
             ).ask()
             if Path(f"{path}/.venv").is_dir():
-                clean_venv_cmd = f"rm -rf {path}/.venv"
+                clean_venv_cmd = f"rm -rf {path}/.venv".split(" ")
 
                 execute_command(
                     clean_venv_cmd,
