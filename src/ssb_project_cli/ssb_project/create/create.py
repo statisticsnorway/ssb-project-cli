@@ -91,7 +91,12 @@ def create_project(
             verify_ssl = not running_onprem(JUPYTER_IMAGE_SPEC)
 
             repo_url = create_github(
-                github_token, project_name, repo_privacy, description, github_org_name, verify_ssl
+                github_token,
+                project_name,
+                repo_privacy,
+                description,
+                github_org_name,
+                verify_ssl
             )
 
             print("Creating a local repo, and pushing to Github")
