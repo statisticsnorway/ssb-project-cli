@@ -96,7 +96,7 @@ def create_project(
                 repo_privacy,
                 description,
                 github_org_name,
-                verify_ssl
+                verify_ssl,
             )
 
             print("Creating a local repo, and pushing to Github")
