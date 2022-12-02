@@ -10,7 +10,6 @@ from ssb_project_cli.ssb_project.util import create_error_log
 from ..build.build import build_project
 from ..build.environment import JUPYTER_IMAGE_SPEC
 from ..build.environment import running_onprem
-
 from .github import create_github
 from .github import is_github_repo
 from .github import set_branch_protection_rules
