@@ -5,7 +5,7 @@ from pathlib import Path
 import questionary
 from rich import print
 
-from ssb_project_cli.ssb_project.util import create_error_log
+from ssb_project_cli.ssb_project.util import execute_command
 
 
 def clean_project(project_name: str) -> None:
@@ -36,26 +36,15 @@ def clean_project(project_name: str) -> None:
         f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually."
     )
 
-    clean_cmd = f"jupyter kernelspec remove -f {project_name}".split()
+    clean_cmd = f"jupyter kernelspec remove -f {project_name}".split(" ")
 
-    result = subprocess.run(  # noqa: S603 no untrusted input
-        clean_cmd, capture_output=True
+    execute_command(
+        clean_cmd,
+        "clean-cmd",
+        f"Deleted Jupyter kernel {project_name}.",
+        "Error: Something went wrong while removing the jupyter kernel.",
+        None,
     )
-
-    output = result.stderr.decode("utf-8").strip()
-
-    if (
-        result.returncode != 0
-        or output != f"[RemoveKernelSpec] Removed {kernels[project_name]}"
-    ):
-        calling_function = "clean-kernel"
-        log = str(result)
-
-        print("Error: Something went wrong while removing the jupyter kernel.")
-        create_error_log(log, calling_function)
-        exit(1)
-
-    print(f"Deleted Jupyter kernel {project_name}.")
 
 
 def get_kernels_dict() -> dict[str, str]:
@@ -89,46 +78,33 @@ def clean_venv() -> None:
     ).ask()
     if confirm:
         if Path(".venv").is_dir():
-            clean_venv_cmd = "rm -rf .venv"
-            clean_venv_run = subprocess.run(
-                clean_venv_cmd, capture_output=True, shell=True  # noqa: S602
+            clean_venv_cmd = "rm -rf .venv".split(" ")
+
+            execute_command(
+                clean_venv_cmd,
+                "clean-virtualenv",
+                "Virtual environment successfully removed!",
+                "Something went wrong while removing virtual environment in current directory. A log of the issue was created...",
+                None,
+                True,
             )
 
-            if clean_venv_run.stderr:
-                print(
-                    "Something went wrong while removing virtual environment in current directory. A log of the issue was created..."
-                )
-
-                calling_function = "clean-virtualenv"
-                log = str(clean_venv_run.stderr)
-
-                create_error_log(log, calling_function)
-                exit(1)
-            else:
-                print("Virtual environment successfully removed.")
         else:
             print("No virtual environment found in current directory...")
             path = questionary.path(
                 "Please provide the path to the ssb project you wish to delete the virtual environment for:"
             ).ask()
             if Path(f"{path}/.venv").is_dir():
-                clean_venv_cmd = f"rm -rf {path}/.venv"
-                clean_venv_run = subprocess.run(
-                    clean_venv_cmd, capture_output=True, shell=True  # noqa: S602
+                clean_venv_cmd = f"rm -rf {path}/.venv".split(" ")
+
+                execute_command(
+                    clean_venv_cmd,
+                    "clean-virtualenv",
+                    "Virtual environment successfully removed!",
+                    "Something went wrong while removing virtual environment at provided path. A log of the issue was created...",
+                    None,
+                    True,
                 )
-
-                if clean_venv_run.stderr:
-                    print(
-                        f"Something went wrong while removing virtual environment at {path}."
-                    )
-
-                    calling_function = "clean-virtualenv"
-                    log = str(clean_venv_run.stderr)
-
-                    create_error_log(log, calling_function)
-                    exit(1)
-                else:
-                    print("Virtual environment successfully removed.")
 
             else:
                 print("No virtual environment found at that path. Skipping...")
