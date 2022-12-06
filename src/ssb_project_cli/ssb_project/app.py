@@ -37,7 +37,7 @@ console = Console(color_system=None)
 print = console.print
 
 app = typer.Typer(
-    help="Usage instructions: https://statisticsnorway.github.io/dapla-manual/ssb-project.html",
+    help="Usage instructions: https://manual.dapla.ssb.no/ssbproject.html",
     rich_markup_mode="rich",
     pretty_exceptions_show_locals=False,  # Locals can contain sensitive information
 )
@@ -59,10 +59,10 @@ def create(  # noqa: C901
     ),
     github_token: str = typer.Option(  # noqa: B008
         "",
-        help="Your Github Personal Access Token, follow these instructions to create one: https://statisticsnorway.github.io/dapla-manual/ssb-project.html#personal-access-token-pat",
+        help="Your Github Personal Access Token, follow these instructions to create one: https://manual.dapla.ssb.no/git-github.html#personal-access-token-pat",
     ),
 ) -> None:
-    """:sparkles:\tCreate a project locally, and optionally on GitHub with the flag --github. The project will follow SSB's best practice for development."""
+    """:sparkles:  Create a project locally, and optionally on GitHub with the flag --github. The project will follow SSB's best practice for development."""
     create_project(
         project_name,
         description,
@@ -84,7 +84,7 @@ def build(
         help="Project path",
     ),
 ) -> None:
-    """:wrench:\tCreate a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
+    """:wrench:  Create a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
     build_project(path, CURRENT_WORKING_DIRECTORY)
 
 
@@ -94,7 +94,7 @@ def clean(
         ..., help="The name of the project/kernel you want to delete."
     )
 ) -> None:
-    """Deletes the kernel corresponding to the provided project name."""
+    """:broom:  Delete the kernel for the given project name."""
     clean_project(project_name)
 
 

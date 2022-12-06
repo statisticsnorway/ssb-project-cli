@@ -103,7 +103,7 @@ def create_project(
             f":white_check_mark:\tCreated project ({project_name}) in the folder {project_directory}"
         )
         print(
-            ":tada: All done! Visit the Dapla manual to see how to use your project: https://statisticsnorway.github.io/dapla-manual/ssb-project.html"
+            ":tada:\tAll done! Visit the Dapla manual to see how to use your project: https://manual.dapla.ssb.no/ssbproject.html"
         )
     except Exception as e:
         create_error_log(str(e), "create")
