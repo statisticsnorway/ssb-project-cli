@@ -1,5 +1,9 @@
 """Command-line-interface for project-operations in dapla-jupterlab."""
 
+import os
+from pathlib import Path
+
+import toml
 import typer
 from rich.console import Console
 
@@ -41,6 +45,33 @@ app = typer.Typer(
     rich_markup_mode="rich",
     pretty_exceptions_show_locals=False,  # Locals can contain sensitive information
 )
+
+
+def version_callback(value: bool) -> None:
+    """Print the version string and exit."""
+    pyproject = (
+        Path(os.path.dirname(__file__)).absolute().parent.parent.parent
+        / "pyproject.toml"
+    )
+    version = toml.load(pyproject)["tool"]["poetry"]["version"]
+    if value:
+        print(f"ssb-project version: {version}")
+        raise typer.Exit()
+
+
+@app.callback()
+def common(
+    ctx: typer.Context,
+    version: bool = typer.Option(  ## noqa B008
+        None,
+        "--version",
+        callback=version_callback,
+        help="Print the version string and exit.",
+    ),
+) -> None:
+    """Defines flags which are called from the top level app."""
+    # This function only needs to be defined for the --version flag, thus the body is empty
+    pass
 
 
 @app.command()
