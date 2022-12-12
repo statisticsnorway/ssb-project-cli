@@ -74,7 +74,7 @@ def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> Non
     )
     print("Refreshing lock file...")
     execute_command(
-        f"poetry lock --no-update {source_name}".split(" "),
+        "poetry lock --no-update".split(" "),
         "source-remove",
         "Poetry successfully refreshed lock file!",
         "Poetry failed to refresh lock file.",
