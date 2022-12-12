@@ -83,5 +83,5 @@ def test_nexus_source_not_set_in_lock(isfile: bool, data: str, expected: bool) -
         with patch(f"{POETRY}.open", mock_open(read_data=data)):
             assert expected == nexus_source_not_set_in_lock(
                 "http://pl-nexuspro-p.ssb.no:8081/repository/pypi-proxy/simple",
-                Mock(),
+                Path(),
             )
