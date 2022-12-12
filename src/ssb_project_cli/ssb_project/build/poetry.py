@@ -103,7 +103,7 @@ def poetry_source_add(
     )
 
     # If the lock is created off-prem, we need to refresh the lock.
-    if nexus_source_not_set_in_lock(source_url, cwd):
+    if is_source_not_set_in_lock_file(source_url, cwd):
         print("Refreshing lock file...")
         execute_command(
             "poetry lock --no-update".split(" "),
@@ -114,7 +114,7 @@ def poetry_source_add(
         )
 
 
-def nexus_source_not_set_in_lock(source_url: str, cwd: Path) -> bool:
+def is_source_not_set_in_lock_file(source_url: str, cwd: Path) -> bool:
     """Checks if poetry.lock exists and if nexus source is set there.
 
     Args:
