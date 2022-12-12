@@ -103,7 +103,7 @@ def poetry_source_add(
     )
 
     # If the lock is created off-prem, we need to refresh the lock.
-    if not nexus_source_is_set_in_lock(source_url, cwd):
+    if nexus_source_not_set_in_lock(source_url, cwd):
         print("Refreshing lock file...")
         execute_command(
             "poetry lock --no-update".split(" "),
@@ -114,19 +114,23 @@ def poetry_source_add(
         )
 
 
-def nexus_source_is_set_in_lock(source_url: str, cwd: Path) -> bool:
-    """Checks if nexus source is set in project lock file.
+def nexus_source_not_set_in_lock(source_url: str, cwd: Path) -> bool:
+    """Checks if poetry.lock exists and if nexus source is set there.
 
     Args:
         source_url: URL of 'simple' package API of package server
         cwd: Path of project to add source to
+    Return: false if lock does exist or contains source_url, else true.
     """
     lock_file_path = cwd / Path("poetry.lock")
     if os.path.isfile(lock_file_path):
         with open(lock_file_path) as lock_file:
             if source_url in lock_file.read():
-                return True
-    return False
+                return False
+    else:
+        return False
+
+    return True
 
 
 def install_ipykernel(project_directory: Path, project_name: str) -> None:
