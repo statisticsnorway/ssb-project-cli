@@ -121,7 +121,8 @@ def nexus_source_not_set_in_lock(source_url: str, cwd: Path) -> bool:
         source_url: URL of 'simple' package API of package server
         cwd: Path of project to add source to
     Returns:
-        True if lock nexus source is not set in lock file, else False.
+        True if lock nexus source is not set in lock file.
+        False lalala.
     """
     lock_file_path = cwd / Path("poetry.lock")
     if os.path.isfile(lock_file_path):
