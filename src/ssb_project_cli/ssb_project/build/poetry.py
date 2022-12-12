@@ -1,4 +1,5 @@
 """This module contains functions used to install poetry dependecies and kernels."""
+import os
 from pathlib import Path
 from rich.progress import Progress
 from rich.progress import SpinnerColumn
@@ -100,6 +101,32 @@ def poetry_source_add(
         "Failed to add poetry source.",
         cwd=cwd,
     )
+
+    # If the lock is created off-prem, we need to refresh the lock.
+    if not nexus_source_is_set_in_lock(source_url, cwd):
+        print("Refreshing lock file...")
+        execute_command(
+            "poetry lock --no-update".split(" "),
+            "source-remove",
+            "Poetry successfully refreshed lock file!",
+            "Poetry failed to refresh lock file.",
+            cwd=cwd,
+        )
+
+
+def nexus_source_is_set_in_lock(source_url: str, cwd: Path) -> bool:
+    """Checks if nexus source is set in project lock file.
+
+    Args:
+        source_url: URL of 'simple' package API of package server
+        cwd: Path of project to add source to
+    """
+    lock_file_path = cwd / Path("poetry.lock")
+    if os.path.isfile(lock_file_path):
+        with open(lock_file_path) as lock_file:
+            if source_url in lock_file.read():
+                return True
+    return False
 
 
 def install_ipykernel(project_directory: Path, project_name: str) -> None:
