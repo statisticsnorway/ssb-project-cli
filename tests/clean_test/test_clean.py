@@ -38,7 +38,12 @@ def test_clean_venv(mock_confirm: Mock, mock_path: Mock, mock_execute: Mock) -> 
 
     clean_venv()
 
-    assert mock_execute.call_count == 1
+    mock_confirm.confirm().ask.return_value = True
+    mock_path.is_dir.return_value = False
+
+    clean_venv()
+
+    assert mock_execute.call_count == 2
 
 
 @patch(f"{CLEAN}.subprocess.run")
