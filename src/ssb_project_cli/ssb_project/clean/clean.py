@@ -1,7 +1,7 @@
 """Clean command module."""
+import os
 import subprocess  # noqa: S404
 from pathlib import Path
-import os
 
 import questionary
 from rich import print
@@ -97,7 +97,7 @@ def clean_venv() -> None:
             ).ask()
             if Path(f"{path}/.venv").is_dir():
                 curr_path = os.getcwd()
-                clean_venv_cmd = f"rm -rf {curr_path}/{path}/.venv" 
+                clean_venv_cmd = f"rm -rf {curr_path}/{path}/.venv"
 
                 execute_command(
                     clean_venv_cmd,
