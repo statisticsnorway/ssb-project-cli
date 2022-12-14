@@ -1,5 +1,4 @@
 """Clean command module."""
-import os
 import subprocess  # noqa: S404
 from pathlib import Path
 
@@ -96,8 +95,7 @@ def clean_venv() -> None:
                 "Please provide the path to the ssb project you wish to delete the virtual environment for:"
             ).ask()
             if Path(f"{path}/.venv").is_dir():
-                curr_path = os.getcwd()
-                clean_venv_cmd = f"rm -rf {curr_path}/{path}/.venv"
+                clean_venv_cmd = f"rm -rf {path}/.venv"
 
                 execute_command(
                     clean_venv_cmd,
