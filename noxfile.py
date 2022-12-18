@@ -33,7 +33,6 @@ nox.options.sessions = (
     "unit_tests",
     "integration_tests",
     "typeguard",
-    "xdoctest",
     "docs-build",
 )
 
@@ -215,21 +214,6 @@ def typeguard(session: Session) -> None:
     session.run(
         "pytest", f"--typeguard-packages={package}", UNIT_TESTS_PATH, *session.posargs
     )
-
-
-@session(python=python_versions)
-def xdoctest(session: Session) -> None:
-    """Run examples with xdoctest."""
-    if session.posargs:
-        args = [package, *session.posargs]
-    else:
-        args = [f"--modname={package}", "--command=all"]
-        if "FORCE_COLOR" in os.environ:
-            args.append("--colored=1")
-
-    session.install(".")
-    session.install("xdoctest[colors]")
-    session.run("python", "-m", "xdoctest", *args)
 
 
 @session(name="docs-build", python=python_versions[0])
