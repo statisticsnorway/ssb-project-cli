@@ -78,7 +78,7 @@ def clean_venv() -> None:
     ).ask()
     if confirm:
         if Path(".venv").is_dir():
-            clean_venv_cmd = "rm -rf .venv".split(" ")
+            clean_venv_cmd = "rm -rf .venv"
 
             execute_command(
                 clean_venv_cmd,
@@ -95,7 +95,7 @@ def clean_venv() -> None:
                 "Please provide the path to the ssb project you wish to delete the virtual environment for:"
             ).ask()
             if Path(f"{path}/.venv").is_dir():
-                clean_venv_cmd = f"rm -rf {path}/.venv".split(" ")
+                clean_venv_cmd = f"rm -rf {path}/.venv"
 
                 execute_command(
                     clean_venv_cmd,

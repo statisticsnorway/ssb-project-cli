@@ -1,12 +1,14 @@
 """Tests for the poetry module."""
 from pathlib import Path
 from unittest.mock import Mock
+from unittest.mock import mock_open
 from unittest.mock import patch
 
 import pytest
 
 from ssb_project_cli.ssb_project.build.environment import NEXUS_SOURCE_NAME
 from ssb_project_cli.ssb_project.build.poetry import poetry_source_includes_source_name
+from ssb_project_cli.ssb_project.build.poetry import should_update_lock_file
 from ssb_project_cli.ssb_project.clean.clean import get_kernels_dict
 
 
@@ -43,3 +45,43 @@ def test_get_kernels_dict(mock_run: Mock) -> None:
     assert get_kernels_dict() == {"python": "/some/path", "R": "/other/path"}
     with pytest.raises(SystemExit):
         get_kernels_dict()
+
+
+@pytest.mark.parametrize(
+    "isfile,data,expected",
+    [
+        (
+            True,
+            """
+            [package.source]
+            type = "legacy"
+            url = "http://pl-nexuspro-p.ssb.no:8081/repository/pypi-proxy/simple"
+            reference = "nexus"
+            [[package]]""",
+            False,
+        ),
+        (
+            True,
+            """
+            [package.source]
+            type = "legacy"
+            url = "No url"
+            reference = "nexus"
+            [[package]]""",
+            True,
+        ),
+        (
+            False,
+            """""",
+            False,
+        ),
+    ],
+)
+def test_should_update_lock_file(isfile: bool, data: str, expected: bool) -> None:
+    """Checks if nexus_source_is_set_in_lock returns appropriate truth values."""
+    with patch(f"{POETRY}.os.path.isfile", return_value=isfile):
+        with patch(f"{POETRY}.open", mock_open(read_data=data)):
+            assert expected == should_update_lock_file(
+                "http://pl-nexuspro-p.ssb.no:8081/repository/pypi-proxy/simple",
+                Path(),
+            )
