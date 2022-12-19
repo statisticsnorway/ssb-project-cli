@@ -1,17 +1,9 @@
 """Global fixtures."""
-import shutil
 import subprocess  # noqa: S404
 from pathlib import Path
 from typing import Generator
 
 import pytest
-from click.testing import Result
-from typer.testing import CliRunner
-
-from ssb_project_cli.ssb_project.app import app
-
-
-runner = CliRunner()
 
 
 @pytest.fixture(scope="module")
@@ -32,6 +24,7 @@ def git_config() -> Generator[dict[str, str], None, None]:
 
     try:
         for key, value in config.items():
+            # If we have set values to our known test values, unset them once we're done
             if value in subprocess.run(git_config_get + [key]).stdout.decode("utf-8"):
                 subprocess.run(git_config_unset + [key])
     except AttributeError:
@@ -43,14 +36,3 @@ def git_config() -> Generator[dict[str, str], None, None]:
 def name() -> Path:
     """A name for the project to be created."""
     return Path("integration-test-project")
-
-
-@pytest.fixture(scope="module")
-def project(name: Path, git_config: dict[str, str]) -> Generator[Result, None, None]:
-    """Create the project and tidy up after."""
-    result = runner.invoke(app, ["create", str(name)], catch_exceptions=False)
-    yield result
-    # Clean up project directory
-    shutil.rmtree(name)
-    # Clean up project kernel
-    subprocess.run(f"jupyter kernelspec remove -f {name}".split(" "))
