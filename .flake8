@@ -5,7 +5,7 @@ max-line-length = 80
 max-complexity = 10
 docstring-convention = google
 per-file-ignores =
-    tests/*:D104
+    tests/*:D104,S603,S404
     tests/**/*:S101,D103,D415,D100,D104
 rst-roles = class,const,func,meth,mod,ref
 rst-directives = deprecated
