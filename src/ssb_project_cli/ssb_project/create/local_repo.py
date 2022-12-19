@@ -20,7 +20,7 @@ def create_project_from_template(
     working_directory: Path,
     license_year: Optional[str] = None,
 ) -> Path:
-    """Creates a project from CookiCutter template.
+    """Creates a project from CookieCutter template.
 
     Args:
         project_name: Name of project
