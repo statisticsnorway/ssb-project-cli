@@ -189,6 +189,7 @@ def integration_tests(session: Session) -> None:
     session.run(
         "pytest",
         INTEGRATION_TESTS_PATH,
+        "-vvvv",
         *session.posargs,
     )
 
