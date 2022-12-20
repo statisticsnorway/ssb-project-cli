@@ -172,7 +172,6 @@ def test_create_project_from_template(
     assert pyproject.exists()
 
 
-
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
 @patch(f"{LOCAL_REPO}.subprocess.run")

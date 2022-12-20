@@ -34,8 +34,6 @@ class TestCreateFunction(TestCase):
         )
         assert mock_rmtree.call_count == 0
 
-        
-
     def test_rmtree_template_error(
         self,
         mock_template: Mock,
@@ -78,11 +76,10 @@ class TestCreateFunction(TestCase):
         assert mock_rmtree.call_count == 1
 
 
-
 @patch(f"{CREATE}.Path.exists")
-def test_project_dir_exists(mock_exists):
+def test_project_dir_exists(mock_path_exists: Mock) -> None:
     # Test that SystemExit is raised when the project directory exists
-    mock_exists.return_value = True
+    mock_path_exists.return_value = True
     with pytest.raises(SystemExit) as excinfo:
         create(
             "test_project",
