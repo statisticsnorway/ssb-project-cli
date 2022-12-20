@@ -171,15 +171,6 @@ def test_create_project_from_template(
     pyproject = project_dir.joinpath("pyproject.toml")
     assert pyproject.exists()
 
-    with pytest.raises(SystemExit):
-        # Should tmp_path be added?
-        create_project_from_template(
-            "testname",
-            "test description",
-            STAT_TEMPLATE_REPO_URL,
-            STAT_TEMPLATE_DEFAULT_REFERENCE,
-            tmp_path,
-        )
 
 
 @patch(f"{LOCAL_REPO}.extract_name_email")

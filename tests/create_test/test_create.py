@@ -3,6 +3,8 @@ from unittest import TestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
+import pytest
+
 from ssb_project_cli.ssb_project.app import create
 from ssb_project_cli.ssb_project.create.repo_privacy import RepoPrivacy
 
@@ -31,6 +33,34 @@ class TestCreateFunction(TestCase):
             "test_project", "description", RepoPrivacy.internal, False, "github_token"
         )
         assert mock_rmtree.call_count == 0
+
+
+    def test_existing_project_name(
+        self,
+        _mock_template: Mock,
+        _mock_git: Mock,
+        _mock_build_project: Mock,
+        mock_rmtree: Mock,
+        _mock_log: Mock,
+    ) -> None:
+        """Check that there is a SystemExit given a path (project) with the same name exists"""
+        with patch(f"{CREATE}.Path.is_dir", return_value=True):
+            create(
+                "test_project",
+                "description",
+                RepoPrivacy.internal,
+                False,
+                "github_token",
+            )
+
+        with pytest.raises(SystemExit):
+             create(
+                "test_project",
+                "description",
+                RepoPrivacy.internal,
+                False,
+                "github_token",
+            )
 
     def test_rmtree_template_error(
         self,
@@ -72,3 +102,25 @@ class TestCreateFunction(TestCase):
                 "github_token",
             )
         assert mock_rmtree.call_count == 1
+
+
+
+
+
+"""
+Hei,
+
+Takk for raskt svar. Romjulen blir dessverre litt for sent for oss å ha visning. Vi reiser begge hjem til familie i julen, så visningen måtte skjedd på nyåret i så fall. Vi har imidlertid sett på annonsen og basert på den så tror jeg leiligheten vil passe oss bra med tanke på at vi bare er 2 stk.  
+
+
+
+
+
+
+
+
+
+
+
+
+"""
