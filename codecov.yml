@@ -1,4 +1,6 @@
 comment: false
+ignore:
+  - "tests/**/*"
 coverage:
   status:
     project:

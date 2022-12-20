@@ -21,7 +21,8 @@ except ImportError:
     {sys.executable} -m pip install nox-poetry"""
     raise SystemExit(dedent(message)) from None
 
-
+UNIT_TESTS_PATH = "tests/unit"
+INTEGRATION_TESTS_PATH = "tests/integration"
 package = "ssb_project_cli"
 python_versions = ["3.10", "3.9"]
 nox.needs_version = ">= 2021.6.6"
@@ -29,9 +30,9 @@ nox.options.sessions = (
     "pre-commit",
     "safety",
     "mypy",
-    "tests",
+    "unit_tests",
+    "integration_tests",
     "typeguard",
-    "xdoctest",
     "docs-build",
 )
 
@@ -161,15 +162,36 @@ def mypy(session: Session) -> None:
 
 
 @session(python=python_versions)
-def tests(session: Session) -> None:
-    """Run the test suite."""
+def unit_tests(session: Session) -> None:
+    """Run the unit tests."""
     session.install(".")
     session.install("coverage[toml]", "pytest", "pygments")
     try:
-        session.run("coverage", "run", "--parallel", "-m", "pytest", *session.posargs)
+        session.run(
+            "coverage",
+            "run",
+            "--parallel",
+            "-m",
+            "pytest",
+            UNIT_TESTS_PATH,
+            *session.posargs,
+        )
     finally:
         if session.interactive:
             session.notify("coverage", posargs=[])
+
+
+@session(python=python_versions[0])
+def integration_tests(session: Session) -> None:
+    """Run the unit tests."""
+    session.install(".")
+    session.install("pytest")
+    session.run(
+        "pytest",
+        INTEGRATION_TESTS_PATH,
+        "-vvvv",
+        *session.posargs,
+    )
 
 
 @session(python=python_versions[0])
@@ -190,22 +212,9 @@ def typeguard(session: Session) -> None:
     """Runtime type checking using Typeguard."""
     session.install(".")
     session.install("pytest", "typeguard", "pygments")
-    session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
-
-
-@session(python=python_versions)
-def xdoctest(session: Session) -> None:
-    """Run examples with xdoctest."""
-    if session.posargs:
-        args = [package, *session.posargs]
-    else:
-        args = [f"--modname={package}", "--command=all"]
-        if "FORCE_COLOR" in os.environ:
-            args.append("--colored=1")
-
-    session.install(".")
-    session.install("xdoctest[colors]")
-    session.run("python", "-m", "xdoctest", *args)
+    session.run(
+        "pytest", f"--typeguard-packages={package}", UNIT_TESTS_PATH, *session.posargs
+    )
 
 
 @session(name="docs-build", python=python_versions[0])
