@@ -69,10 +69,8 @@ def execute_command(
         )
 
     if result.returncode != 0:
-
         calling_function = command_shortname
         log = str(result)
-
         print(failure_desc)
         create_error_log(log, calling_function)
         exit(1)
