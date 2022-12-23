@@ -3,6 +3,8 @@ from unittest import TestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
+import pytest
+
 from ssb_project_cli.ssb_project.app import create
 from ssb_project_cli.ssb_project.create.repo_privacy import RepoPrivacy
 
@@ -72,3 +74,18 @@ class TestCreateFunction(TestCase):
                 "github_token",
             )
         assert mock_rmtree.call_count == 1
+
+
+@patch(f"{CREATE}.Path.exists")
+def test_project_dir_exists(mock_path_exists: Mock) -> None:
+    # Test that SystemExit is raised when the project directory exists
+    mock_path_exists.return_value = True
+    with pytest.raises(SystemExit) as excinfo:
+        create(
+            "test_project",
+            "description",
+            RepoPrivacy.internal,
+            False,
+            "github_token",
+        )
+    assert excinfo.value.code == 1

@@ -20,7 +20,7 @@ from .prompt import request_project_description
 from .repo_privacy import RepoPrivacy
 
 
-def create_project(
+def create_project(  # noqa: C901
     project_name: str,
     description: str,
     repo_privacy: RepoPrivacy,
@@ -69,7 +69,13 @@ def create_project(
     if add_github and description == "":
         description = request_project_description()
 
-    project_directory = working_directory / project_name
+    project_directory = working_directory.joinpath(project_name)
+
+    if project_directory.exists():
+        print(
+            f"A project with name '{project_name}' already exists. Please choose another name."
+        )
+        exit(1)
 
     try:
         create_project_from_template(

@@ -20,7 +20,7 @@ def create_project_from_template(
     working_directory: Path,
     license_year: Optional[str] = None,
 ) -> Path:
-    """Creates a project from CookiCutter template.
+    """Creates a project from CookieCutter template.
 
     Args:
         project_name: Name of project
@@ -34,11 +34,6 @@ def create_project_from_template(
         Path: Path of project.
     """
     project_dir = working_directory.joinpath(project_name)
-    if project_dir.exists():
-        print(
-            f"A project with name '{project_name}' already exists. Please choose another name."
-        )
-        exit(1)
 
     name, email = extract_name_email()
     if not (name and email):
