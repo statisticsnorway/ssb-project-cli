@@ -5,7 +5,11 @@ from unittest import TestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
+import pytest
+
 from ssb_project_cli.ssb_project.create.create import delete_folder
+from ssb_project_cli.ssb_project.create.create import is_memory_full_123
+
 
 
 CREATE = "ssb_project_cli.ssb_project.create.create"
@@ -50,3 +54,23 @@ class TestCreateFunction(TestCase):
         assert mock_isdir.call_count == 1
         assert mock_rmtree.call_count == 1
         assert mock_log.call_count == 1
+
+    
+    @patch(f"{CREATE}.is_memory_full.psutil.virtual_memory")
+    def test_is_memory_full(mock_virtual_memory) -> None:
+        # Set up the mock to return a low percentage of used memory
+        mock_virtual_memory.return_value.used = 10
+        mock_virtual_memory.return_value.total = 100
+
+        # Call the function and check that it does not exit
+        is_memory_full_123()
+
+        # Set up the mock to return a high percentage of used memory
+        mock_virtual_memory.return_value.used = 90
+        mock_virtual_memory.return_value.total = 100
+
+        # Call the function and check that it does exit
+        with pytest.raises(SystemExit) as ex:
+            is_memory_full_123()
+
+        assert ex.exception.code == 1

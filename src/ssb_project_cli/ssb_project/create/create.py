@@ -2,8 +2,8 @@
 import shutil
 from pathlib import Path
 from shutil import rmtree
-import psutil
 
+import psutil  # type: ignore
 from rich import print
 
 from ssb_project_cli.ssb_project.util import create_error_log
@@ -134,9 +134,8 @@ def delete_folder(folder: Path) -> None:
             create_error_log(str(e), "delete_dir")
 
 
-def is_memory_full() -> None:
-    """Checks whether used memory is greater than 95% and terminates the program if that is the case.
-    """
+def is_memory_full_123() -> None:
+    """Checks whether used memory is greater than 95% and terminates the program if that is the case."""
     # get the memory usage information
     mem = psutil.virtual_memory()
 
@@ -145,6 +144,8 @@ def is_memory_full() -> None:
 
     # check if the percentage of used memory is greater than 95 percent
     if used_percent > 95:
-        print("Remaining memory capacity is less than 5%. Please free some memory before creating a new project.")
+        print(
+            "Remaining memory capacity is less than 5%. Please free some memory before creating a new project."
+        )
         exit(1)
 
