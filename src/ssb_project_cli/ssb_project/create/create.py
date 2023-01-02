@@ -134,7 +134,7 @@ def delete_folder(folder: Path) -> None:
             create_error_log(str(e), "delete_dir")
 
 
-def is_memory_full_123() -> None:
+def is_memory_full() -> None:
     """Checks whether used memory is greater than 95% and terminates the program if that is the case."""
     # get the memory usage information
     mem = psutil.virtual_memory()

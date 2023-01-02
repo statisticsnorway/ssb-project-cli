@@ -7,7 +7,6 @@ import pytest
 
 from ssb_project_cli.ssb_project.app import create
 from ssb_project_cli.ssb_project.create.repo_privacy import RepoPrivacy
-from ssb_project_cli.ssb_project.create.create import is_memory_full
 
 
 
