@@ -2,6 +2,7 @@
 import shutil
 from pathlib import Path
 from shutil import rmtree
+import psutil
 
 from rich import print
 
@@ -46,6 +47,8 @@ def create_project(  # noqa: C901
         template_repo_url: Template repository url
         template_reference: Template reference
     """
+    is_memory_full()
+
     if not valid_repo_name(project_name):
         print(
             "Invalid repo name: Please choose a valid name. For example: 'my-fantastic-project'"
@@ -129,3 +132,19 @@ def delete_folder(folder: Path) -> None:
             rmtree(folder)
         except shutil.Error as e:
             create_error_log(str(e), "delete_dir")
+
+
+def is_memory_full() -> None:
+    """Checks whether used memory is greater than 95% and terminates the program if that is the case.
+    """
+    # get the memory usage information
+    mem = psutil.virtual_memory()
+
+    # calculate the percentage of used memory
+    used_percent = mem.used / mem.total * 100
+
+    # check if the percentage of used memory is greater than 95 percent
+    if used_percent > 95:
+        print("Remaining memory capacity is less than 5%. Please free some memory before creating a new project.")
+        exit(1)
+
