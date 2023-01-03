@@ -1,8 +1,8 @@
 """Create command module."""
+import os
 import shutil
 from pathlib import Path
 from shutil import rmtree
-import os
 
 import psutil  # type: ignore
 from rich import print
@@ -146,10 +146,9 @@ def is_memory_full() -> None:
 
     # calculate the percentage of swap memory used
     swap_used_percent = swap_memory.used / swap_memory.total * 100
-    
 
     # check if the percentage of used memory is greater than 95 percent
-    if virtual_used_percent > 95:
+    if virtual_used_percent > 95 or swap_used_percent > 95:
         print(
             "Remaining free memory is less than 5%. Please free some memory (for example by terminating running programs) before continuing. Terminating."
         )

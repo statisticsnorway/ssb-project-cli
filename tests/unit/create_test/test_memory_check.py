@@ -1,8 +1,6 @@
 from unittest.mock import Mock
 from unittest.mock import patch
 
-import pytest
-
 from ssb_project_cli.ssb_project.create.create import is_memory_full
 
 
@@ -13,7 +11,12 @@ CREATE = "ssb_project_cli.ssb_project.create.create"
 @patch(f"{CREATE}.psutil.swap_memory")
 @patch(f"{CREATE}.psutil.disk_usage")
 @patch("os.path.exists")
-def test_is_memory_full(mock_exists: Mock, mock_disk_usage: Mock, mock_swap_memory: Mock, mock_virtual_memory: Mock) -> None:
+def test_is_memory_full(
+    mock_exists: Mock,
+    mock_disk_usage: Mock,
+    mock_swap_memory: Mock,
+    mock_virtual_memory: Mock,
+) -> None:
     # Set up the mock to return a low percentage of used virtual memory
     mock_virtual_memory.return_value.used = 10
     mock_virtual_memory.return_value.total = 100
