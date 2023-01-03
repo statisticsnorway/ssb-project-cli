@@ -2,6 +2,7 @@
 import shutil
 from pathlib import Path
 from shutil import rmtree
+import os
 
 import psutil  # type: ignore
 from rich import print
@@ -145,23 +146,25 @@ def is_memory_full() -> None:
 
     # calculate the percentage of swap memory used
     swap_used_percent = swap_memory.used / swap_memory.total * 100
+    
 
     # check if the percentage of used memory is greater than 95 percent
-    if virtual_used_percent > 95 or swap_used_percent > 95:
+    if virtual_used_percent > 95:
         print(
             "Remaining free memory is less than 5%. Please free some memory (for example by terminating running programs) before continuing. Terminating."
         )
         exit(1)
 
-    # Get the disk usage information for the root partition
-    disk_usage = psutil.disk_usage("/home/jovyan/")
+    # Get the disk usage information for the partition containing /home/jovyan/
+    if os.path.exists("/home/jovyan/"):
+        disk_usage = psutil.disk_usage("/home/jovyan/")
 
-    # Calculate the percentage of used disk space
-    disk_used_percent = disk_usage.used / disk_usage.total * 100
+        # Calculate the percentage of used disk space
+        disk_used_percent = disk_usage.used / disk_usage.total * 100
 
-    # Check if the percentage of used disk space is greater than 95 percent
-    if disk_used_percent > 95:
-        print(
-            "Remaining disk space is less than 5%. Please free some disk space before creating a new project. Terminating."
-        )
-        exit(1)
+        # Check if the percentage of used disk space is greater than 95 percent
+        if disk_used_percent > 95:
+            print(
+                "Remaining disk space is less than 5%. Please free some disk space before creating a new project. Terminating."
+            )
+            exit(1)
