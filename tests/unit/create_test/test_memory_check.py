@@ -60,3 +60,14 @@ def test_is_memory_full(
     mock_disk_usage.return_value.used = 10
     mock_disk_usage.return_value.total = 100
     is_memory_full()
+
+    # Test the case where swap memory is above 95% used
+    mock_virtual_memory.return_value.used = 10
+    mock_virtual_memory.return_value.total = 100
+    mock_swap_memory.return_value.used = 96
+    mock_swap_memory.return_value.total = 100
+    mock_exists.return_value = True
+    mock_disk_usage.return_value.used = 98
+    mock_disk_usage.return_value.total = 100
+    with pytest.raises(SystemExit):
+        is_memory_full()
