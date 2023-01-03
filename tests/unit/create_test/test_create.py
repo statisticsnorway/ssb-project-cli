@@ -9,7 +9,6 @@ from ssb_project_cli.ssb_project.app import create
 from ssb_project_cli.ssb_project.create.repo_privacy import RepoPrivacy
 
 
-
 CREATE = "ssb_project_cli.ssb_project.create.create"
 
 
@@ -90,5 +89,3 @@ def test_project_dir_exists(mock_path_exists: Mock) -> None:
             "github_token",
         )
     assert excinfo.value.code == 1
-
-

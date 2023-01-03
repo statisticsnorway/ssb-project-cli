@@ -5,11 +5,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
-import pytest
-
 from ssb_project_cli.ssb_project.create.create import delete_folder
-from ssb_project_cli.ssb_project.create.create import is_memory_full
-
 
 
 CREATE = "ssb_project_cli.ssb_project.create.create"
@@ -54,6 +50,3 @@ class TestCreateFunction(TestCase):
         assert mock_isdir.call_count == 1
         assert mock_rmtree.call_count == 1
         assert mock_log.call_count == 1
-
-    
- 
