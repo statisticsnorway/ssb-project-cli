@@ -149,12 +149,12 @@ def is_memory_full() -> None:
     # check if the percentage of used memory is greater than 95 percent
     if virtual_used_percent > 95 or swap_used_percent > 95:
         print(
-            "Remaining free memory is less than 5%. Please free some memory (for example by deleting files or terminating running programs) before continuing. Terminating."
+            "Remaining free memory is less than 5%. Please free some memory (for example by terminating running programs) before continuing. Terminating."
         )
         exit(1)
 
     # Get the disk usage information for the root partition
-    disk_usage = psutil.disk_usage("/")
+    disk_usage = psutil.disk_usage("/home/jovyan/")
 
     # Calculate the percentage of used disk space
     disk_used_percent = disk_usage.used / disk_usage.total * 100
