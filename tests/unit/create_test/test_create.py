@@ -12,6 +12,7 @@ from ssb_project_cli.ssb_project.create.repo_privacy import RepoPrivacy
 CREATE = "ssb_project_cli.ssb_project.create.create"
 
 
+@patch(f"{CREATE}.is_memory_full")
 @patch(f"{CREATE}.create_error_log")
 @patch(f"{CREATE}.rmtree", return_value=None)
 @patch(f"{CREATE}.build_project", return_value=None)
@@ -27,6 +28,7 @@ class TestCreateFunction(TestCase):
         _mock_build_project: Mock,
         mock_rmtree: Mock,
         _mock_log: Mock,
+        _mock_is_memory_full: Mock,
     ) -> None:
         """Check that rmtree is not called when no sub functions raises an error."""
         create(
@@ -41,6 +43,7 @@ class TestCreateFunction(TestCase):
         _mock_build_project: Mock,
         mock_rmtree: Mock,
         mock_log: Mock,
+        _mock_is_memory_full: Mock,
     ) -> None:
         """Check that rmtree and create_error_log is called when create_project_from_template raises an Exception."""
         mock_template.side_effect = Exception("Test exception")
@@ -62,6 +65,7 @@ class TestCreateFunction(TestCase):
         _mock_build_project: Mock,
         mock_rmtree: Mock,
         _mock_log: Mock,
+        _mock_is_memory_full: Mock,
     ) -> None:
         """Check that rmtree is called when make_and_init_git_repo calls SystemExit."""
         mock_git.side_effect = SystemExit(1)

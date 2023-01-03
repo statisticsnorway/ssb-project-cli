@@ -90,26 +90,4 @@ def clean_venv() -> None:
             )
 
         else:
-            print("No virtual environment found in current directory...")
-            path = questionary.path(
-                "Please provide the path to the ssb project you wish to delete the virtual environment for:"
-            ).ask()
-            if Path(f"{path}/.venv").is_dir():
-                clean_venv_cmd = f"rm -rf {path}/.venv"
-
-                execute_command(
-                    clean_venv_cmd,
-                    "clean-virtualenv",
-                    "Virtual environment successfully removed!",
-                    "Something went wrong while removing virtual environment at provided path. A log of the issue was created...",
-                    None,
-                    True,
-                )
-
-            else:
-                print("No virtual environment found at that path. Skipping...")
-
-    else:
-        print(
-            "Skipping removal of virtual environment. The virtual environment can also be removed manually by deleting the .venv folder in your ssb project directory."
-        )
+            print("No virtual environment found in current directory. Skipping...")

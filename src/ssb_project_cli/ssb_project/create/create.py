@@ -1,8 +1,10 @@
 """Create command module."""
+import os
 import shutil
 from pathlib import Path
 from shutil import rmtree
 
+import psutil  # type: ignore
 from rich import print
 
 from ssb_project_cli.ssb_project.util import create_error_log
@@ -46,6 +48,8 @@ def create_project(  # noqa: C901
         template_repo_url: Template repository url
         template_reference: Template reference
     """
+    is_memory_full()
+
     if not valid_repo_name(project_name):
         print(
             "Invalid repo name: Please choose a valid name. For example: 'my-fantastic-project'"
@@ -129,3 +133,46 @@ def delete_folder(folder: Path) -> None:
             rmtree(folder)
         except shutil.Error as e:
             create_error_log(str(e), "delete_dir")
+
+
+def is_memory_full() -> None:
+    """Checks whether used memory is greater than 95% and terminates the program if that is the case."""
+    # get the memory usage information
+    virtual_memory = psutil.virtual_memory()
+    swap_memory = psutil.swap_memory()
+
+    # calculate the percentage of virtual memory used
+    if virtual_memory.total > 0:
+        virtual_used_percent = virtual_memory.used / virtual_memory.total * 100
+
+        # check if the percentage of used memory is greater than 95 percent
+        if virtual_used_percent > 95:
+            print(
+                "Remaining free memory is less than 5%. Please free some memory (for example by terminating running programs) before continuing. Terminating."
+            )
+            exit(1)
+
+    # calculate the percentage of swap memory used
+    if swap_memory.total > 0:
+        swap_used_percent = swap_memory.used / swap_memory.total * 100
+
+        # check if the percentage of used memory is greater than 95 percent
+        if swap_used_percent > 95:
+            print(
+                "Remaining free memory is less than 5%. Please free some memory (for example by terminating running programs) before continuing. Terminating."
+            )
+            exit(1)
+
+    # Get the disk usage information for the partition containing /home/jovyan/
+    if os.path.exists("/home/jovyan/"):
+        disk_usage = psutil.disk_usage("/home/jovyan/")
+
+        # Calculate the percentage of used disk space
+        disk_used_percent = disk_usage.used / disk_usage.total * 100
+
+        # Check if the percentage of used disk space is greater than 95 percent
+        if disk_used_percent > 95:
+            print(
+                "Remaining disk space is less than 5%. Please free some disk space before creating a new project. Terminating."
+            )
+            exit(1)
