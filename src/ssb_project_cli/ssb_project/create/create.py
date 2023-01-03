@@ -142,17 +142,26 @@ def is_memory_full() -> None:
     swap_memory = psutil.swap_memory()
 
     # calculate the percentage of virtual memory used
-    virtual_used_percent = virtual_memory.used / virtual_memory.total * 100
+    if virtual_memory.total > 0:
+        virtual_used_percent = virtual_memory.used / virtual_memory.total * 100
+
+        # check if the percentage of used memory is greater than 95 percent
+        if virtual_used_percent > 95:
+            print(
+                "Remaining free memory is less than 5%. Please free some memory (for example by terminating running programs) before continuing. Terminating."
+            )
+            exit(1)
 
     # calculate the percentage of swap memory used
-    swap_used_percent = swap_memory.used / swap_memory.total * 100
+    if swap_memory.total > 0:
+        swap_used_percent = swap_memory.used / swap_memory.total * 100
 
-    # check if the percentage of used memory is greater than 95 percent
-    if virtual_used_percent > 95 or swap_used_percent > 95:
-        print(
-            "Remaining free memory is less than 5%. Please free some memory (for example by terminating running programs) before continuing. Terminating."
-        )
-        exit(1)
+        # check if the percentage of used memory is greater than 95 percent
+        if swap_used_percent > 95:
+            print(
+                "Remaining free memory is less than 5%. Please free some memory (for example by terminating running programs) before continuing. Terminating."
+            )
+            exit(1)
 
     # Get the disk usage information for the partition containing /home/jovyan/
     if os.path.exists("/home/jovyan/"):
