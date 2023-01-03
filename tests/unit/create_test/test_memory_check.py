@@ -71,7 +71,7 @@ def test_is_memory_full(
     mock_disk_usage.return_value.total = 100
     with pytest.raises(SystemExit):
         is_memory_full()
-    
+
     # Test the case where total swap memory is 0
     mock_virtual_memory.return_value.used = 10
     mock_virtual_memory.return_value.total = 100
@@ -82,7 +82,7 @@ def test_is_memory_full(
     mock_disk_usage.return_value.total = 100
     with pytest.raises(SystemExit):
         is_memory_full()
-    
+
     # Test the case where total virtual memory is 0
     mock_virtual_memory.return_value.used = 10
     mock_virtual_memory.return_value.total = 0
@@ -93,5 +93,3 @@ def test_is_memory_full(
     mock_disk_usage.return_value.total = 100
     with pytest.raises(SystemExit):
         is_memory_full()
-
-    
