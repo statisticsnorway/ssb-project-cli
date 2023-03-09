@@ -65,6 +65,7 @@ def get_kernels_dict() -> dict[str, str]:
     kernel_dict = {}
     for kernel in kernels_str.split("\n")[1:]:
         line = " ".join(kernel.strip().split())
+        line = line.replace("%s ","").strip()
         if len(line.split(" ")) == 2:
             k, v = line.split(" ")
             kernel_dict[k] = v
