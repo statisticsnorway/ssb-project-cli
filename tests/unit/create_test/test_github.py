@@ -9,6 +9,9 @@ from github import BadCredentialsException
 from github import GithubException
 
 from ssb_project_cli.ssb_project.create.github import create_github
+from ssb_project_cli.ssb_project.create.github import (
+    get_environment_specific_github_object,
+)
 from ssb_project_cli.ssb_project.create.github import get_github_pat_from_gitcredentials
 from ssb_project_cli.ssb_project.create.github import get_github_pat_from_netrc
 from ssb_project_cli.ssb_project.create.github import is_github_repo
@@ -124,3 +127,22 @@ def test_get_github_pat_from_gitcredentials(
     with patch(f"{GITHUB}.Path.exists", return_value=True):
         with patch(f"{GITHUB}.open", mock_open(read_data=data)):
             assert (get_github_pat_from_gitcredentials(Path(".")) == result) == expected
+
+
+@patch(f"{GITHUB}.running_onprem")
+@patch(f"{GITHUB}.Github")
+def test_get_environment_specific_github_object(
+    mock_github: Mock, mock_running_onprem: Mock
+) -> None:
+    mock_running_onprem.side_effect = [True, False]
+
+    # Test when running on-premises
+    get_environment_specific_github_object("")
+    # Assert that the Github object was called with verify=False
+    assert mock_github.call_args.kwargs["verify"] is False
+
+    # Test when not running on-premises
+    get_environment_specific_github_object("")
+
+    # Assert that the Github object was called with verify=True
+    assert mock_github.call_args.kwargs["verify"] is True
