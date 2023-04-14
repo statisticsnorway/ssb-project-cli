@@ -7,6 +7,8 @@ from github import BadCredentialsException
 from github import Github
 from github import GithubException
 
+from ssb_project_cli.ssb_project.build.environment import JUPYTER_IMAGE_SPEC
+from ssb_project_cli.ssb_project.build.environment import running_onprem
 from ssb_project_cli.ssb_project.util import create_error_log
 
 
@@ -29,7 +31,7 @@ def create_github(
     Returns:
         str: Repository url
     """
-    g = Github(github_token)
+    g = get_environment_specific_github_object(github_token)
 
     try:
         # Ignoring mypy warning: Unexpected keyword argument "visibility"
@@ -165,7 +167,9 @@ def is_github_repo(token: str, repo_name: str, github_org_name: str) -> bool:
         True if the repository exists, else false.
     """
     try:
-        Github(token).get_repo(f"{github_org_name}/{repo_name}")
+        get_environment_specific_github_object(token).get_repo(
+            f"{github_org_name}/{repo_name}"
+        )
     except ValueError:
         print(
             "The provided Github credentials are invalid. Please check that your personal access token is not expired."
@@ -192,7 +196,33 @@ def set_branch_protection_rules(
         repo_name: name of repository
         github_org_name: Name of GitHub organization
     """
-    repo = Github(github_token).get_repo(f"{github_org_name}/{repo_name}")
+    repo = get_environment_specific_github_object(github_token).get_repo(
+        f"{github_org_name}/{repo_name}"
+    )
     repo.get_branch("main").edit_protection(
         required_approving_review_count=1, dismiss_stale_reviews=True
     )
+
+
+def get_environment_specific_github_object(github_token: str) -> Github:
+    """Creates and returns a `Github` object with appropriate settings based on the environment.
+
+    Args:
+        github_token: A personal access token for authenticating with the GitHub API.
+
+    Returns:
+        A `Github` object that can be used to interact with the GitHub API.
+
+    This function creates a `Github` object that is specific to the current environment.
+    If the function is running in the onprem environment, SSL verification is disabled.
+    Otherwise, SSL verification is enabled.
+
+    The function requires a personal access token for authentication with the GitHub API.
+    If the access token is not valid, a `RuntimeError` will be raised.
+    """
+    if running_onprem(JUPYTER_IMAGE_SPEC):
+        verify = False
+    else:
+        verify = True
+
+    return Github(github_token, verify=verify)
