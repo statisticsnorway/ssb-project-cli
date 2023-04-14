@@ -1,11 +1,13 @@
 """This module contains GitHub related functionality used when creating ssb-projects."""
 import re
+import warnings
 from pathlib import Path
 from traceback import format_exc
 
 from github import BadCredentialsException
 from github import Github
 from github import GithubException
+from urllib3.exceptions import InsecureRequestWarning
 
 from ssb_project_cli.ssb_project.build.environment import JUPYTER_IMAGE_SPEC
 from ssb_project_cli.ssb_project.build.environment import running_onprem
@@ -217,10 +219,14 @@ def get_environment_specific_github_object(github_token: str) -> Github:
     If the function is running in the onprem environment, SSL verification is disabled.
     Otherwise, SSL verification is enabled.
 
-    The function requires a personal access token for authentication with the GitHub API.
-    If the access token is not valid, a `RuntimeError` will be raised.
+    If SSL verification is disabled, the function also suppresses the `InsecureRequestWarning` that is issued by urllib3. The warning is suppressed because SSL verification is intentionally disabled in the onprem environment.
     """
     if running_onprem(JUPYTER_IMAGE_SPEC):
+        warnings.filterwarnings(
+            "ignore",
+            message="Unverified HTTPS request is being made to host",
+            category=InsecureRequestWarning,
+        )
         verify = False
     else:
         verify = True
