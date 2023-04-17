@@ -1,13 +1,11 @@
 """This module contains GitHub related functionality used when creating ssb-projects."""
 import re
-import warnings
 from pathlib import Path
 from traceback import format_exc
 
 from github import BadCredentialsException
 from github import Github
 from github import GithubException
-from urllib3.exceptions import InsecureRequestWarning
 
 from ssb_project_cli.ssb_project.build.environment import JUPYTER_IMAGE_SPEC
 from ssb_project_cli.ssb_project.build.environment import running_onprem
@@ -216,19 +214,12 @@ def get_environment_specific_github_object(github_token: str) -> Github:
         A `Github` object that can be used to interact with the GitHub API.
 
     This function creates a `Github` object that is specific to the current environment.
-    If the function is running in the onprem environment, SSL verification is disabled.
+    If the function is running in the onprem environment, SSL verification uses /etc/ssl/certs/ca-certificates.crt.
     Otherwise, SSL verification is enabled.
-
-    If SSL verification is disabled, the function also suppresses the `InsecureRequestWarning` that is issued by urllib3. The warning is suppressed because SSL verification is intentionally disabled in the onprem environment.
     """
     if running_onprem(JUPYTER_IMAGE_SPEC):
-        warnings.filterwarnings(
-            "ignore",
-            message="Unverified HTTPS request is being made to host",
-            category=InsecureRequestWarning,
-        )
-        verify = False
+        # CA bundle to use, suppying this fixes the onprem error "CERTIFICATE_VERIFY_FAILED"
+        # verify can be boolean or string, we have to type ignore because mypy expects it to be a bool
+        return Github(github_token, verify="/etc/ssl/certs/ca-certificates.crt")  # type: ignore
     else:
-        verify = True
-
-    return Github(github_token, verify=verify)
+        return Github(github_token)

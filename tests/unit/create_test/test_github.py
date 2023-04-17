@@ -139,7 +139,9 @@ def test_get_environment_specific_github_object(
     # Test when running on-premises
     get_environment_specific_github_object("")
     # Assert that the Github object was called with verify=False
-    assert mock_github.call_args.kwargs["verify"] is False
+    assert (
+        mock_github.call_args.kwargs["verify"] == "/etc/ssl/certs/ca-certificates.crt"
+    )
 
     # Test when not running on-premises
     get_environment_specific_github_object("")
