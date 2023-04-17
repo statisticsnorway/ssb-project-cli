@@ -218,7 +218,7 @@ def get_environment_specific_github_object(github_token: str) -> Github:
     Otherwise, SSL verification is enabled.
     """
     if running_onprem(JUPYTER_IMAGE_SPEC):
-        # CA bundle to use, suppying this fixes the onprem error "CERTIFICATE_VERIFY_FAILED"
+        # CA bundle to use, supplying this fixes the onprem error "CERTIFICATE_VERIFY_FAILED"
         # verify can be boolean or string, we have to type ignore because mypy expects it to be a bool
         return Github(github_token, verify="/etc/ssl/certs/ca-certificates.crt")  # type: ignore
     else:
