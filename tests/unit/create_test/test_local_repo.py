@@ -1,4 +1,5 @@
 """Tests for local_repo module."""
+import json
 from pathlib import Path
 from random import randint
 from unittest.mock import Mock
@@ -190,12 +191,16 @@ def test_create_project_from_template_license_year(
     mock_extract.return_value = ("Name", "")
     mock_request.return_value = ("Name2", "email@email.com")
     license_year = str(randint(1000, 3000))  # noqa: S311 non-cryptographic use
+    project_name = "testname"
     create_project_from_template(
-        "testname",
+        project_name,
         "test description",
         STAT_TEMPLATE_REPO_URL,
         STAT_TEMPLATE_DEFAULT_REFERENCE,
         tmp_path,
         license_year,
     )
-    assert f'"license_year": "{license_year}"' in mock_run.call_args.args[-1][-1]
+    mock_run_call_args = mock_run.call_args.args
+    cruft_args = json.loads(mock_run_call_args[-1][-1])
+    assert cruft_args["license_year"] == license_year
+    assert cruft_args["project_name"] == project_name
