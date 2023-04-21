@@ -3,12 +3,14 @@ import re
 from pathlib import Path
 from traceback import format_exc
 
+import questionary
 from github import BadCredentialsException
 from github import Github
 from github import GithubException
 
 from ssb_project_cli.ssb_project.build.environment import JUPYTER_IMAGE_SPEC
 from ssb_project_cli.ssb_project.build.environment import running_onprem
+from ssb_project_cli.ssb_project.settings import GITHUB_ORG_NAME
 from ssb_project_cli.ssb_project.util import create_error_log
 
 
@@ -223,3 +225,44 @@ def get_environment_specific_github_object(github_token: str) -> Github:
         return Github(github_token, verify="/etc/ssl/certs/ca-certificates.crt")  # type: ignore
     else:
         return Github(github_token)
+
+
+def get_org_members(github: Github) -> list[str]:
+    """Returns a list of login names for all members of a GitHub organization.
+
+    Args:
+        github: A PyGithub `Github` object authenticated with a GitHub API token.
+
+    Returns:
+        list: A list of strings, where each string is the login name of a member of the organization.
+    """
+    org = github.get_organization(GITHUB_ORG_NAME)
+
+    # Get the list of members and return their login names as a list
+    members = [member.login for member in org.get_members()]
+    return members
+
+
+def get_github_username(github: Github) -> str:
+    """Get the user's GitHub username.
+
+    If running on-prem, prompt the user to select their username from a list of
+    organization members. Otherwise, retrieve the user's username from GitHub.
+
+    Args:
+        github: An instance of the `Github` class
+
+    Returns:
+        str: The user's GitHub username.
+    """
+    if running_onprem(JUPYTER_IMAGE_SPEC):
+        org_members = get_org_members(github)
+        user_value: str = questionary.autocomplete(
+            message="Enter your GitHub username:",
+            choices=org_members,
+            validate=lambda text: text.lower()
+            in [member.lower() for member in org_members],
+        ).ask()
+        return user_value
+    else:
+        return github.get_user().login

@@ -14,6 +14,8 @@ from ssb_project_cli.ssb_project.create.github import (
 )
 from ssb_project_cli.ssb_project.create.github import get_github_pat_from_gitcredentials
 from ssb_project_cli.ssb_project.create.github import get_github_pat_from_netrc
+from ssb_project_cli.ssb_project.create.github import get_github_username
+from ssb_project_cli.ssb_project.create.github import get_org_members
 from ssb_project_cli.ssb_project.create.github import is_github_repo
 from ssb_project_cli.ssb_project.create.github import set_branch_protection_rules
 
@@ -147,4 +149,42 @@ def test_get_environment_specific_github_object(
     get_environment_specific_github_object("")
 
     # Assert that the Github object was called with verify=True
-    assert mock_github.call_args.kwargs["verify"] is True
+    assert "verify" not in mock_github.call_args.kwargs.keys()
+
+
+@patch(f"{GITHUB}.Github")
+def test_get_org_members(github_mock: Mock) -> None:
+    # Create a mock organization object with a mock list of members
+    org_mock = Mock()
+    org_mock.get_members.return_value = [
+        Mock(login="user1"),
+        Mock(login="user2"),
+        Mock(login="user3"),
+    ]
+    github_mock.get_organization.return_value = org_mock
+
+    assert get_org_members(github_mock) == ["user1", "user2", "user3"]
+
+
+@patch(f"{GITHUB}.running_onprem")
+@patch(f"{GITHUB}.Github")
+def test_get_github_username_onprem(
+    github_mock: Mock, running_onprem_mock: Mock
+) -> None:
+    running_onprem_mock.return_value = True
+    mock_autocomplete = Mock()
+    mock_autocomplete.ask.return_value = "TestUser1"
+    with patch("questionary.autocomplete", return_value=mock_autocomplete):
+        assert "TestUser1" == get_github_username(github_mock)
+
+
+@patch(f"{GITHUB}.running_onprem")
+@patch(f"{GITHUB}.Github")
+def test_get_github_username_not_onprem(
+    github_mock: Mock, running_onprem_mock: Mock
+) -> None:
+    running_onprem_mock.return_value = False
+    mock_user = Mock()
+    mock_user.login = "testuser"
+    github_mock.get_user.return_value = mock_user
+    assert "testuser" == get_github_username(github_mock)
