@@ -130,7 +130,7 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
     repo = make_and_init_git_repo(repo_dir)
 
     github_username = get_github_username(
-        get_environment_specific_github_object(github_token)
+        get_environment_specific_github_object(github_token), github_token
     )
     credential_url = mangle_url(github_url, github_token)
     username_url = mangle_url(github_url, github_username)

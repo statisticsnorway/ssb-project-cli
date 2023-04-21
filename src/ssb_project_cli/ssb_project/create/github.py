@@ -4,6 +4,7 @@ from pathlib import Path
 from traceback import format_exc
 
 import questionary
+import requests
 from github import BadCredentialsException
 from github import Github
 from github import GithubException
@@ -227,36 +228,56 @@ def get_environment_specific_github_object(github_token: str) -> Github:
         return Github(github_token)
 
 
-def get_org_members(github: Github) -> list[str]:
+def get_org_members(github_token: str) -> list[str]:
     """Returns a list of login names for all members of a GitHub organization.
 
     Args:
-        github: A PyGithub `Github` object authenticated with a GitHub API token.
+        github_token: GitHub API token.
 
     Returns:
         list: A list of strings, where each string is the login name of a member of the organization.
     """
-    org = github.get_organization(GITHUB_ORG_NAME)
+    # Set up the API endpoint URL and initial query parameters
+    url = f"https://api.github.com/orgs{GITHUB_ORG_NAME}/members"
+    params = {"per_page": 100, "page": 1}
+    headers = {"Authorization": f"Bearer {github_token}"}
 
-    # Get the list of members and return their login names as a list
-    members = [member.login for member in org.get_members()]
-    return members
+    # Store usernames
+    github_usernames = []
+
+    while True:
+        response = requests.get(url, headers=headers, params=params, timeout=20)
+
+        if response.status_code == 200:
+            members = response.json()
+            if len(members) == 0:
+                break
+
+            for member in members:
+                github_usernames.append(member["login"])
+            params["page"] += 1
+        else:
+            print("Error: could not retrieve member list")
+            exit(1)
+
+    return github_usernames
 
 
-def get_github_username(github: Github) -> str:
+def get_github_username(github: Github, github_token: str) -> str:
     """Get the user's GitHub username.
 
     If running on-prem, prompt the user to select their username from a list of
     organization members. Otherwise, retrieve the user's username from GitHub.
 
     Args:
-        github: An instance of the `Github` class
+        github: An instance of the `Github` class.
+        github_token: GitHub API token.
 
     Returns:
         str: The user's GitHub username.
     """
     if running_onprem(JUPYTER_IMAGE_SPEC):
-        org_members = get_org_members(github)
+        org_members = get_org_members(github_token)
         user_value: str = questionary.autocomplete(
             message="Enter your GitHub username:",
             choices=org_members,
