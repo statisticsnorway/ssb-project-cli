@@ -19,6 +19,9 @@ def set_debug_logging(home_path: Path = HOME_PATH) -> None:
         home_path: path prefix to use for error logging, defaults to HOME_PATH.
     """
     error_logs_path = f"{home_path}/ssb-project-cli/.error_logs/ssb-project-debug.log"
+    log_dir = os.path.dirname(error_logs_path)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
     logging.basicConfig(filename=error_logs_path, level=logging.DEBUG)
 
 
