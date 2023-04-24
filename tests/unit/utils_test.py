@@ -1,10 +1,13 @@
 """Tests utils functions."""
+import tempfile
+from pathlib import Path
 from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
 
 from ssb_project_cli.ssb_project.util import execute_command
+from ssb_project_cli.ssb_project.util import set_debug_logging
 
 
 UTILS = "ssb_project_cli.ssb_project.util"
@@ -42,3 +45,10 @@ def test_execute_command_success(mock_run: Mock, mock_print: Mock) -> None:
 
     assert mock_run.call_count == 1
     mock_print.assert_called_with("Success")
+
+
+def test_set_debug_logging_folders_created() -> None:
+    with tempfile.TemporaryDirectory() as tempdir:
+        error_logs_path = Path(f"{tempdir}/ssb-project-cli/.error_logs/")
+        set_debug_logging(home_path=Path(tempdir))
+        assert error_logs_path.is_dir()
