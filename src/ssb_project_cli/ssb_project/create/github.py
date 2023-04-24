@@ -265,6 +265,8 @@ def get_org_members(github_token: str) -> list[str]:
             params["page"] += 1
         else:
             print("Error: could not retrieve member list")
+            response_json, response_status = response.json(), response.status_code
+            create_error_log(f"{response_json=}, {response_status=}", "get_org_members")
             exit(1)
 
     return github_usernames

@@ -1,4 +1,5 @@
 """SSB-project utils."""
+import logging
 import os
 import subprocess  # noqa: S404
 import time
@@ -9,6 +10,16 @@ from typing import Union
 from rich import print
 
 from .settings import HOME_PATH
+
+
+def set_debug_logging(home_path: Path = HOME_PATH) -> None:
+    """Creates a file with log of error in the current folder.
+
+    Args:
+        home_path: path prefix to use for error logging, defaults to HOME_PATH.
+    """
+    error_logs_path = f"{home_path}/ssb-project-cli/.error_logs/ssb-project-debug.log"
+    logging.basicConfig(filename=error_logs_path, level=logging.DEBUG)
 
 
 def create_error_log(
@@ -29,6 +40,9 @@ def create_error_log(
         with open(f"{error_logs_path}/{filename}", "w+") as f:
             f.write(log)
             print(f"Detailed error information saved to {error_logs_path}/{filename}")
+            print(
+                f"You can find the full debug log here {error_logs_path}/ssb-project-debug.log"
+            )
             f.close()
     except Exception as e:
         print(f"Error while attempting to write the log file: {e}")
