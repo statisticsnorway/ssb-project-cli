@@ -246,7 +246,16 @@ def get_org_members(github_token: str) -> list[str]:
     github_usernames = []
 
     while True:
-        response = requests.get(url, headers=headers, params=params, timeout=20)
+        if running_onprem(JUPYTER_IMAGE_SPEC):
+            response = requests.get(
+                url,
+                headers=headers,
+                params=params,
+                timeout=20,
+                verify="/etc/ssl/certs/ca-certificates.crt",
+            )
+        else:
+            response = requests.get(url, headers=headers, params=params, timeout=20)
 
         if response.status_code == 200:
             members = response.json()
