@@ -1,7 +1,8 @@
 """Command-line-interface for project-operations in dapla-jupterlab."""
-
 import typer
 from rich.console import Console
+
+from ssb_project_cli.ssb_project.util import set_debug_logging
 
 from .build.build import build_project
 from .clean.clean import clean_project
@@ -100,6 +101,7 @@ def clean(
 
 def main() -> None:
     """Main function of ssb_project_cli."""
+    set_debug_logging()
     app(prog_name="ssb-project")  # pragma: no cover
 
 

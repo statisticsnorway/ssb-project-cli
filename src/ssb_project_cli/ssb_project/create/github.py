@@ -3,10 +3,16 @@ import re
 from pathlib import Path
 from traceback import format_exc
 
+import questionary
+import requests
 from github import BadCredentialsException
 from github import Github
 from github import GithubException
 
+from ssb_project_cli.ssb_project import prompt_autocomplete_style
+from ssb_project_cli.ssb_project.build.environment import JUPYTER_IMAGE_SPEC
+from ssb_project_cli.ssb_project.build.environment import running_onprem
+from ssb_project_cli.ssb_project.settings import GITHUB_ORG_NAME
 from ssb_project_cli.ssb_project.util import create_error_log
 
 
@@ -29,7 +35,7 @@ def create_github(
     Returns:
         str: Repository url
     """
-    g = Github(github_token)
+    g = get_environment_specific_github_object(github_token)
 
     try:
         # Ignoring mypy warning: Unexpected keyword argument "visibility"
@@ -165,7 +171,9 @@ def is_github_repo(token: str, repo_name: str, github_org_name: str) -> bool:
         True if the repository exists, else false.
     """
     try:
-        Github(token).get_repo(f"{github_org_name}/{repo_name}")
+        get_environment_specific_github_object(token).get_repo(
+            f"{github_org_name}/{repo_name}"
+        )
     except ValueError:
         print(
             "The provided Github credentials are invalid. Please check that your personal access token is not expired."
@@ -192,7 +200,100 @@ def set_branch_protection_rules(
         repo_name: name of repository
         github_org_name: Name of GitHub organization
     """
-    repo = Github(github_token).get_repo(f"{github_org_name}/{repo_name}")
+    repo = get_environment_specific_github_object(github_token).get_repo(
+        f"{github_org_name}/{repo_name}"
+    )
     repo.get_branch("main").edit_protection(
         required_approving_review_count=1, dismiss_stale_reviews=True
     )
+
+
+def get_environment_specific_github_object(github_token: str) -> Github:
+    """Creates and returns a `Github` object with appropriate settings based on the environment.
+
+    Args:
+        github_token: A personal access token for authenticating with the GitHub API.
+
+    Returns:
+        A `Github` object that can be used to interact with the GitHub API.
+
+    This function creates a `Github` object that is specific to the current environment.
+    If the function is running in the onprem environment, SSL verification uses /etc/ssl/certs/ca-certificates.crt.
+    Otherwise, SSL verification is enabled.
+    """
+    if running_onprem(JUPYTER_IMAGE_SPEC):
+        # CA bundle to use, supplying this fixes the onprem error "CERTIFICATE_VERIFY_FAILED"
+        # verify can be boolean or string, we have to type ignore because mypy expects it to be a bool
+        return Github(github_token, verify="/etc/ssl/certs/ca-certificates.crt")  # type: ignore
+    else:
+        return Github(github_token)
+
+
+def get_org_members(github_token: str) -> list[str]:
+    """Returns a list of login names for all members of a GitHub organization.
+
+    Args:
+        github_token: GitHub API token.
+
+    Returns:
+        list: A list of strings, where each string is the login name of a member of the organization.
+    """
+    # Set up the API endpoint URL and initial query parameters
+    url = f"https://api.github.com/orgs/{GITHUB_ORG_NAME}/members"
+    params = {"per_page": 100, "page": 1}
+    headers = {"Authorization": f"Bearer {github_token}"}
+
+    # Store usernames
+    github_usernames = []
+
+    while True:
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            timeout=20,
+            verify="/etc/ssl/certs/ca-certificates.crt",
+        )
+
+        if response.status_code == 200:
+            members = response.json()
+            if len(members) == 0:
+                break
+
+            for member in members:
+                github_usernames.append(member["login"])
+            params["page"] += 1
+        else:
+            print("Error: could not retrieve member list")
+            response_json, response_status = response.json(), response.status_code
+            create_error_log(f"{response_json=}, {response_status=}", "get_org_members")
+            exit(1)
+
+    return github_usernames
+
+
+def get_github_username(github: Github, github_token: str) -> str:
+    """Get the user's GitHub username.
+
+    If running on-prem, prompt the user to select their username from a list of
+    organization members. Otherwise, retrieve the user's username from GitHub.
+
+    Args:
+        github: An instance of the `Github` class.
+        github_token: GitHub API token.
+
+    Returns:
+        str: The user's GitHub username.
+    """
+    if running_onprem(JUPYTER_IMAGE_SPEC):
+        org_members = get_org_members(github_token)
+        user_value: str = questionary.autocomplete(
+            message="Enter your GitHub username:",
+            choices=org_members,
+            style=prompt_autocomplete_style,
+            validate=lambda text: text.lower()
+            in [member.lower() for member in org_members],
+        ).ask()
+        return user_value
+    else:
+        return github.get_user().login

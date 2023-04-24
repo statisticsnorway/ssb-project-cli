@@ -1,4 +1,5 @@
 """Tests for local_repo module."""
+import json
 from pathlib import Path
 from random import randint
 from unittest.mock import Mock
@@ -49,17 +50,21 @@ def test_mangle_url(url: str, mangle: str, expected: str) -> None:
 
 
 @patch(f"{LOCAL_REPO}.temp_git_repo.Repo")
-@patch(f"{LOCAL_REPO}.Github.get_user")
+@patch(f"{LOCAL_REPO}.get_environment_specific_github_object")
 @patch(f"{LOCAL_REPO}.make_and_init_git_repo")
 def test_make_git_repo_and_push(
-    mock_make_and_init_git_repo: Mock, mock_getuser: Mock, mock_repo: Mock
+    mock_make_and_init_git_repo: Mock,
+    mock_get_environment_specific_github_object: Mock,
+    mock_repo: Mock,
 ) -> None:
     """Checks that make_git_repo_and_push works.
 
     The git repo is mocked with 5 fake remotes to check that
     repo.delete_remote is called the expected amount of times.
     """
-    mock_getuser.return_value = Mock(login="user")
+    mock_get_environment_specific_github_object.get_user.return_value = Mock(
+        login="user"
+    )
 
     test_repo = Mock(remotes=range(5))
     mock_make_and_init_git_repo.return_value = test_repo
@@ -74,17 +79,21 @@ def test_make_git_repo_and_push(
 
 
 @patch(f"{LOCAL_REPO}.temp_git_repo.Repo")
-@patch(f"{LOCAL_REPO}.Github.get_user")
+@patch(f"{LOCAL_REPO}.get_environment_specific_github_object")
 @patch(f"{LOCAL_REPO}.make_and_init_git_repo")
 def test_make_and_repo_and_push(
-    mock_make_and_init_git_repo: Mock, mock_getuser: Mock, mock_repo: Mock
+    mock_make_and_init_git_repo: Mock,
+    mock_get_environment_specific_github_object: Mock,
+    mock_repo: Mock,
 ) -> None:
     """Checks that make_git_repo_and_push works.
 
     The git repo is mocked with 5 fake remotes to check that
     repo.delete_remote is called the expected amount of times.
     """
-    mock_getuser.return_value = Mock(login="user")
+    mock_get_environment_specific_github_object.get_user.return_value = Mock(
+        login="user"
+    )
 
     test_repo = Mock(remotes=range(5))
     mock_make_and_init_git_repo.return_value = test_repo
@@ -182,12 +191,16 @@ def test_create_project_from_template_license_year(
     mock_extract.return_value = ("Name", "")
     mock_request.return_value = ("Name2", "email@email.com")
     license_year = str(randint(1000, 3000))  # noqa: S311 non-cryptographic use
+    project_name = "testname"
     create_project_from_template(
-        "testname",
+        project_name,
         "test description",
         STAT_TEMPLATE_REPO_URL,
         STAT_TEMPLATE_DEFAULT_REFERENCE,
         tmp_path,
         license_year,
     )
-    assert f'"license_year": "{license_year}"' in mock_run.call_args.args[-1][-1]
+    mock_run_call_args = mock_run.call_args.args
+    cruft_args = json.loads(mock_run_call_args[-1][-1])
+    assert cruft_args["license_year"] == license_year
+    assert cruft_args["project_name"] == project_name

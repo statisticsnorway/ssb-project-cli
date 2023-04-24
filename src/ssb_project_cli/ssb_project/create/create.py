@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 from shutil import rmtree
 
-import psutil  # type: ignore
+import psutil
 from rich import print
 
 from ssb_project_cli.ssb_project.util import create_error_log
@@ -77,7 +77,9 @@ def create_project(  # noqa: C901
 
     if project_directory.exists():
         print(
-            f"A project with name '{project_name}' already exists. Please choose another name."
+            "A project with name {!r} already exists. Please choose another name.".format(
+                project_name
+            )
         )
         exit(1)
 

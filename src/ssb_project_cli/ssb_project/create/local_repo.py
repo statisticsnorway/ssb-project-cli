@@ -6,9 +6,12 @@ from pathlib import Path
 from typing import Optional
 
 from git import Repo  # type: ignore[attr-defined]
-from github import Github
 
 from ssb_project_cli.ssb_project.create import temp_git_repo
+from ssb_project_cli.ssb_project.create.github import (
+    get_environment_specific_github_object,
+)
+from ssb_project_cli.ssb_project.create.github import get_github_username
 from ssb_project_cli.ssb_project.create.prompt import request_name_email
 
 
@@ -126,7 +129,9 @@ def make_git_repo_and_push(github_token: str, github_url: str, repo_dir: Path) -
     """
     repo = make_and_init_git_repo(repo_dir)
 
-    github_username = Github(github_token).get_user().login
+    github_username = get_github_username(
+        get_environment_specific_github_object(github_token), github_token
+    )
     credential_url = mangle_url(github_url, github_token)
     username_url = mangle_url(github_url, github_username)
 
