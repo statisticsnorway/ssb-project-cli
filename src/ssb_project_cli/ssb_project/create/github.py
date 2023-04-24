@@ -238,7 +238,7 @@ def get_org_members(github_token: str) -> list[str]:
         list: A list of strings, where each string is the login name of a member of the organization.
     """
     # Set up the API endpoint URL and initial query parameters
-    url = f"https://api.github.com/orgs{GITHUB_ORG_NAME}/members"
+    url = f"https://api.github.com/orgs/{GITHUB_ORG_NAME}/members"
     params = {"per_page": 100, "page": 1}
     headers = {"Authorization": f"Bearer {github_token}"}
 
