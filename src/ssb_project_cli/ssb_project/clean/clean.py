@@ -20,13 +20,17 @@ def clean_project(project_name: str) -> None:
 
     if project_name not in kernels:
         print(
-            f'Could not find kernel "{project_name}". Is the project name spelled correctly?'
+            "Could not find kernel {!r}. Is the project name spelled correctly?".format(
+                project_name
+            )
         )
 
         exit(1)
 
     confirmation = questionary.confirm(
-        f"Are you sure you want to delete the kernel '{project_name}'. This action will delete the kernel associated with the virtual environment and leave all other files untouched."
+        "Are you sure you want to delete the kernel '{!r}'. This action will delete the kernel associated with the virtual environment and leave all other files untouched.".format(
+            project_name
+        )
     ).ask()
 
     if not confirmation:
