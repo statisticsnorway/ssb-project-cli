@@ -9,6 +9,7 @@ from github import BadCredentialsException
 from github import Github
 from github import GithubException
 
+from ssb_project_cli.ssb_project import prompt_autocomplete_style
 from ssb_project_cli.ssb_project.build.environment import JUPYTER_IMAGE_SPEC
 from ssb_project_cli.ssb_project.build.environment import running_onprem
 from ssb_project_cli.ssb_project.settings import GITHUB_ORG_NAME
@@ -287,6 +288,7 @@ def get_github_username(github: Github, github_token: str) -> str:
         user_value: str = questionary.autocomplete(
             message="Enter your GitHub username:",
             choices=org_members,
+            style=prompt_autocomplete_style,
             validate=lambda text: text.lower()
             in [member.lower() for member in org_members],
         ).ask()
