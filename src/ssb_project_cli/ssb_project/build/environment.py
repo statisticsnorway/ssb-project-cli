@@ -95,9 +95,7 @@ def reset_global_gitconfig() -> None:
 
     try:
         ssb_gitconfig.main(test=False)
-    except SystemExit as sys_ex:
-        exit_code = sys_ex.code
-    if exit_code != 0:
+    except SystemExit:
         platform = ssb_gitconfig.Platform()
         is_supported_bools = ("is", "is not")
         print(
