@@ -108,7 +108,6 @@ def build(
         STAT_TEMPLATE_DEFAULT_REFERENCE,
         verify_config,
     )
-    print(verify_config)
 
 
 @app.command()
