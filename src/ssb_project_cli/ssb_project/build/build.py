@@ -45,7 +45,11 @@ def build_project(
         )
         exit(1)
     if verify_config:
-        valid_global_git_config = kvakk_git_tools.validate_git_config()
+        try:
+            valid_global_git_config = kvakk_git_tools.validate_git_config()
+        except FileExistsError:
+            # If gitconfig does not exist the configuration is invalid
+            valid_global_git_config = False
         valid_project_git_config = verify_local_config(
             template_repo_url,
             template_reference,
