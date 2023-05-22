@@ -33,6 +33,7 @@ def create_project(  # noqa: C901
     github_org_name: str,
     template_repo_url: str,
     template_reference: str,
+    verify_config: bool = True,
 ) -> None:
     """Create an SSB-project.
 
@@ -47,6 +48,7 @@ def create_project(  # noqa: C901
         github_org_name: Name of GitHub organization
         template_repo_url: Template repository url
         template_reference: Template reference
+        verify_config: Determines if gitconfig is verified.
     """
     is_memory_full()
 
@@ -91,8 +93,13 @@ def create_project(  # noqa: C901
             template_reference,
             working_directory,
         )
-
-        build_project(str(project_directory), working_directory)
+        build_project(
+            project_directory,
+            working_directory,
+            template_repo_url,
+            template_reference,
+            verify_config,
+        )
 
         git_repo_dir = Path(working_directory.joinpath(project_name))
         if add_github:

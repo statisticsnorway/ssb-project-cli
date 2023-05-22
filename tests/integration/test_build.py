@@ -19,7 +19,9 @@ def create_project(
     name: Path, git_config: dict[str, str]
 ) -> Generator[Result, None, None]:
     """Create the project and tidy up after."""
-    result = runner.invoke(app, ["create", str(name)], catch_exceptions=False)
+    result = runner.invoke(
+        app, ["create", str(name), "--no-verify"], catch_exceptions=False
+    )
     yield result
     # Clean up project directory
     shutil.rmtree(name)
@@ -29,7 +31,7 @@ def create_project(
 
 @pytest.fixture(scope="module")
 def build_project(create_project: dict[str, str]) -> Result:
-    return runner.invoke(app, ["build"], catch_exceptions=False)
+    return runner.invoke(app, ["build", "--no-verify"], catch_exceptions=False)
 
 
 def test_build_project_exit_code(build_project: Result) -> None:

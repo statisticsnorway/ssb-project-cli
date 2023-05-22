@@ -28,7 +28,7 @@ def clean_project(project_name: str) -> None:
         exit(1)
 
     confirmation = questionary.confirm(
-        "Are you sure you want to delete the kernel '{!r}'. This action will delete the kernel associated with the virtual environment and leave all other files untouched.".format(
+        "Are you sure you want to delete the kernel {!r}. This action will delete the kernel associated with the virtual environment and leave all other files untouched.".format(
             project_name
         )
     ).ask()
