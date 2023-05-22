@@ -17,12 +17,10 @@ class TempTemplateRepo:
 
     def __enter__(self) -> "TempTemplateRepo":
         """Clones the template repository specified by template_repo_url to a temporary directory and checks out the tag specified by template_reference."""
-        # Cleanup is using ignore_cleanup_errors ref https://github.com/python/cpython/pull/24793
-        # This uses a best-effort cleanup approach without stopping on errors, such as PermissionErrors on Windows.
-        self.temp_dir = TemporaryDirectory(ignore_cleanup_errors=True)
+        self.temp_dir = TemporaryDirectory()
 
         # clone the repository
-        self.repo = Repo.clone_from(self.template_repo_url, self.temp_dir.name)
+        self.repo = Repo.clone_from(self.template_repo_url, str(self.temp_dir))
 
         # checkout the specific tag you're interested in
         self.repo.git.checkout(self.template_reference)
