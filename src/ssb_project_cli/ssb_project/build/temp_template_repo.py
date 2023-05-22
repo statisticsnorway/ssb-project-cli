@@ -1,7 +1,5 @@
 """This module provides the TempTemplateRepo context manager, which can be used to clone a Git repository to a temporary directory and checkout a specific tag."""
-import os
-import shutil
-import stat
+import logging
 from tempfile import TemporaryDirectory
 from types import TracebackType
 from typing import Optional
@@ -39,20 +37,9 @@ class TempTemplateRepo:
         exc_tb: Optional[TracebackType],
     ) -> None:
         """Cleans up the temporary directory created containing the template repository."""
-        # Workaround for https://bugs.python.org/issue26660
-        self._unset_readonly_recursive()
-        shutil.rmtree(self.temp_dir.name)
-
-    def _unset_readonly_recursive(self) -> None:
-        """Unset the read-only bit for files and directories in the temporary directory.
-
-        This fixes the https://bugs.python.org/issue26660 issue in windows tests.
-        """
-        for root, dirs, files in os.walk(str(self.temp_dir)):
-            for directory in dirs:
-                directory_path = os.path.join(root, directory)
-                os.chmod(directory_path, stat.S_IWRITE)
-
-            for file in files:
-                file_path = os.path.join(root, file)
-                os.chmod(file_path, stat.S_IWRITE)
+        try:
+            self.temp_dir.cleanup()
+        except PermissionError:
+            logging.exception(
+                "PermissionError occurred during cleanup of temporary repo directory:"
+            )
