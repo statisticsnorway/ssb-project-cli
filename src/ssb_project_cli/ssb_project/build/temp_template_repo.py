@@ -1,5 +1,6 @@
 """This module provides the TempTemplateRepo context manager, which can be used to clone a Git repository to a temporary directory and checkout a specific tag."""
 import os
+import shutil
 import stat
 from tempfile import TemporaryDirectory
 from types import TracebackType
@@ -40,7 +41,7 @@ class TempTemplateRepo:
         """Cleans up the temporary directory created containing the template repository."""
         # Workaround for https://bugs.python.org/issue26660
         self._unset_readonly_recursive()
-        self.temp_dir.cleanup()
+        shutil.rmtree(self.temp_dir.name)
 
     def _unset_readonly_recursive(self) -> None:
         """Unset the read-only bit for files and directories in the temporary directory.
