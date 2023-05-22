@@ -28,11 +28,11 @@ def confirm_fix_ssb_git_config(
     """
     valid_global_git_config_tuple = (".gitconfig", "")
     valid_project_git_config_tuple = (".gitattributes and .gitignore", "")
-    change_files_str = f"{valid_global_git_config_tuple[valid_global_git_config]} {valid_project_git_config_tuple[valid_project_git_config]}"
+    changed_files = f"{valid_global_git_config_tuple[valid_global_git_config]} {valid_project_git_config_tuple[valid_project_git_config]}"
 
     # Default is set to None makes typer repeat until input y/n is given.
     if typer.confirm(
-        f"\n\tWould you like to reset your Git configuration to the SSB recommended defaults?\n\tThis action will override changes you have made to: {change_files_str}.",
+        f"\n\tWould you like to reset your Git configuration to the SSB recommended defaults?\n\tThis action will override changes you have made to: {changed_files}.",
         default=None,
     ):
         print()  # Formatting print
