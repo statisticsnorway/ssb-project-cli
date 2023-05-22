@@ -16,9 +16,9 @@ def test_temp_template_repo(exit_temp_repo_mock: Mock) -> None:
         STAT_TEMPLATE_REPO_URL, STAT_TEMPLATE_DEFAULT_REFERENCE
     ) as temp_repo:
         # Check that the temporary directory was created and exists
-        assert os.path.exists(str(temp_repo.temp_dir))
+        assert os.path.exists(temp_repo.temp_dir.name)
         # Check that the Git repository was cloned to the temporary directory
-        assert os.path.exists(f"{str(temp_repo.temp_dir)}/.git")
+        assert os.path.exists(f"{temp_repo.temp_dir.name}/.git")
 
         # Check that the specified tag was checked out in the cloned Git repository
         assert get_current_tag(temp_repo.repo) == STAT_TEMPLATE_DEFAULT_REFERENCE

@@ -20,7 +20,7 @@ class TempTemplateRepo:
         self.temp_dir = TemporaryDirectory()
 
         # clone the repository
-        self.repo = Repo.clone_from(self.template_repo_url, str(self.temp_dir))
+        self.repo = Repo.clone_from(self.template_repo_url, self.temp_dir.name)
 
         # checkout the specific tag you're interested in
         self.repo.git.checkout(self.template_reference)
