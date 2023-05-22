@@ -1,5 +1,4 @@
 """This module provides the TempTemplateRepo context manager, which can be used to clone a Git repository to a temporary directory and checkout a specific tag."""
-import logging
 from tempfile import TemporaryDirectory
 from types import TracebackType
 from typing import Optional
@@ -18,7 +17,9 @@ class TempTemplateRepo:
 
     def __enter__(self) -> "TempTemplateRepo":
         """Clones the template repository specified by template_repo_url to a temporary directory and checks out the tag specified by template_reference."""
-        self.temp_dir = TemporaryDirectory()
+        # Cleanup is using ignore_cleanup_errors ref https://github.com/python/cpython/pull/24793
+        # This uses a best-effort cleanup approach without stopping on errors, such as PermissionErrors on Windows.
+        self.temp_dir = TemporaryDirectory(ignore_cleanup_errors=True)
 
         # clone the repository
         self.repo = Repo.clone_from(self.template_repo_url, self.temp_dir.name)
@@ -37,9 +38,4 @@ class TempTemplateRepo:
         exc_tb: Optional[TracebackType],
     ) -> None:
         """Cleans up the temporary directory created containing the template repository."""
-        try:
-            self.temp_dir.cleanup()
-        except PermissionError:
-            logging.exception(
-                "PermissionError occurred during cleanup of temporary repo directory:"
-            )
+        self.temp_dir.cleanup()
