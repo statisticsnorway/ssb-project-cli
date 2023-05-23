@@ -1,11 +1,14 @@
 """This module contains functions used to set up a local git repository with ssb-project."""
 import json
+import shutil
 import subprocess  # noqa: S404
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 from git import Repo  # type: ignore[attr-defined]
+from rich import print
 
 from ssb_project_cli.ssb_project.create import temp_git_repo
 from ssb_project_cli.ssb_project.create.github import (
@@ -13,6 +16,7 @@ from ssb_project_cli.ssb_project.create.github import (
 )
 from ssb_project_cli.ssb_project.create.github import get_github_username
 from ssb_project_cli.ssb_project.create.prompt import request_name_email
+from ssb_project_cli.ssb_project.util import create_error_log
 
 
 def create_project_from_template(
@@ -22,6 +26,9 @@ def create_project_from_template(
     template_reference: str,
     working_directory: Path,
     license_year: Optional[str] = None,
+    name: Optional[str] = None,
+    email: Optional[str] = None,
+    override_dir: Optional[Path] = None,
 ) -> Path:
     """Creates a project from CookieCutter template.
 
@@ -32,15 +39,22 @@ def create_project_from_template(
         template_repo_url: URL for the chosen template
         template_reference: Git reference to the template repository
         working_directory: Working directory
+        name: Optional name of project owner
+        email: Optional email of project owner
+        override_dir: Used to hard set working_directory.
 
     Returns:
         Path: Path of project.
     """
-    project_dir = working_directory.joinpath(project_name)
+    if override_dir is None:
+        project_dir = working_directory.joinpath(project_name)
+    else:
+        project_dir = override_dir
 
-    name, email = extract_name_email()
     if not (name and email):
-        name, email = request_name_email()
+        name, email = extract_name_email()
+        if not (name and email):
+            name, email = request_name_email()
 
     template_info = {
         "project_name": project_name,
@@ -144,3 +158,41 @@ def mangle_url(url: str, mangle_name: str) -> str:
     mangle_name = mangle_name + "@"
     split_index = url.find("//") + 2
     return url[:split_index] + mangle_name + url[split_index:]
+
+
+def reset_project_git_configuration(
+    project_name: str,
+    template_repo_url: str,
+    template_reference: str,
+    project_directory: Path,
+) -> None:
+    """Overrides .gitattributes and .gitignore inn a given project directory.
+
+    Args:
+        project_name: Name of project.
+        template_repo_url: URL for the chosen template.
+        template_reference: Git reference to the template repository.
+        project_directory: Directory of the project.
+    """
+    files = [".gitattributes", ".gitignore"]
+    try:
+        with tempfile.TemporaryDirectory() as tempdir:
+            create_project_from_template(
+                project_name,
+                "",
+                template_repo_url,
+                template_reference,
+                Path(tempdir),
+                name=None,
+                email=None,
+                override_dir=Path(tempdir),
+            )
+            for file in files:
+                shutil.copy(
+                    tempdir / Path(project_name) / Path(file),
+                    project_directory / Path(file),
+                )
+    except Exception as e:
+        print(":x:\tCould not restore .gitattributes .gitignore.")
+        create_error_log(f"{e}", "reset_project_git_configuration")
+    print(":white_check_mark:\tRestored recommended .gitattributes .gitignore.")

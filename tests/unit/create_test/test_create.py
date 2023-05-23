@@ -32,7 +32,12 @@ class TestCreateFunction(TestCase):
     ) -> None:
         """Check that rmtree is not called when no sub functions raises an error."""
         create(
-            "test_project", "description", RepoPrivacy.internal, False, "github_token"
+            "test_project",
+            "description",
+            RepoPrivacy.internal,
+            False,
+            "github_token",
+            False,
         )
         assert mock_rmtree.call_count == 0
 
@@ -54,6 +59,7 @@ class TestCreateFunction(TestCase):
                 RepoPrivacy.internal,
                 False,
                 "github_token",
+                False,
             )
         assert mock_rmtree.call_count == 1
         assert mock_log.call_count == 1
@@ -76,6 +82,7 @@ class TestCreateFunction(TestCase):
                 RepoPrivacy.internal,
                 False,
                 "github_token",
+                False,
             )
         assert mock_rmtree.call_count == 1
 
@@ -91,5 +98,6 @@ def test_project_dir_exists(mock_path_exists: Mock) -> None:
             RepoPrivacy.internal,
             False,
             "github_token",
+            False,
         )
     assert excinfo.value.code == 1

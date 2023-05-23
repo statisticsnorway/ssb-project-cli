@@ -1,4 +1,6 @@
 """Command-line-interface for project-operations in dapla-jupterlab."""
+from pathlib import Path
+
 import typer
 from rich.console import Console
 
@@ -62,6 +64,12 @@ def create(  # noqa: C901
         "",
         help="Your Github Personal Access Token, follow these instructions to create one: https://manual.dapla.ssb.no/git-github.html#personal-access-token-pat",
     ),
+    verify_config: bool = typer.Option(  # noqa: B008
+        True,
+        "--no-verify",
+        help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
+        show_default=True,
+    ),
 ) -> None:
     """:sparkles:  Create a project locally, and optionally on GitHub with the flag --github. The project will follow SSB's best practice for development."""
     create_project(
@@ -75,18 +83,31 @@ def create(  # noqa: C901
         GITHUB_ORG_NAME,
         STAT_TEMPLATE_REPO_URL,
         STAT_TEMPLATE_DEFAULT_REFERENCE,
+        verify_config,
     )
 
 
 @app.command()
 def build(
-    path: str = typer.Argument(  # noqa: B008
+    path: Path = typer.Argument(  # noqa: B008
         "",
         help="Project path",
     ),
+    verify_config: bool = typer.Option(  # noqa: B008
+        True,
+        "--no-verify",
+        help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
+        show_default=True,
+    ),
 ) -> None:
     """:wrench:  Create a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
-    build_project(path, CURRENT_WORKING_DIRECTORY)
+    build_project(
+        path,
+        CURRENT_WORKING_DIRECTORY,
+        STAT_TEMPLATE_REPO_URL,
+        STAT_TEMPLATE_DEFAULT_REFERENCE,
+        verify_config,
+    )
 
 
 @app.command()

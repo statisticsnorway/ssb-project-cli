@@ -20,7 +20,9 @@ def create_project(
     name: Path, git_config: dict[str, str]
 ) -> Generator[Result, None, None]:
     """Create the project and tidy up after."""
-    result = runner.invoke(app, ["create", str(name)], catch_exceptions=False)
+    result = runner.invoke(
+        app, ["create", str(name), "--no-verify"], catch_exceptions=False
+    )
     yield result
     # Clean up project directory
     shutil.rmtree(name)
