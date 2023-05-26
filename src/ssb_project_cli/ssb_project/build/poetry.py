@@ -95,7 +95,7 @@ def poetry_source_add(
     """
     print("Adding package installation source for poetry...")
     execute_command(
-        f"poetry source add --default {source_name} {source_url}".split(" "),
+        f"poetry source add --priority=primary {source_name} {source_url}".split(" "),
         "poetry-source-add",
         "Poetry source successfully added!",
         "Failed to add poetry source.",
