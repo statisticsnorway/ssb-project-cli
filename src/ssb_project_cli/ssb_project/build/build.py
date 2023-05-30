@@ -73,7 +73,7 @@ def build_project(
             ":twisted_rightwards_arrows:\tDetected onprem environment, using proxy for package installation"
         )
         if poetry_source_includes_source_name(project_directory):
-            poetry_source_remove(project_directory)
+            poetry_source_remove(project_directory, lock_update=False)
         poetry_source_add(PIP_INDEX_URL, project_directory)
     elif poetry_source_includes_source_name(project_directory):
         print(
