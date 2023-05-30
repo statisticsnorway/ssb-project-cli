@@ -58,11 +58,14 @@ def poetry_source_includes_source_name(
     return source_name in result.stdout.decode("utf-8")
 
 
-def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> None:
+def poetry_source_remove(
+    cwd: Path, lock_update: bool = True, source_name: str = NEXUS_SOURCE_NAME
+) -> None:
     """Remove a package installation source for this project.
 
     Args:
         cwd: Path of project to add source to
+        lock_update: Bool used to decide whether to run update_lock
         source_name: Name of source to be removed
     """
     print("Removing Poetry source...")
@@ -73,14 +76,8 @@ def poetry_source_remove(cwd: Path, source_name: str = NEXUS_SOURCE_NAME) -> Non
         "Failed to remove Poetry source.",
         cwd=cwd,
     )
-    print("Refreshing lock file...")
-    execute_command(
-        "poetry lock --no-update".split(" "),
-        "source-remove",
-        "Poetry successfully refreshed lock file!",
-        "Poetry failed to refresh lock file.",
-        cwd=cwd,
-    )
+    if lock_update:
+        update_lock(cwd)
 
 
 def poetry_source_add(
@@ -95,7 +92,7 @@ def poetry_source_add(
     """
     print("Adding package installation source for poetry...")
     execute_command(
-        f"poetry source add --priority=primary {source_name} {source_url}".split(" "),
+        f"poetry source add --priority=default {source_name} {source_url}".split(" "),
         "poetry-source-add",
         "Poetry source successfully added!",
         "Failed to add poetry source.",
@@ -104,14 +101,23 @@ def poetry_source_add(
 
     # If the lock is created off-prem, we need to refresh the lock.
     if should_update_lock_file(source_url, cwd):
-        print("Refreshing lock file...")
-        execute_command(
-            "poetry lock --no-update".split(" "),
-            "source-remove",
-            "Poetry successfully refreshed lock file!",
-            "Poetry failed to refresh lock file.",
-            cwd=cwd,
-        )
+        update_lock(cwd)
+
+
+def update_lock(cwd: Path) -> None:
+    """Runs poetry lock --no-update command in CWD.
+
+    Args:
+        cwd: Path of project to add source to.
+    """
+    print("Refreshing lock file...")
+    execute_command(
+        "poetry lock --no-update".split(" "),
+        "update_lock",
+        "Poetry successfully refreshed lock file!",
+        "Poetry failed to refresh lock file.",
+        cwd=cwd,
+    )
 
 
 def should_update_lock_file(source_url: str, cwd: Path) -> bool:
