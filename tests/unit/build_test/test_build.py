@@ -27,8 +27,8 @@ BUILD = "ssb_project_cli.ssb_project.build.build"
     "running_onprem_return,poetry_source_includes_source_name_return,calls_to_poetry_source_includes_source_name,calls_to_poetry_source_add,calls_to_poetry_source_remove",
     [
         (False, False, 1, 0, 0),
-        (True, False, 0, 1, 0),
-        (True, True, 0, 1, 0),
+        (True, False, 1, 1, 0),
+        (True, True, 1, 1, 1),
         (False, True, 1, 0, 1),
     ],
 )

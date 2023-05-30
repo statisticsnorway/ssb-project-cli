@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "test-test"
+version = "0.0.0"
+description = "Test description"
+authors = ["TestName <test-email@test.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.11"
+
+[[tool.poetry.source]]
+name = "nexus"
+url = "http://pl-nexuspro-p.ssb.no:8081/repository/pypi-proxy/simple"
+default = true
+secondary = false
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
