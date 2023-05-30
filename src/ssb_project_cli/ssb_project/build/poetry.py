@@ -127,7 +127,7 @@ def should_update_lock_file(source_url: str, cwd: Path) -> bool:
         source_url: URL of 'simple' package API of package server
         cwd: Path of project to add source to
     Returns:
-        True if nexus source is not set in lock file, else False.
+        True if source url is not set in lock file, else False.
     """
     lock_file_path = cwd / Path("poetry.lock")
     if os.path.isfile(lock_file_path):
