@@ -19,7 +19,7 @@ classifiers = [
 Changelog = "https://github.com/statisticsnorway/ssb-project-cli/releases"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.11"
+python = ">=3.10,<3.12"
 click = ">=8.0.1"
 dparse = "^0.6.2"
 typer = "^0.6.1"
@@ -37,6 +37,7 @@ types-urllib3 = "^1.26.25.10"
 types-requests = "^2.28.11.17"
 types-psutil = "^5.9.5.12"
 kvakk-git-tools = "^2.2.1"
+poetry = "^1.5.1"
 
 
 [tool.poetry.dev-dependencies]
@@ -73,7 +74,7 @@ mkdocstrings = "^0.19.0"
 mkdocs-material = "^8.5.6"
 mkdocs-click = "^0.8.0"
 mkdocs-gen-files = "^0.4.0"
-build = "^0.8.0"
+build = ">=0.8.0"
 Jinja2 = "^3.1.2"
 
 
