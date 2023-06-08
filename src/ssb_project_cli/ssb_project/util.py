@@ -46,6 +46,7 @@ def create_error_log(
             print(
                 f"You can find the full debug log here {error_logs_path}/ssb-project-debug.log"
             )
+            print(f"❗️You can try deleting '.poetry/cache' in your project directory or '{home_path}/.cache/pypoetry'. Cache could be causing problems")
             f.close()
     except Exception as e:
         print(f"Error while attempting to write the log file: {e}")
