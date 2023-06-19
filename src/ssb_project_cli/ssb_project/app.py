@@ -70,8 +70,12 @@ def create(  # noqa: C901
         help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
         show_default=True,
     ),
+    template_uri: str = typer.Option("", help="The URI for a different remplate than the standard"),  # noqa: B008
 ) -> None:
     """:sparkles:  Create a project locally, and optionally on GitHub with the flag --github. The project will follow SSB's best practice for development."""
+    if not template_uri:
+        template_uri = STAT_TEMPLATE_REPO_URL
+
     create_project(
         project_name,
         description,
@@ -81,7 +85,7 @@ def create(  # noqa: C901
         CURRENT_WORKING_DIRECTORY,
         HOME_PATH,
         GITHUB_ORG_NAME,
-        STAT_TEMPLATE_REPO_URL,
+        template_uri,
         STAT_TEMPLATE_DEFAULT_REFERENCE,
         verify_config,
     )
