@@ -106,7 +106,7 @@ class TestCreateFunction(TestCase):
             False,
             "github_token",
             False,
-            "https://github.com/statisticsnorway/ssb-project-template-stat.git",
+            "https://github.com/statisticsnorway/ssb-minimal-template",
         )
         assert mock_rmtree.call_count == 0
 
