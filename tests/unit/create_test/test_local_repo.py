@@ -209,7 +209,7 @@ def test_create_project_from_template_license_year(
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
 @patch(f"{LOCAL_REPO}.subprocess.run")
-def test_create_project_from_template_license_year(
+def test_create_project_from_template_different_template_uri(
     mock_run: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
 ) -> None:
     """Check that different template uri works"""
