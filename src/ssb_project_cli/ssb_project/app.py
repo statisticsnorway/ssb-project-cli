@@ -72,7 +72,7 @@ def create(  # noqa: C901
     ),
     template_uri: str = typer.Option(  # noqa: B008
         "", help="The URI for a different template than the standard"
-    ),  
+    ),
 ) -> None:
     """:sparkles:  Create a project locally, and optionally on GitHub with the flag --github. The project will follow SSB's best practice for development."""
     if not template_uri:
