@@ -38,7 +38,7 @@ class TestCreateFunction(TestCase):
             False,
             "github_token",
             False,
-            ""
+            "",
         )
         assert mock_rmtree.call_count == 0
 
@@ -61,7 +61,7 @@ class TestCreateFunction(TestCase):
                 False,
                 "github_token",
                 False,
-                ""
+                "",
             )
         assert mock_rmtree.call_count == 1
         assert mock_log.call_count == 1
@@ -85,7 +85,7 @@ class TestCreateFunction(TestCase):
                 False,
                 "github_token",
                 False,
-                ""
+                "",
             )
         assert mock_rmtree.call_count == 1
 
@@ -102,6 +102,6 @@ def test_project_dir_exists(mock_path_exists: Mock) -> None:
             False,
             "github_token",
             False,
-            ""
+            "",
         )
     assert excinfo.value.code == 1

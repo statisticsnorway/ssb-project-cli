@@ -8,6 +8,6 @@ extensions = [
     "sphinx_click",
     "myst_parser",
 ]
-source_suffix = ['.rst', '.md']
+source_suffix = [".md", ".rst"]
 autodoc_typehints = "description"
 html_theme = "furo"
