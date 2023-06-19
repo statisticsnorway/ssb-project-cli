@@ -204,3 +204,28 @@ def test_create_project_from_template_license_year(
     cruft_args = json.loads(mock_run_call_args[-1][-1])
     assert cruft_args["license_year"] == license_year
     assert cruft_args["project_name"] == project_name
+
+
+@patch(f"{LOCAL_REPO}.extract_name_email")
+@patch(f"{LOCAL_REPO}.request_name_email")
+@patch(f"{LOCAL_REPO}.subprocess.run")
+def test_create_project_from_template_license_year(
+    mock_run: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+) -> None:
+    """Check that different template uri works"""
+    mock_extract.return_value = ("Name", "")
+    mock_request.return_value = ("Name2", "email@email.com")
+    license_year = str(randint(1000, 3000))  # noqa: S311 non-cryptographic use
+    project_name = "testname"
+    create_project_from_template(
+        project_name,
+        "test description",
+        "https://github.com/statisticsnorway/ssb-minimal-template",
+        STAT_TEMPLATE_DEFAULT_REFERENCE,
+        tmp_path,
+        license_year,
+    )
+    mock_run_call_args = mock_run.call_args.args
+    cruft_args = json.loads(mock_run_call_args[-1][-1])
+    assert cruft_args["license_year"] == license_year
+    assert cruft_args["project_name"] == project_name
