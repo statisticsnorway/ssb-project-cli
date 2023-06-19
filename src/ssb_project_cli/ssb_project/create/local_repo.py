@@ -16,8 +16,8 @@ from ssb_project_cli.ssb_project.create.github import (
 )
 from ssb_project_cli.ssb_project.create.github import get_github_username
 from ssb_project_cli.ssb_project.create.prompt import request_name_email
-from ssb_project_cli.ssb_project.util import create_error_log
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
+from ssb_project_cli.ssb_project.util import create_error_log
 
 
 def create_project_from_template(
@@ -58,12 +58,12 @@ def create_project_from_template(
             name, email = request_name_email()
 
     template_info = {
-            "project_name": project_name,
-            "description": description,
-            "full_name": name,
-            "email": email,
-            "license_year": license_year or str(datetime.now().year),
-        }
+        "project_name": project_name,
+        "description": description,
+        "full_name": name,
+        "email": email,
+        "license_year": license_year or str(datetime.now().year),
+    }
 
     quoted = json.dumps(template_info).replace('"', '"')
 
@@ -88,10 +88,10 @@ def create_project_from_template(
             "--extra-context",
             quoted,
         ]
-    
+
     subprocess.run(  # noqa: S603 no untrusted input
-            argv, check=True, cwd=working_directory
-        )
+        argv, check=True, cwd=working_directory
+    )
 
     return project_dir
 
