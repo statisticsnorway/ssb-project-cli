@@ -57,16 +57,17 @@ def create_project_from_template(
         if not (name and email):
             name, email = request_name_email()
 
-    if template_repo_url == STAT_TEMPLATE_REPO_URL:
-        template_info = {
+    template_info = {
             "project_name": project_name,
             "description": description,
             "full_name": name,
             "email": email,
             "license_year": license_year or str(datetime.now().year),
         }
-        quoted = json.dumps(template_info).replace('"', '"')
 
+    quoted = json.dumps(template_info).replace('"', '"')
+
+    if template_repo_url == STAT_TEMPLATE_REPO_URL:
         argv = [
             "cruft",
             "create",
@@ -77,14 +78,15 @@ def create_project_from_template(
             "--extra-context",
             quoted,
         ]
-    # If user has specified their own template, dont push default settings into cruft
+    # If user has specified their own template, show inputs with defaults filled where possible
     else:
+        print("(If defaults are correct, just press enter)")
         argv = [
             "cruft",
             "create",
             template_repo_url,
-            "--checkout",
-            "1.0.0",
+            "--extra-context",
+            quoted,
         ]
     
     subprocess.run(  # noqa: S603 no untrusted input
