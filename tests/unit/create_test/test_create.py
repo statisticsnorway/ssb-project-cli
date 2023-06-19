@@ -89,6 +89,27 @@ class TestCreateFunction(TestCase):
             )
         assert mock_rmtree.call_count == 1
 
+    def test_specify_template_uri(
+        self,
+        _mock_template: Mock,
+        mock_git: Mock,
+        _mock_build_project: Mock,
+        mock_rmtree: Mock,
+        _mock_log: Mock,
+        _mock_is_memory_full: Mock,
+    ) -> None:
+        """Test that specifying a different url (slightly) triggers a create and works out"""
+        create(
+            "test_project",
+            "description",
+            RepoPrivacy.internal,
+            False,
+            "github_token",
+            False,
+            "https://github.com/statisticsnorway/ssb-project-template-stat.git",
+        )
+        assert mock_rmtree.call_count == 0
+
 
 @patch(f"{CREATE}.Path.exists")
 def test_project_dir_exists(mock_path_exists: Mock) -> None:
