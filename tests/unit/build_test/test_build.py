@@ -16,6 +16,7 @@ BUILD = "ssb_project_cli.ssb_project.build.build"
 @patch(f"{BUILD}.running_onprem")
 @patch(f"{BUILD}.poetry_install")
 @patch(f"{BUILD}.install_ipykernel")
+@patch(f"{BUILD}.ipykernel_attach_bashrc")
 @patch(f"{BUILD}.poetry_source_includes_source_name")
 @patch(f"{BUILD}.poetry_source_add")
 @patch(f"{BUILD}.poetry_source_remove")
@@ -41,6 +42,7 @@ def test_build(
     mock_poetry_source_add: Mock,
     mock_poetry_source_includes_source_name: Mock,
     mock_install_ipykernel: Mock,
+    mock_ipykernel_attach_bashrc: Mock,
     mock_poetry_install: Mock,
     mock_running_onprem: Mock,
     running_onprem_return: bool,
@@ -68,6 +70,7 @@ def test_build(
     assert mock_file_found.call_count == 1
     assert mock_poetry_install.call_count == 1
     assert mock_install_ipykernel.call_count == 1
+    assert mock_ipykernel_attach_bashrc.call_count == 1
     assert mock_running_onprem.call_count == 1
     assert (
         mock_poetry_source_includes_source_name.call_count

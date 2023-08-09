@@ -6,7 +6,7 @@ import questionary
 from rich import print
 
 from ssb_project_cli.ssb_project.util import execute_command
-
+from ssb_project_cli.ssb_project.util import get_kernels_dict
 
 def clean_project(project_name: str) -> None:
     """Removes the kernel and/or virtual environment of an SSB-project.
@@ -49,31 +49,6 @@ def clean_project(project_name: str) -> None:
         "Error: Something went wrong while removing the jupyter kernel.",
         None,
     )
-
-
-def get_kernels_dict() -> dict[str, str]:
-    """Makes a dictionary of installed kernel specifications.
-
-    Returns:
-        kernel_dict: Dictionary of installed kernel specifications
-    """
-    kernels_process = subprocess.run(  # noqa S607
-        ["jupyter", "kernelspec", "list"], capture_output=True
-    )
-    kernels_str = ""
-    if kernels_process.returncode == 0:
-        kernels_str = kernels_process.stdout.decode("utf-8")
-    else:
-        print("An error occured while looking for installed kernels.")
-        exit(1)
-    kernel_dict = {}
-    for kernel in kernels_str.split("\n")[1:]:
-        line = " ".join(kernel.strip().split())
-        line = line.replace("%s ", "").strip()
-        if len(line.split(" ")) == 2:
-            k, v = line.split(" ")
-            kernel_dict[k] = v
-    return kernel_dict
 
 
 def clean_venv() -> None:
