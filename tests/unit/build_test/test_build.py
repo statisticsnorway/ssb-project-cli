@@ -193,7 +193,7 @@ def test_ipykernel_attach_bashrc_kernel_json_file_not_exist(
     assert mock_exit.call_args[0][0] == expected_exit_code
 
 
-def test_ipykernel_attach_bashrc_find_python_executable_path() -> None:
+def test_find_python_executable_path() -> None:
     test_data = [
         "some/path/bin/python3",
         "-m",
@@ -206,7 +206,7 @@ def test_ipykernel_attach_bashrc_find_python_executable_path() -> None:
     assert _get_python_executable_path(test_data) == expected_result
 
 
-def test_ipykernel_attach_bashrc_not_find_python_executable_path() -> None:
+def test_not_find_python_executable_path() -> None:
     test_data_no_python_path = [
         "/no/python/path",
         "-m",
@@ -220,7 +220,7 @@ def test_ipykernel_attach_bashrc_not_find_python_executable_path() -> None:
 
 
 @patch(f'builtins.open', new_callable=mock_open)
-def test_ipykernel_attach_bashrc_write_start_script(mock_file_open: Mock) -> None:
+def test_write_start_script(mock_file_open: Mock) -> None:
     start_script_path = "/some/place/to/put/test_start_script.sh"
     python_executable_path = "/path/to/bin/python3"
 
