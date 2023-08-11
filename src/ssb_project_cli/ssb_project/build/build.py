@@ -130,8 +130,9 @@ def ipykernel_attach_bashrc(project_name: str) -> None:
         )  # noqa: B907
         exit(1)
 
+    start_script_path = f"{project_kernel_path}/python.sh"
     content_as_json["argv"] = [
-        f"{project_kernel_path}/python.sh",
+        start_script_path,
         "-m",
         "ipykernel_launcher",
         "-f",
@@ -140,8 +141,6 @@ def ipykernel_attach_bashrc(project_name: str) -> None:
 
     with open(kernel_json_file, "w", encoding="utf-8") as f:
         f.write(json.dumps(content_as_json))
-
-    start_script_path = f"{project_kernel_path}/python.sh"
 
     _write_start_script(start_script_path, python_executable_path)
 
