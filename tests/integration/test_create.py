@@ -9,7 +9,7 @@ from click.testing import Result
 from typer.testing import CliRunner
 
 from ssb_project_cli.ssb_project.app import app
-from ssb_project_cli.ssb_project.clean.clean import get_kernels_dict
+from ssb_project_cli.ssb_project.util import get_kernels_dict
 
 
 runner = CliRunner()

@@ -15,7 +15,7 @@ from ssb_project_cli.ssb_project.build.poetry import poetry_source_includes_sour
 from ssb_project_cli.ssb_project.build.poetry import poetry_source_remove
 from ssb_project_cli.ssb_project.build.poetry import should_update_lock_file
 from ssb_project_cli.ssb_project.build.poetry import update_lock
-from ssb_project_cli.ssb_project.clean.clean import get_kernels_dict
+from ssb_project_cli.ssb_project.util import get_kernels_dict
 
 
 POETRY = "ssb_project_cli.ssb_project.build.poetry"
