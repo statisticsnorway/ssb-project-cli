@@ -143,20 +143,19 @@ def test_ipykernel_attach_bashrc_success(
     return_value={"existing_project": "/path/which/does/not/exist"},
 )
 @patch(f"{BUILD}.print")
-@patch(f"{BUILD}.exit", side_effect=SystemExit(1))
 def test_ipykernel_attach_bashrc_kernel_not_found(
-    mock_exit: Mock, mock_print: Mock, mock_get_kernels_dict: Mock
+    mock_print: Mock, mock_get_kernels_dict: Mock
 ) -> None:
     project_name = "nonexisting_project"
     expected_print_message = f":x:\tCould not mount .bashrc, '{project_name}' is not found in 'jupyter kernelspec list'."  # noqa: B907
     expected_exit_code = 1
 
-    with unittest.TestCase().assertRaises(SystemExit) as _:
+    with unittest.TestCase().assertRaises(SystemExit) as cm:
         ipykernel_attach_bashrc(project_name)
 
     assert mock_get_kernels_dict.call_count == 1
     assert mock_print.call_args[0][0] == expected_print_message
-    assert mock_exit.call_args[0][0] == expected_exit_code
+    assert cm.exception.code == expected_exit_code
 
 
 @patch(
@@ -165,21 +164,20 @@ def test_ipykernel_attach_bashrc_kernel_not_found(
 )
 @patch(f"{BUILD}.Path.exists", side_effect=[False])
 @patch(f"{BUILD}.print")
-@patch(f"{BUILD}.exit", side_effect=SystemExit(1))
 def test_ipykernel_attach_bashrc_kernel_path_does_not_exist(
-    mock_exit: Mock, mock_print: Mock, mock_exists: Mock, mock_get_kernels_dict: Mock
+    mock_print: Mock, mock_exists: Mock, mock_get_kernels_dict: Mock
 ) -> None:
     project_name = "existing_project"
     expected_print_message = ":x:\tCould not mount .bashrc, path: '/path/which/does/not/exist' does not exist."
     expected_exit_code = 1
 
-    with unittest.TestCase().assertRaises(SystemExit) as _:
+    with unittest.TestCase().assertRaises(SystemExit) as cm:
         ipykernel_attach_bashrc(project_name)
 
     assert mock_get_kernels_dict.call_count == 1
     assert mock_exists.call_count == 1
     assert mock_print.call_args[0][0] == expected_print_message
-    assert mock_exit.call_args[0][0] == expected_exit_code
+    assert cm.exception.code == expected_exit_code
 
 
 @patch(
@@ -188,21 +186,20 @@ def test_ipykernel_attach_bashrc_kernel_path_does_not_exist(
 )
 @patch(f"{BUILD}.Path.exists", side_effect=[True, False])
 @patch(f"{BUILD}.print")
-@patch(f"{BUILD}.exit", side_effect=SystemExit(1))
 def test_ipykernel_attach_bashrc_kernel_json_file_not_exist(
-    mock_exit: Mock, mock_print: Mock, mock_exists: Mock, mock_get_kernels_dict: Mock
+    mock_print: Mock, mock_exists: Mock, mock_get_kernels_dict: Mock
 ) -> None:
     project_name = "existing_project"
     expected_print_message = ":x:\tCould not mount .bashrc, file: '/path/which/does/not/exist/kernel.json' does not exist."
     expected_exit_code = 1
 
-    with unittest.TestCase().assertRaises(SystemExit) as _:
+    with unittest.TestCase().assertRaises(SystemExit) as cm:
         ipykernel_attach_bashrc(project_name)
 
     assert mock_get_kernels_dict.call_count == 1
     assert mock_exists.call_count == 2
     assert mock_print.call_args[0][0] == expected_print_message
-    assert mock_exit.call_args[0][0] == expected_exit_code
+    assert cm.exception.code == expected_exit_code
 
 
 @patch(
@@ -229,9 +226,7 @@ def test_ipykernel_attach_bashrc_kernel_json_file_not_exist(
 )
 @patch(f"{BUILD}._get_python_executable_path", return_value=None)
 @patch(f"{BUILD}.print")
-@patch(f"{BUILD}.exit", side_effect=SystemExit(1))
 def test_ipykernel_attach_bashrc_python_executable_path_not_found(
-    mock_exit: Mock,
     mock_print: Mock,
     mock_python_executable_path: Mock,
     mock_json_dumps: Mock,
@@ -244,7 +239,7 @@ def test_ipykernel_attach_bashrc_python_executable_path_not_found(
     expected_print_message = ":x:\tCould not mount .bashrc, cannot find python executable path in /path/which/does/not/exist/kernel.json"
     expected_exit_code = 1
 
-    with unittest.TestCase().assertRaises(SystemExit) as _:
+    with unittest.TestCase().assertRaises(SystemExit) as cm:
         ipykernel_attach_bashrc(project_name)
 
     assert mock_get_kernels_dict.call_count == 1
@@ -254,7 +249,7 @@ def test_ipykernel_attach_bashrc_python_executable_path_not_found(
     assert mock_json_dumps.call_count == 1
     assert mock_python_executable_path.call_count == 1
     assert mock_print.call_args[0][0] == expected_print_message
-    assert mock_exit.call_args[0][0] == expected_exit_code
+    assert cm.exception.code == expected_exit_code
 
 
 def test_find_python_executable_path() -> None:
