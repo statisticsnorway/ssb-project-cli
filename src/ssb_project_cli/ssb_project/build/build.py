@@ -123,6 +123,13 @@ def ipykernel_attach_bashrc(project_name: str) -> None:
     with open(kernel_json_file, encoding="utf-8") as f:
         content_as_json = json.loads(f.read())
 
+    python_executable_path = _get_python_executable_path(content_as_json["argv"])
+    if python_executable_path is None:
+        print(
+            f":x:\tCould not mount .bashrc, cannot find python executable path in {kernel_json_file}"
+        )  # noqa: B907
+        exit(1)
+
     content_as_json["argv"] = [
         f"{project_kernel_path}/python.sh",
         "-m",
@@ -135,13 +142,6 @@ def ipykernel_attach_bashrc(project_name: str) -> None:
         f.write(json.dumps(content_as_json))
 
     start_script_path = f"{project_kernel_path}/python.sh"
-
-    python_executable_path = _get_python_executable_path(content_as_json["argv"])
-    if python_executable_path is None:
-        print(
-            f":x:\tCould not mount .bashrc, cannot find python executable path in {kernel_json_file}"
-        )  # noqa: B907
-        exit(1)
 
     _write_start_script(start_script_path, python_executable_path)
 
