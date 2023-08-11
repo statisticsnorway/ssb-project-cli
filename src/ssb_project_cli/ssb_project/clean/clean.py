@@ -1,5 +1,5 @@
 """Clean command module."""
-import subprocess  # noqa: S404
+import subprocess  # noqa: S404 F401
 from pathlib import Path
 
 import questionary
@@ -7,6 +7,7 @@ from rich import print
 
 from ssb_project_cli.ssb_project.util import execute_command
 from ssb_project_cli.ssb_project.util import get_kernels_dict
+
 
 def clean_project(project_name: str) -> None:
     """Removes the kernel and/or virtual environment of an SSB-project.
