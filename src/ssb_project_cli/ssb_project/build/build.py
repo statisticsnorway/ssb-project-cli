@@ -130,6 +130,12 @@ def ipykernel_attach_bashrc(project_name: str) -> None:
         )  # noqa: B907
         exit(1)
 
+    if python_executable_path.endswith("/python.sh"):
+        print(
+            ":warning:\t.bashrc should already been mounted in your kernel, if you are in doubt do a 'clean' followed by a 'build'"
+        )  # noqa: B907
+        exit(0)
+
     start_script_path = f"{project_kernel_path}/python.sh"
     content_as_json["argv"] = [
         start_script_path,
