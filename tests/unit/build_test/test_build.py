@@ -212,7 +212,7 @@ def test_ipykernel_attach_bashrc_kernel_json_file_not_exist(
     f"{BUILD}.json.loads",
     return_value={
         "argv": [
-            "some/path/bin/python3",
+            "some/path/bin/doesnotexist",
             "-m",
             "ipykernel_launcher",
             "-f",
@@ -220,11 +220,9 @@ def test_ipykernel_attach_bashrc_kernel_json_file_not_exist(
         ]
     },
 )
-@patch(f"{BUILD}._get_python_executable_path", return_value=None)
 @patch(f"{BUILD}.print")
 def test_ipykernel_attach_bashrc_python_executable_path_not_found(
     mock_print: Mock,
-    mock_python_executable_path: Mock,
     mock_json_loads: Mock,
     mock_file_open: Mock,
     mock_exists: Mock,
@@ -241,7 +239,6 @@ def test_ipykernel_attach_bashrc_python_executable_path_not_found(
     assert mock_exists.call_count == 2
     assert mock_file_open.call_count == 1
     assert mock_json_loads.call_count == 1
-    assert mock_python_executable_path.call_count == 1
     assert mock_print.call_args[0][0] == expected_print_message
     assert cm.exception.code == expected_exit_code
 
