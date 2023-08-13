@@ -106,7 +106,7 @@ def test_build(
     f"{BUILD}.json.dumps",
     return_value='{"argv": ["/bin/python3", "-m", "ipykernel_launcher", "-f", "{connection_file}"]}',
 )
-@patch(f"{BUILD}._get_python_executable_path")
+@patch(f"{BUILD}._get_python_executable_path", return_value="/some/path/python3")
 @patch(f"{BUILD}._write_start_script")
 @patch(f"{BUILD}.os.chmod", return_value=True)
 def test_ipykernel_attach_bashrc_success(
@@ -212,7 +212,7 @@ def test_ipykernel_attach_bashrc_kernel_json_file_not_exist(
     f"{BUILD}.json.loads",
     return_value={
         "argv": [
-            "some/path/bin/python3",
+            "some/path/bin/doesnotexist",
             "-m",
             "ipykernel_launcher",
             "-f",
@@ -220,19 +220,12 @@ def test_ipykernel_attach_bashrc_kernel_json_file_not_exist(
         ]
     },
 )
-@patch(
-    f"{BUILD}.json.dumps",
-    return_value='{"argv": ["/bin/python3", "-m", "ipykernel_launcher", "-f", "{connection_file}"]}',
-)
-@patch(f"{BUILD}._get_python_executable_path", return_value=None)
 @patch(f"{BUILD}.print")
 def test_ipykernel_attach_bashrc_python_executable_path_not_found(
     mock_print: Mock,
-    mock_python_executable_path: Mock,
-    mock_json_dumps: Mock,
     mock_json_loads: Mock,
-    mock_exists: Mock,
     mock_file_open: Mock,
+    mock_exists: Mock,
     mock_get_kernels_dict: Mock,
 ) -> None:
     project_name = "existing_project"
@@ -244,10 +237,49 @@ def test_ipykernel_attach_bashrc_python_executable_path_not_found(
 
     assert mock_get_kernels_dict.call_count == 1
     assert mock_exists.call_count == 2
-    assert mock_file_open.call_count == 2
+    assert mock_file_open.call_count == 1
     assert mock_json_loads.call_count == 1
-    assert mock_json_dumps.call_count == 1
-    assert mock_python_executable_path.call_count == 1
+    assert mock_print.call_args[0][0] == expected_print_message
+    assert cm.exception.code == expected_exit_code
+
+
+@patch(
+    f"{BUILD}.get_kernels_dict",
+    return_value={"existing_project": "/path/which/does/not/exist"},
+)
+@patch(f"{BUILD}.Path.exists", side_effect=[True, True])
+@patch("builtins.open", new_callable=mock_open)
+@patch(
+    f"{BUILD}.json.loads",
+    return_value={
+        "argv": [
+            "some/path/bin/python.sh",
+            "-m",
+            "ipykernel_launcher",
+            "-f",
+            "{connection_file}",
+        ]
+    },
+)
+@patch(f"{BUILD}.print")
+def test_ipykernel_attach_bashrc_already_mounted(
+    mock_print: Mock,
+    mock_json_loads: Mock,
+    mock_file_open: Mock,
+    mock_exists: Mock,
+    mock_get_kernels_dict: Mock,
+) -> None:
+    project_name = "existing_project"
+    expected_print_message = ":warning:\t.bashrc should already been mounted in your kernel, if you are in doubt do a 'clean' followed by a 'build'"  # noqa: B907
+    expected_exit_code = 0
+
+    with unittest.TestCase().assertRaises(SystemExit) as cm:
+        ipykernel_attach_bashrc(project_name)
+
+    assert mock_get_kernels_dict.call_count == 1
+    assert mock_exists.call_count == 2
+    assert mock_file_open.call_count == 1
+    assert mock_json_loads.call_count == 1
     assert mock_print.call_args[0][0] == expected_print_message
     assert cm.exception.code == expected_exit_code
 
