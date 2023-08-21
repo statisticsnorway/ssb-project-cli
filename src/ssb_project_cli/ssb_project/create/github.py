@@ -204,7 +204,9 @@ def set_branch_protection_rules(
         f"{github_org_name}/{repo_name}"
     )
     repo.get_branch("main").edit_protection(
-        required_approving_review_count=1, dismiss_stale_reviews=True
+        required_approving_review_count=1,
+        dismiss_stale_reviews=True,
+        enforce_admins=True,
     )
 
 
@@ -224,7 +226,7 @@ def get_environment_specific_github_object(github_token: str) -> Github:
     if running_onprem(JUPYTER_IMAGE_SPEC):
         # CA bundle to use, supplying this fixes the onprem error "CERTIFICATE_VERIFY_FAILED"
         # verify can be boolean or string, we have to type ignore because mypy expects it to be a bool
-        return Github(github_token, verify="/etc/ssl/certs/ca-certificates.crt")  # type: ignore
+        return Github(github_token, verify="/etc/ssl/certs/ca-certificates.crt")
     else:
         return Github(github_token)
 
