@@ -204,7 +204,9 @@ def set_branch_protection_rules(
         f"{github_org_name}/{repo_name}"
     )
     repo.get_branch("main").edit_protection(
-        required_approving_review_count=1, dismiss_stale_reviews=True
+        required_approving_review_count=1,
+        dismiss_stale_reviews=True,
+        enforce_admins=True,
     )
 
 
