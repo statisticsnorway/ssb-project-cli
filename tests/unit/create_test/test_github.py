@@ -51,11 +51,10 @@ def test_is_github_repo(mock_get_repo: Mock) -> None:
     """Checks if is_github_repo returns/raises expected values/errors."""
     mock_get_repo.side_effect = [
         None,
-        GithubException(1, None, None),
-        BadCredentialsException(1, None, None),
+        GithubException(status=1, data="", headers=None),
     ]
-    assert is_github_repo("", "", "org_name")
-    assert not is_github_repo("", "", "org_name")
+    assert is_github_repo("fake-token", "", "org_name")
+    assert not is_github_repo("fake-token", "", "org_name")
 
 
 @patch(f"{GITHUB}.Github")
