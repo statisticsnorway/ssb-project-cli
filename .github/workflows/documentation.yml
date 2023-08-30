@@ -1,11 +1,10 @@
 name: Documentation
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
-      - "release"
+      - main
+      - master
 
 jobs:
   deploy:
