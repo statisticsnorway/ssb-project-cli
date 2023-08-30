@@ -8,7 +8,15 @@ updates:
     directory: "/.github/workflows"
     schedule:
       interval: weekly
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
   - package-ecosystem: pip
     directory: "/docs"
     schedule:
       interval: weekly
+    groups:
+      docs-dependencies:
+        patterns:
+          - "*"
