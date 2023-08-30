@@ -13,7 +13,6 @@
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 
 [pypi status]: https://pypi.org/project/ssb-project-cli/
-[read the docs]: https://ssb-project-cli.readthedocs.io/
 [tests]: https://github.com/statisticsnorway/ssb-project-cli/actions?workflow=Tests
 [codecov]: https://app.codecov.io/gh/statisticsnorway/ssb-project-cli
 [pre-commit]: https://github.com/pre-commit/pre-commit
@@ -21,7 +20,7 @@
 
 ## Features
 
-![Help text](docs/assets/cli_help_screenshot.png)
+![Help text](/docs/assets/images/cli_help_screenshot.png)
 
 - Create a new project quickly and easily with `ssb-project create`.
 - Your colleagues can quickly get started when you share the project with them with `ssb-project build`.
