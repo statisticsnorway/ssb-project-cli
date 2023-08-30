@@ -12,10 +12,3 @@ updates:
     directory: "/docs"
     schedule:
       interval: weekly
-  - package-ecosystem: pip
-    directory: "/"
-    schedule:
-      interval: weekly
-    versioning-strategy: lockfile-only
-    allow:
-      - dependency-type: "all"
