@@ -2,8 +2,8 @@
 
 <!-- prettier-ignore-start -->
 
-::: mkdocs-click
-    :module: ssb_project_cli.__main__
-    :command: main
+::: mkdocs-typer
+    :module: ssb_project_cli.ssb_project.app
+    :command: app
 
 <!-- prettier-ignore-end -->

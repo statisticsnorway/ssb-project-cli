@@ -29,4 +29,4 @@ plugins:
 markdown_extensions:
   - admonition #  note blocks, warning blocks -- https://github.com/mkdocs/mkdocs/issues/1659
   - attr_list # Enables full command headers, see https://github.com/DataDog/mkdocs-click#full-command-path-headers
-  - mkdocs-click
+  - mkdocs-typer
