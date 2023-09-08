@@ -1,11 +1,10 @@
 name: Documentation
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
-      - "release"
+      - main
+      - master
 
 jobs:
   deploy:
@@ -23,6 +22,6 @@ jobs:
       - run: pip install mkdocs-section-index
       - run: pip install mkdocstrings
       - run: pip install mkdocs-material
-      - run: pip install mkdocs-click
+      - run: pip install mkdocs-typer
       - run: pip install mkdocs-gen-files
       - run: mkdocs gh-deploy --force

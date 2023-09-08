@@ -6,7 +6,7 @@ import pytest
 
 from ssb_project_cli.ssb_project.clean.clean import clean_project
 from ssb_project_cli.ssb_project.clean.clean import clean_venv
-from ssb_project_cli.ssb_project.clean.clean import get_kernels_dict
+from ssb_project_cli.ssb_project.util import get_kernels_dict
 
 
 CLEAN = "ssb_project_cli.ssb_project.clean.clean"

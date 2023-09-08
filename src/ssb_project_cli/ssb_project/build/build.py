@@ -1,5 +1,10 @@
 """Build command module."""
+import os
+import json
+import re
+
 from pathlib import Path
+from typing import List
 
 import kvakk_git_tools.validate_ssb_gitconfig  # type: ignore
 
@@ -14,6 +19,8 @@ from .poetry import poetry_source_remove
 from rich import print
 
 from .prompt import confirm_fix_ssb_git_config
+
+from ssb_project_cli.ssb_project.util import get_kernels_dict
 
 
 def build_project(
@@ -83,3 +90,95 @@ def build_project(
 
     poetry_install(project_directory)
     install_ipykernel(project_directory, project_name)
+    ipykernel_attach_bashrc(project_name)
+
+
+def ipykernel_attach_bashrc(project_name: str) -> None:
+    """Attaches bashrc to the project kernel by modifying ipykernel files.
+
+    Args:
+        project_name: path to the kernel directory
+    """
+    kernels = get_kernels_dict()
+    if project_name not in kernels:
+        print(
+            f":x:\tCould not mount .bashrc, '{project_name}' is not found in 'jupyter kernelspec list'."  # noqa: B907
+        )
+        exit(1)
+
+    project_kernel_path = kernels[project_name]
+    if not Path(project_kernel_path).exists():
+        print(
+            f":x:\tCould not mount .bashrc, path: '{project_kernel_path}' does not exist."  # noqa: B907
+        )
+        exit(1)
+
+    kernel_json_file = f"{project_kernel_path}/kernel.json"
+    if not Path(kernel_json_file).exists():
+        print(
+            f":x:\tCould not mount .bashrc, file: '{kernel_json_file}' does not exist."  # noqa: B907
+        )
+        exit(1)
+
+    with open(kernel_json_file, encoding="utf-8") as f:
+        content_as_json = json.loads(f.read())
+
+    python_executable_path = _get_python_executable_path(content_as_json["argv"])
+    if python_executable_path is None:
+        print(
+            f":x:\tCould not mount .bashrc, cannot find python executable path in {kernel_json_file}"
+        )  # noqa: B907
+        exit(1)
+
+    if python_executable_path.endswith("/python.sh"):
+        print(
+            ":warning:\t.bashrc should already been mounted in your kernel, if you are in doubt do a 'clean' followed by a 'build'"
+        )  # noqa: B907
+        exit(0)
+
+    start_script_path = f"{project_kernel_path}/python.sh"
+    content_as_json["argv"] = [
+        start_script_path,
+        "-m",
+        "ipykernel_launcher",
+        "-f",
+        "{connection_file}",
+    ]
+
+    with open(kernel_json_file, "w", encoding="utf-8") as f:
+        f.write(json.dumps(content_as_json))
+
+    _write_start_script(start_script_path, python_executable_path)
+
+    # set rx to everyone, required for jupyterlab to get permission to call start script
+    os.chmod(start_script_path, 0o555)  # noqa: S103
+
+
+def _get_python_executable_path(argv: List[str]) -> str | None:
+    """Searches for any entry which ends with python.
+
+    Args:
+        argv: A list of strings
+
+    Returns: Path to python executable if it exists, otherwise None
+    """
+    pattern = r"^.*(?:/python3|/python|/python\.sh)$"
+    matches = [entry for entry in argv if re.match(pattern, entry)]
+    return matches[0] if len(matches) >= 1 else None
+
+
+def _write_start_script(start_script_path: str, python_executable_path: str) -> None:
+    """Write the start script content to the specified path.
+
+    Args:
+        start_script_path: Path to create the start script
+        python_executable_path: Path to the python executable
+    """
+    with open(start_script_path, "w", encoding="utf-8") as f:
+        f.writelines(
+            [
+                "#!/usr/bin/env bash\n",
+                "source $HOME/.bashrc\n",
+                f"exec {python_executable_path} $@",
+            ]
+        )

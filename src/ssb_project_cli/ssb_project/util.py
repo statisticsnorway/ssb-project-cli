@@ -2,6 +2,7 @@
 import logging
 import os
 import subprocess  # noqa: S404
+import sys  # noqa: S404
 import time
 from pathlib import Path
 from typing import Optional
@@ -93,8 +94,33 @@ def execute_command(
         log = str(result)
         print(failure_desc)
         create_error_log(log, calling_function)
-        exit(1)
+        sys.exit(1)
     else:
         print(success_desc)
 
     return result
+
+
+def get_kernels_dict() -> dict[str, str]:
+    """Makes a dictionary of installed kernel specifications.
+
+    Returns:
+        kernel_dict: Dictionary of installed kernel specifications
+    """
+    kernels_process = subprocess.run(  # noqa S607
+        ["jupyter", "kernelspec", "list"], capture_output=True
+    )
+    kernels_str = ""
+    if kernels_process.returncode == 0:
+        kernels_str = kernels_process.stdout.decode("utf-8")
+    else:
+        print("An error occured while looking for installed kernels.")
+        exit(1)
+    kernel_dict = {}
+    for kernel in kernels_str.split("\n")[1:]:
+        line = " ".join(kernel.strip().split())
+        line = line.replace("%s ", "").strip()
+        if len(line.split(" ")) == 2:
+            k, v = line.split(" ")
+            kernel_dict[k] = v
+    return kernel_dict
