@@ -20,7 +20,7 @@ def build_project(
     path: Path,
     working_directory: Path,
     template_repo_url: str,
-    template_reference: str,
+    checkout: str | None,
     verify_config: bool = True,
 ) -> None:
     """Installs dependencies and kernel for a given project.
@@ -29,7 +29,7 @@ def build_project(
         path: Path to project
         working_directory: working directory
         template_repo_url: Template repository url
-        template_reference: Template reference
+        checkout: The git reference to check against. Supports branches, tags and commit hashes.
         verify_config: Determines if gitconfig is verified.
     """
     if path == "":
@@ -52,7 +52,7 @@ def build_project(
             valid_global_git_config = False
         valid_project_git_config = verify_local_config(
             template_repo_url,
-            template_reference,
+            checkout,
             cwd=str(working_directory / project_directory),
         )
         if not valid_global_git_config or not valid_project_git_config:
@@ -62,7 +62,7 @@ def build_project(
             confirm_fix_ssb_git_config(
                 project_name,
                 template_repo_url,
-                template_reference,
+                checkout,
                 project_directory,
                 valid_global_git_config,
                 valid_project_git_config,

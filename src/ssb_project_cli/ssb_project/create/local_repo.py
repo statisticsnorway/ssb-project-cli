@@ -24,7 +24,7 @@ def create_project_from_template(
     project_name: str,
     description: str,
     template_repo_url: str,
-    template_reference: str,
+    checkout: str | None,
     working_directory: Path,
     license_year: Optional[str] = None,
     name: Optional[str] = None,
@@ -37,8 +37,8 @@ def create_project_from_template(
         project_name: Name of project
         description: Project description
         license_year: Year to be inserted into the LICENSE
-        template_repo_url: URL for the chosen template
-        template_reference: Git reference to the template repository
+        template_repo_url: The Cookiecutter template URI.
+        checkout: The git reference to check against. Supports branches, tags and commit hashes.
         working_directory: Working directory
         name: Optional name of project owner
         email: Optional email of project owner
@@ -67,28 +67,24 @@ def create_project_from_template(
 
     quoted = json.dumps(template_info).replace('"', '"')
 
-    if template_repo_url == STAT_TEMPLATE_REPO_URL:
-        argv = [
-            "cruft",
-            "create",
-            template_repo_url,
-            "--no-input",
+    argv = [
+        "cruft",
+        "create",
+        template_repo_url,
+    ]
+    if checkout:
+        argv += [
             "--checkout",
-            template_reference,
-            "--extra-context",
-            quoted,
+            checkout,
         ]
-    # If user has specified their own template, show inputs with defaults filled where possible
+    if template_repo_url == STAT_TEMPLATE_REPO_URL:
+        argv += ["--no-input"]
     else:
         print("(If defaults are correct, just press enter)")
-        argv = [
-            "cruft",
-            "create",
-            template_repo_url,
-            "--extra-context",
-            quoted,
-        ]
-
+    argv += [
+        "--extra-context",
+        quoted,
+    ]
     subprocess.run(  # noqa: S603 no untrusted input
         argv, check=True, cwd=working_directory
     )
@@ -176,7 +172,7 @@ def mangle_url(url: str, mangle_name: str) -> str:
 def reset_project_git_configuration(
     project_name: str,
     template_repo_url: str,
-    template_reference: str,
+    checkout: str | None,
     project_directory: Path,
 ) -> None:
     """Overrides .gitattributes and .gitignore inn a given project directory.
@@ -184,7 +180,7 @@ def reset_project_git_configuration(
     Args:
         project_name: Name of project.
         template_repo_url: URL for the chosen template.
-        template_reference: Git reference to the template repository.
+        checkout: The git reference to check against. Supports branches, tags and commit hashes.
         project_directory: Directory of the project.
     """
     files = [".gitattributes", ".gitignore"]
@@ -194,7 +190,7 @@ def reset_project_git_configuration(
                 project_name,
                 "",
                 template_repo_url,
-                template_reference,
+                checkout,
                 Path(tempdir),
                 name=None,
                 email=None,

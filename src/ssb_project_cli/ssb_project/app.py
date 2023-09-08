@@ -1,4 +1,5 @@
 """Command-line-interface for project-operations in dapla-jupterlab."""
+import typing as t
 from pathlib import Path
 
 import typer
@@ -70,13 +71,18 @@ def create(  # noqa: C901
         help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
         show_default=True,
     ),
-    template_uri: str = typer.Option(  # noqa: B008
-        "", help="The URI for a different template than the standard"
+    template_git_url: str = typer.Option(  # noqa: B008
+        STAT_TEMPLATE_REPO_URL,
+        help="The Cookiecutter template URI.",
+    ),
+    checkout: t.Optional[str] = typer.Option(  # noqa: B008
+        None,
+        help="The git reference to check against. Supports branches, tags and commit hashes.",
     ),
 ) -> None:
     """:sparkles:  Create a project locally, and optionally on GitHub with the flag --github. The project will follow SSB's best practice for development."""
-    if not template_uri:
-        template_uri = STAT_TEMPLATE_REPO_URL
+    if not checkout and template_git_url is STAT_TEMPLATE_REPO_URL:
+        checkout = STAT_TEMPLATE_DEFAULT_REFERENCE
 
     create_project(
         project_name,
@@ -87,8 +93,8 @@ def create(  # noqa: C901
         CURRENT_WORKING_DIRECTORY,
         HOME_PATH,
         GITHUB_ORG_NAME,
-        template_uri,
-        STAT_TEMPLATE_DEFAULT_REFERENCE,
+        template_git_url,
+        checkout,
         verify_config,
     )
 

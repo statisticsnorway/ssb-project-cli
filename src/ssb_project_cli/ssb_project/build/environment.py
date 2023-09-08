@@ -51,7 +51,7 @@ def _local_file_contains_remote_lines(
 
 
 def verify_local_config(
-    template_repo_url: str, template_reference: str, cwd: str = ""
+    template_repo_url: str, checkout: str | None, cwd: str = ""
 ) -> bool:
     """Verifies that the local configuration files contains all lines from the files in the remote repository.
 
@@ -59,7 +59,7 @@ def verify_local_config(
 
     Args:
         template_repo_url: Template repository url
-        template_reference: Template reference
+        checkout: The git reference to check against. Supports branches, tags and commit hashes.
         cwd: Current working directory
     """
     file_paths = [".gitattributes", ".gitignore"]
@@ -69,7 +69,7 @@ def verify_local_config(
         cwd = cwd + "/"
 
     # create a temporary directory
-    with TempTemplateRepo(template_repo_url, template_reference) as temp_repo:
+    with TempTemplateRepo(template_repo_url, checkout) as temp_repo:
         # compare the contents of the local files with the files in the repository
         for file_path in file_paths:
             # get the paths of the local and remote files
