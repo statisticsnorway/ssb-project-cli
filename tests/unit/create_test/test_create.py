@@ -7,6 +7,8 @@ import pytest
 
 from ssb_project_cli.ssb_project.app import create
 from ssb_project_cli.ssb_project.create.repo_privacy import RepoPrivacy
+from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_DEFAULT_REFERENCE
+from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
 
 
 CREATE = "ssb_project_cli.ssb_project.create.create"
@@ -42,6 +44,28 @@ class TestCreateFunction(TestCase):
             None,
         )
         assert mock_rmtree.call_count == 0
+
+    def test_default_checkout_value_set(
+        self,
+        _mock_template: Mock,
+        _mock_git: Mock,
+        _mock_build_project: Mock,
+        mock_rmtree: Mock,
+        _mock_log: Mock,
+        _mock_is_memory_full: Mock,
+    ) -> None:
+        """Check that rmtree is not called when no sub functions raises an error."""
+        create(
+            "test_project",
+            "description",
+            RepoPrivacy.internal,
+            False,
+            "github_token",
+            False,
+            STAT_TEMPLATE_REPO_URL,
+            None,
+        )
+        assert _mock_build_project.call_args[-2][-2] == STAT_TEMPLATE_DEFAULT_REFERENCE
 
     def test_rmtree_template_error(
         self,
