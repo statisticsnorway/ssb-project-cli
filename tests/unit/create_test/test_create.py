@@ -39,6 +39,7 @@ class TestCreateFunction(TestCase):
             "github_token",
             False,
             "",
+            None,
         )
         assert mock_rmtree.call_count == 0
 
@@ -62,6 +63,7 @@ class TestCreateFunction(TestCase):
                 "github_token",
                 False,
                 "",
+                None,
             )
         assert mock_rmtree.call_count == 1
         assert mock_log.call_count == 1
@@ -86,6 +88,7 @@ class TestCreateFunction(TestCase):
                 "github_token",
                 False,
                 "",
+                None,
             )
         assert mock_rmtree.call_count == 1
 
@@ -107,6 +110,7 @@ class TestCreateFunction(TestCase):
             "github_token",
             False,
             "https://github.com/statisticsnorway/ssb-minimal-template",
+            None,
         )
         assert mock_rmtree.call_count == 0
 
@@ -124,5 +128,6 @@ def test_project_dir_exists(mock_path_exists: Mock) -> None:
             "github_token",
             False,
             "",
+            None,
         )
     assert excinfo.value.code == 1
