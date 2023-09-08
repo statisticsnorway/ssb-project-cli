@@ -16,6 +16,7 @@ from ssb_project_cli.ssb_project.create.github import (
 )
 from ssb_project_cli.ssb_project.create.github import get_github_username
 from ssb_project_cli.ssb_project.create.prompt import request_name_email
+from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
 from ssb_project_cli.ssb_project.util import create_error_log
 
 
@@ -23,7 +24,7 @@ def create_project_from_template(
     project_name: str,
     description: str,
     template_repo_url: str,
-    template_reference: str,
+    checkout: str | None,
     working_directory: Path,
     license_year: Optional[str] = None,
     name: Optional[str] = None,
@@ -36,8 +37,8 @@ def create_project_from_template(
         project_name: Name of project
         description: Project description
         license_year: Year to be inserted into the LICENSE
-        template_repo_url: URL for the chosen template
-        template_reference: Git reference to the template repository
+        template_repo_url: The Cookiecutter template URI.
+        checkout: The git reference to check against. Supports branches, tags and commit hashes.
         working_directory: Working directory
         name: Optional name of project owner
         email: Optional email of project owner
@@ -63,19 +64,27 @@ def create_project_from_template(
         "email": email,
         "license_year": license_year or str(datetime.now().year),
     }
+
     quoted = json.dumps(template_info).replace('"', '"')
 
     argv = [
         "cruft",
         "create",
         template_repo_url,
-        "--no-input",
-        "--checkout",
-        template_reference,
+    ]
+    if checkout:
+        argv += [
+            "--checkout",
+            checkout,
+        ]
+    if template_repo_url == STAT_TEMPLATE_REPO_URL:
+        argv += ["--no-input"]
+    else:
+        print("(If defaults are correct, just press enter)")
+    argv += [
         "--extra-context",
         quoted,
     ]
-
     subprocess.run(  # noqa: S603 no untrusted input
         argv, check=True, cwd=working_directory
     )
@@ -163,7 +172,7 @@ def mangle_url(url: str, mangle_name: str) -> str:
 def reset_project_git_configuration(
     project_name: str,
     template_repo_url: str,
-    template_reference: str,
+    checkout: str | None,
     project_directory: Path,
 ) -> None:
     """Overrides .gitattributes and .gitignore inn a given project directory.
@@ -171,7 +180,7 @@ def reset_project_git_configuration(
     Args:
         project_name: Name of project.
         template_repo_url: URL for the chosen template.
-        template_reference: Git reference to the template repository.
+        checkout: The git reference to check against. Supports branches, tags and commit hashes.
         project_directory: Directory of the project.
     """
     files = [".gitattributes", ".gitignore"]
@@ -181,7 +190,7 @@ def reset_project_git_configuration(
                 project_name,
                 "",
                 template_repo_url,
-                template_reference,
+                checkout,
                 Path(tempdir),
                 name=None,
                 email=None,

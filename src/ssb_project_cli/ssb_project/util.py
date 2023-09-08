@@ -2,6 +2,7 @@
 import logging
 import os
 import subprocess  # noqa: S404
+import sys  # noqa: S404
 import time
 from pathlib import Path
 from typing import Optional
@@ -93,7 +94,7 @@ def execute_command(
         log = str(result)
         print(failure_desc)
         create_error_log(log, calling_function)
-        exit(1)
+        sys.exit(1)
     else:
         print(success_desc)
 

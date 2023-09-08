@@ -11,7 +11,7 @@ from ssb_project_cli.ssb_project.create.local_repo import (
 def confirm_fix_ssb_git_config(
     project_name: str,
     template_repo_url: str,
-    template_reference: str,
+    checkout: str | None,
     project_directory: Path,
     valid_global_git_config: bool,
     valid_project_git_config: bool,
@@ -21,7 +21,7 @@ def confirm_fix_ssb_git_config(
     Args:
         project_name: Name of project
         template_repo_url: URL for the chosen template
-        template_reference: Git reference to the template repository
+        checkout: The git reference to check against. Supports branches, tags and commit hashes.
         project_directory: Directory of the project.
         valid_global_git_config: True if global git is configured according to company policy.
         valid_project_git_config:True if local git files are configured according to company policy.
@@ -40,5 +40,5 @@ def confirm_fix_ssb_git_config(
             reset_global_gitconfig()
         if not valid_project_git_config:
             reset_project_git_configuration(
-                project_name, template_repo_url, template_reference, project_directory
+                project_name, template_repo_url, checkout, project_directory
             )

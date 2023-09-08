@@ -32,6 +32,12 @@
 - The project will follow the most recent SSB guidelines for security and quality.
 - It will always be possible to update existing projects as guidelines change.
 
+:sparkles: Now allows specifying _any_ Cookiecutter template which uses Poetry, for example
+
+```shell
+ssb-project create my-project --template-git-url https://github.com/cjolowicz/cookiecutter-hypermodern-python
+```
+
 ## Installation
 
 You can install _SSB Project CLI_ via [pip] from [PyPI]:

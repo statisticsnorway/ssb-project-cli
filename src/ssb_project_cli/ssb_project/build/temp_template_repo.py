@@ -10,20 +10,21 @@ from git import Repo  # type: ignore[attr-defined]
 class TempTemplateRepo:
     """A context manager that clones a Git repository to a temporary directory and checks out a specific tag."""
 
-    def __init__(self, template_repo_url: str, template_reference: str) -> None:
-        """Initializes a new TemplateRepo object with the specified template_repo_url and template_reference attributes."""
+    def __init__(self, template_repo_url: str, checkout: str | None) -> None:
+        """Initializes a new TemplateRepo object with the specified template_repo_url and checkout attributes."""
         self.template_repo_url = template_repo_url
-        self.template_reference = template_reference
+        self.checkout = checkout
 
     def __enter__(self) -> "TempTemplateRepo":
-        """Clones the template repository specified by template_repo_url to a temporary directory and checks out the tag specified by template_reference."""
+        """Clones the template repository specified by template_repo_url to a temporary directory and checks out the tag specified by checkout."""
         self.temp_dir = TemporaryDirectory()
 
         # clone the repository
         self.repo = Repo.clone_from(self.template_repo_url, self.temp_dir.name)
 
-        # checkout the specific tag you're interested in
-        self.repo.git.checkout(self.template_reference)
+        if self.checkout:
+            # checkout the specific tag you're interested in
+            self.repo.git.checkout(self.checkout)
 
         self.subdir = "{{cookiecutter.project_name}}"
 

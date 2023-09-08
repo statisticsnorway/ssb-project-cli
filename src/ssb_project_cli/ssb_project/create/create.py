@@ -32,7 +32,7 @@ def create_project(  # noqa: C901
     home_path: Path,
     github_org_name: str,
     template_repo_url: str,
-    template_reference: str,
+    checkout: str | None,
     verify_config: bool = True,
 ) -> None:
     """Create an SSB-project.
@@ -46,8 +46,8 @@ def create_project(  # noqa: C901
         working_directory: Current working directory
         home_path: Home Path
         github_org_name: Name of GitHub organization
-        template_repo_url: Template repository url
-        template_reference: Template reference
+        template_repo_url: The Cookiecutter template URI.
+        checkout: The git reference to check against. Supports branches, tags and commit hashes.
         verify_config: Determines if gitconfig is verified.
     """
     is_memory_full()
@@ -90,14 +90,14 @@ def create_project(  # noqa: C901
             project_name,
             description,
             template_repo_url,
-            template_reference,
+            checkout,
             working_directory,
         )
         build_project(
             project_directory,
             working_directory,
             template_repo_url,
-            template_reference,
+            checkout,
             verify_config,
         )
 
