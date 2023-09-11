@@ -1,6 +1,7 @@
 """Tests for local_repo module."""
 import json
 from pathlib import Path
+from pprint import pprint
 from random import randint
 from unittest.mock import Mock
 from unittest.mock import patch
@@ -183,9 +184,9 @@ def test_create_project_from_template(
 
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
-@patch(f"{LOCAL_REPO}.subprocess.run")
+@patch(f"{LOCAL_REPO}.execute_command")
 def test_create_project_from_template_license_year(
-    mock_run: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+    mock_execute_command: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
 ) -> None:
     """Verify that we supply the license year to Cruft"""
     mock_extract.return_value = ("Name", "")
@@ -200,17 +201,18 @@ def test_create_project_from_template_license_year(
         tmp_path,
         license_year,
     )
-    mock_run_call_args = mock_run.call_args.args
-    cruft_args = json.loads(mock_run_call_args[-1][-1])
+    mock_execute_command_call_args = mock_execute_command.call_args.args
+    pprint(mock_execute_command_call_args)
+    cruft_args = json.loads(mock_execute_command_call_args[0][-1])
     assert cruft_args["license_year"] == license_year
     assert cruft_args["project_name"] == project_name
 
 
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
-@patch(f"{LOCAL_REPO}.subprocess.run")
+@patch(f"{LOCAL_REPO}.execute_command")
 def test_create_project_from_template_different_template_uri(
-    mock_run: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+    mock_execute_command: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
 ) -> None:
     """Check that different template uri works"""
     mock_extract.return_value = ("Name", "")
@@ -225,7 +227,7 @@ def test_create_project_from_template_different_template_uri(
         tmp_path,
         license_year,
     )
-    mock_run_call_args = mock_run.call_args.args
-    cruft_args = json.loads(mock_run_call_args[-1][-1])
+    mock_execute_command_call_args = mock_execute_command.call_args.args
+    cruft_args = json.loads(mock_execute_command_call_args[0][-1])
     assert cruft_args["license_year"] == license_year
     assert cruft_args["project_name"] == project_name

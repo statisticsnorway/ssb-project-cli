@@ -46,16 +46,23 @@ def test_clean_venv(mock_confirm: Mock, mock_path: Mock, mock_execute: Mock) -> 
     assert mock_execute.call_count == 2
 
 
-@patch(f"{CLEAN}.subprocess.run")
-def test_get_kernels_dict(mock_run: Mock) -> None:
+@patch("ssb_project_cli.ssb_project.util.execute_command")
+def test_get_kernels_dict_command_success(mock_execute_command: Mock) -> None:
     """Checks that get_kernels_dict correctly parses jupyter output."""
-    mock_run.side_effect = [
+    mock_execute_command.side_effect = [
         Mock(
             returncode=0,
             stdout=b"Available kernels:\n  python    /some/path\n  R    /other/path\nthis line is invalid",
+            stderr=b"",
         ),
-        Mock(returncode=1, stderr=b"Some error"),
     ]
     assert get_kernels_dict() == {"python": "/some/path", "R": "/other/path"}
-    with pytest.raises(SystemExit):
-        get_kernels_dict()
+
+
+@patch("ssb_project_cli.ssb_project.util.execute_command")
+def test_get_kernels_dict_command_error(mock_execute_command: Mock) -> None:
+    """Checks that get_kernels_dict correctly parses jupyter output."""
+    mock_execute_command.side_effect = [
+        Mock(returncode=1, stdout=b"", stderr=b"Some error"),
+    ]
+    assert get_kernels_dict() == {}

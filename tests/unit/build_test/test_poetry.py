@@ -15,7 +15,6 @@ from ssb_project_cli.ssb_project.build.poetry import poetry_source_includes_sour
 from ssb_project_cli.ssb_project.build.poetry import poetry_source_remove
 from ssb_project_cli.ssb_project.build.poetry import should_update_lock_file
 from ssb_project_cli.ssb_project.build.poetry import update_lock
-from ssb_project_cli.ssb_project.util import get_kernels_dict
 
 
 POETRY = "ssb_project_cli.ssb_project.build.poetry"
@@ -36,21 +35,6 @@ def test_poetry_source_includes_source_name(mock_run: Mock) -> None:
     assert not poetry_source_includes_source_name(
         Path("."), source_name=NEXUS_SOURCE_NAME
     )
-
-
-@patch(f"{CLEAN}.subprocess.run")
-def test_get_kernels_dict(mock_run: Mock) -> None:
-    """Checks that get_kernels_dict correctly parses jupyter output."""
-    mock_run.side_effect = [
-        Mock(
-            returncode=0,
-            stdout=b"Available kernels:\n  python    /some/path\n  R    /other/path\nthis line is invalid",
-        ),
-        Mock(returncode=1, stderr=b"Some error"),
-    ]
-    assert get_kernels_dict() == {"python": "/some/path", "R": "/other/path"}
-    with pytest.raises(SystemExit):
-        get_kernels_dict()
 
 
 @pytest.mark.parametrize(
