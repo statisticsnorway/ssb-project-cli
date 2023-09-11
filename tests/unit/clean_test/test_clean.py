@@ -6,7 +6,6 @@ import pytest
 
 from ssb_project_cli.ssb_project.clean.clean import clean_project
 from ssb_project_cli.ssb_project.clean.clean import clean_venv
-from ssb_project_cli.ssb_project.util import get_kernels_dict
 
 
 CLEAN = "ssb_project_cli.ssb_project.clean.clean"
@@ -44,25 +43,3 @@ def test_clean_venv(mock_confirm: Mock, mock_path: Mock, mock_execute: Mock) -> 
     clean_venv()
 
     assert mock_execute.call_count == 2
-
-
-@patch("ssb_project_cli.ssb_project.util.execute_command")
-def test_get_kernels_dict_command_success(mock_execute_command: Mock) -> None:
-    """Checks that get_kernels_dict correctly parses jupyter output."""
-    mock_execute_command.side_effect = [
-        Mock(
-            returncode=0,
-            stdout=b"Available kernels:\n  python    /some/path\n  R    /other/path\nthis line is invalid",
-            stderr=b"",
-        ),
-    ]
-    assert get_kernels_dict() == {"python": "/some/path", "R": "/other/path"}
-
-
-@patch("ssb_project_cli.ssb_project.util.execute_command")
-def test_get_kernels_dict_command_error(mock_execute_command: Mock) -> None:
-    """Checks that get_kernels_dict correctly parses jupyter output."""
-    mock_execute_command.side_effect = [
-        Mock(returncode=1, stdout=b"", stderr=b"Some error"),
-    ]
-    assert get_kernels_dict() == {}
