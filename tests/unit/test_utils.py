@@ -7,7 +7,6 @@ from unittest.mock import patch
 import pytest
 
 from ssb_project_cli.ssb_project.util import execute_command
-from ssb_project_cli.ssb_project.util import get_kernels_dict
 from ssb_project_cli.ssb_project.util import set_debug_logging
 
 
@@ -53,25 +52,3 @@ def test_set_debug_logging_folders_created() -> None:
         error_logs_path = Path(f"{tempdir}/ssb-project-cli/.error_logs/")
         set_debug_logging(home_path=Path(tempdir))
         assert error_logs_path.is_dir()
-
-
-@patch(f"{UTILS}.execute_command")
-def test_get_kernels_dict_command_success(mock_execute_command: Mock) -> None:
-    """Checks that get_kernels_dict correctly parses jupyter output."""
-    mock_execute_command.side_effect = [
-        Mock(
-            returncode=0,
-            stdout=b"Available kernels:\n  python    /some/path\n  R    /other/path\nthis line is invalid",
-            stderr=b"",
-        ),
-    ]
-    assert get_kernels_dict() == {"python": "/some/path", "R": "/other/path"}
-
-
-@patch(f"{UTILS}.execute_command")
-def test_get_kernels_dict_command_error(mock_execute_command: Mock) -> None:
-    """Checks that get_kernels_dict correctly parses jupyter output."""
-    mock_execute_command.side_effect = [
-        Mock(returncode=1, stdout=b"", stderr=b"Some error"),
-    ]
-    assert get_kernels_dict() == {}

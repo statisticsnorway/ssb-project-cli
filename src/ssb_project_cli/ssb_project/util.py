@@ -8,9 +8,14 @@ from pathlib import Path
 from typing import Optional
 from typing import Union
 
+import jupyter_client
+from ipykernel import kernelspec
 from rich import print
 
 from .settings import HOME_PATH
+
+
+kernelspec_manager = jupyter_client.kernelspec.KernelSpecManager()  # type: ignore[no-untyped-call]
 
 
 def set_debug_logging(home_path: Path = HOME_PATH) -> None:
@@ -60,7 +65,6 @@ def execute_command(
     success_desc: Optional[str] = None,
     failure_desc: Optional[str] = None,
     cwd: Optional[Path] = None,
-    shell: bool = False,
 ) -> subprocess.CompletedProcess[bytes]:
     """Execute command and handle failure/success cases.
 
@@ -70,19 +74,16 @@ def execute_command(
         success_desc: For example: "Poetry install ran successfully".
         failure_desc: For example: "Something went wrong while running poetry install".
         cwd: The current working directory.
-        shell: Setting the shell argument to a true value causes subprocess to spawn an intermediate shell process.
 
     Returns:
-        The result of the of the subprocess.
-
+        The result of the subprocess.
     """
-    if not cwd:
-        cwd = Path.cwd()
-    result = subprocess.run(
+    if isinstance(command, str):
+        command = command.split(" ")
+    result = subprocess.run(  # noqa S603
         command,
         capture_output=True,
         cwd=cwd,
-        shell=shell,  # noqa: S60 no untrusted input
     )
 
     if result.returncode != 0:
@@ -91,7 +92,7 @@ def execute_command(
         if failure_desc:
             print(failure_desc)
         else:
-            print("Error while running" + " ".join(command))
+            print("Error while running: " + " ".join(command))
         create_error_log(log, calling_function)
         sys.exit(1)
     else:
@@ -101,25 +102,20 @@ def execute_command(
     return result
 
 
-def get_kernels_dict() -> dict[str, str]:
+def get_kernels_dict() -> dict[str, dict[str, str]]:
     """Gets installed kernel specifications.
 
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """
-    kernels_process = execute_command(
-        ["python", "-m", "jupyter", "kernelspec", "list"],
-        "List kernels",
-        failure_desc="Could not list kernels",
-    )
-    kernels_str = kernels_process.stdout.decode(
-        "utf-8"
-    ) + kernels_process.stderr.decode("utf-8")
-    kernel_dict = {}
-    for kernel in kernels_str.split("\n")[1:]:
-        line = " ".join(kernel.strip().split())
-        line = line.replace("%s ", "").strip()
-        if len(line.split(" ")) == 2:
-            k, v = line.split(" ")
-            kernel_dict[k] = v
-    return kernel_dict
+    return kernelspec_manager.get_all_specs()  # type: ignore
+
+
+def remove_kernel_spec(kernel_name: str) -> None:
+    """Remove a kernel spec."""
+    kernelspec_manager.remove_kernel_spec(kernel_name)  # type: ignore[no-untyped-call]
+
+
+def install_kernel(name: str) -> None:
+    """Install a kernel."""
+    kernelspec.install(kernel_name=name, user=True)  # type: ignore[no-untyped-call]
