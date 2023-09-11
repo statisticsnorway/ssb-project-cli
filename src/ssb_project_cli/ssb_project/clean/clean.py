@@ -1,5 +1,4 @@
 """Clean command module."""
-import subprocess  # noqa: S404 F401
 from pathlib import Path
 
 import questionary
@@ -41,7 +40,7 @@ def clean_project(project_name: str) -> None:
         f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually."
     )
 
-    clean_cmd = f"jupyter kernelspec remove -f {project_name}".split(" ")
+    clean_cmd = f"python -m jupyter kernelspec remove -f {project_name}".split(" ")
 
     execute_command(
         clean_cmd,

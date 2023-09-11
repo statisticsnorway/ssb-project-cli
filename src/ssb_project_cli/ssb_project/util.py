@@ -50,7 +50,6 @@ def create_error_log(
             print(
                 f"❗️You can try deleting '.poetry/cache' in your project directory or '{home_path}/.cache/pypoetry'. Cache could be causing problems"
             )
-            f.close()
     except Exception as e:
         print(f"Error while attempting to write the log file: {e}")
 
@@ -58,9 +57,9 @@ def create_error_log(
 def execute_command(
     command: Union[str, list[str]],
     command_shortname: str,
-    success_desc: Optional[str],
-    failure_desc: str,
-    cwd: Optional[Path],
+    success_desc: Optional[str] = None,
+    failure_desc: Optional[str] = None,
+    cwd: Optional[Path] = None,
     shell: bool = False,
 ) -> subprocess.CompletedProcess[bytes]:
     """Execute command and handle failure/success cases.
@@ -77,45 +76,45 @@ def execute_command(
         The result of the of the subprocess.
 
     """
-    if cwd:
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            cwd=cwd,
-            shell=shell,  # noqa: S60 no untrusted input
-        )
-    else:
-        result = subprocess.run(
-            command, capture_output=True, shell=shell  # noqa: S602 no untrusted input
-        )
+    if not cwd:
+        cwd = Path.cwd()
+    result = subprocess.run(
+        command,
+        capture_output=True,
+        cwd=cwd,
+        shell=shell,  # noqa: S60 no untrusted input
+    )
 
     if result.returncode != 0:
         calling_function = command_shortname
         log = str(result)
-        print(failure_desc)
+        if failure_desc:
+            print(failure_desc)
+        else:
+            print("Error while running" + " ".join(command))
         create_error_log(log, calling_function)
         sys.exit(1)
     else:
-        print(success_desc)
+        if success_desc:
+            print(success_desc)
 
     return result
 
 
 def get_kernels_dict() -> dict[str, str]:
-    """Makes a dictionary of installed kernel specifications.
+    """Gets installed kernel specifications.
 
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """
-    kernels_process = subprocess.run(  # noqa S607
-        ["jupyter", "kernelspec", "list"], capture_output=True
+    kernels_process = execute_command(
+        ["python", "-m", "jupyter", "kernelspec", "list"],
+        "List kernels",
+        failure_desc="Could not list kernels",
     )
-    kernels_str = ""
-    if kernels_process.returncode == 0:
-        kernels_str = kernels_process.stdout.decode("utf-8")
-    else:
-        print("An error occured while looking for installed kernels.")
-        exit(1)
+    kernels_str = kernels_process.stdout.decode(
+        "utf-8"
+    ) + kernels_process.stderr.decode("utf-8")
     kernel_dict = {}
     for kernel in kernels_str.split("\n")[1:]:
         line = " ".join(kernel.strip().split())

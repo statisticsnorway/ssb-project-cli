@@ -18,6 +18,7 @@ from ssb_project_cli.ssb_project.create.github import get_github_username
 from ssb_project_cli.ssb_project.create.prompt import request_name_email
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
 from ssb_project_cli.ssb_project.util import create_error_log
+from ssb_project_cli.ssb_project.util import execute_command
 
 
 def create_project_from_template(
@@ -68,6 +69,8 @@ def create_project_from_template(
     quoted = json.dumps(template_info).replace('"', '"')
 
     argv = [
+        "python",
+        "-m",
         "cruft",
         "create",
         template_repo_url,
@@ -85,9 +88,7 @@ def create_project_from_template(
         "--extra-context",
         quoted,
     ]
-    subprocess.run(  # noqa: S603 no untrusted input
-        argv, check=True, cwd=working_directory
-    )
+    execute_command(argv, "Creating project from template", cwd=working_directory)
 
     return project_dir
 
