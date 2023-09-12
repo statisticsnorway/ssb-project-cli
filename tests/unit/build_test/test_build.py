@@ -25,7 +25,6 @@ BUILD = "ssb_project_cli.ssb_project.build.build"
 @patch(f"{BUILD}.poetry_source_includes_source_name")
 @patch(f"{BUILD}.poetry_source_add")
 @patch(f"{BUILD}.poetry_source_remove")
-@patch("pathlib.Path.is_file")
 @patch("typer.confirm")
 @patch("kvakk_git_tools.validate_git_config")
 @patch("ssb_project_cli.ssb_project.build.environment.verify_local_config")
@@ -42,7 +41,6 @@ def test_build(
     mock_verify_local_config: Mock,
     mock_kvakk: Mock,
     mock_confirm: Mock,
-    mock_file_found: Mock,
     mock_poetry_source_remove: Mock,
     mock_poetry_source_add: Mock,
     mock_poetry_source_includes_source_name: Mock,
@@ -61,7 +59,6 @@ def test_build(
     mock_kvakk.return_value = True
     mock_verify_local_config.return_value = True
     mock_running_onprem.return_value = running_onprem_return
-    mock_file_found.return_value = True
     mock_confirm.return_value = False
     mock_poetry_source_includes_source_name.return_value = (
         poetry_source_includes_source_name_return
@@ -72,7 +69,6 @@ def test_build(
     assert mock_kvakk.called
     assert mock_verify_local_config
     assert mock_confirm.call_count == 1
-    assert mock_file_found.call_count == 1
     assert mock_poetry_install.call_count == 1
     assert mock_install_ipykernel.call_count == 1
     assert mock_ipykernel_attach_bashrc.call_count == 1

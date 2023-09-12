@@ -1,4 +1,5 @@
 """SSB-project utils."""
+import json
 import logging
 import os
 import subprocess  # noqa: S404
@@ -9,6 +10,7 @@ from typing import Optional
 from typing import Union
 
 import jupyter_client
+import tomli
 from ipykernel import kernelspec
 from rich import print
 
@@ -119,3 +121,57 @@ def remove_kernel_spec(kernel_name: str) -> None:
 def install_kernel(name: str) -> None:
     """Install a kernel."""
     kernelspec.install(kernel_name=name, user=True)  # type: ignore[no-untyped-call]
+
+
+def get_project_name_and_root_path(
+    project_path: Path | None = None,
+) -> tuple[str | None, Path | None]:
+    """Get the name and root of the project.
+
+    - First source: `.cruft.json`
+    - Second source: `pyproject.toml`
+    - Final fallback: project root directory name.
+
+    Args:
+        project_path: Optionally supply a path to the project. If not supplied, use the current working directory.
+
+    Returns:
+        project_name: The name of the project.
+        project_root: Path of the root directory of the project.
+    """
+    cruft_json_name = ".cruft.json"
+    pyproject_name = "pyproject.toml"
+    origin = project_path or Path.cwd()
+    if not origin.exists():
+        return None, None
+    paths = [origin]
+    # List of current path and all parents up to the filesystem root
+    paths.extend(origin.parents)
+
+    for path in paths:
+        if {i.name for i in path.iterdir()}.intersection(
+            {cruft_json_name, pyproject_name, ".git"}
+        ):
+            try:
+                # Attempt to source from Cruft first
+                name = json.loads((path / cruft_json_name).read_text())["context"][
+                    "cookiecutter"
+                ]["project_name"]
+                return (
+                    name,
+                    path,
+                )
+            except (KeyError, FileNotFoundError, json.JSONDecodeError):
+                # Fall back to pyproject.toml
+                try:
+                    name = tomli.loads((path / pyproject_name).read_text())["tool"][
+                        "poetry"
+                    ]["name"]
+                    return (
+                        name,
+                        path,
+                    )
+                except (KeyError, FileNotFoundError):
+                    # Final fall back to project root directory name
+                    return path.name, path
+    return None, None
