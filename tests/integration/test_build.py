@@ -26,7 +26,7 @@ def create_project(
     # Clean up project directory
     shutil.rmtree(name)
     # Clean up project kernel
-    subprocess.run(f"jupyter kernelspec remove -f {name}".split(" "))
+    subprocess.run(f"python -m jupyter kernelspec remove -f {name}".split(" "))
 
 
 @pytest.fixture(scope="module")

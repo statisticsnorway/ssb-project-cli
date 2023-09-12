@@ -1,5 +1,4 @@
 """This module contains functions used to set up a local git repository with ssb-project."""
-import json
 import shutil
 import subprocess  # noqa: S404
 import tempfile
@@ -7,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+import cruft  # type: ignore[import]
 from git import Repo  # type: ignore[attr-defined]
 from rich import print
 
@@ -64,29 +64,11 @@ def create_project_from_template(
         "email": email,
         "license_year": license_year or str(datetime.now().year),
     }
-
-    quoted = json.dumps(template_info).replace('"', '"')
-
-    argv = [
-        "cruft",
-        "create",
-        template_repo_url,
-    ]
-    if checkout:
-        argv += [
-            "--checkout",
-            checkout,
-        ]
-    if template_repo_url == STAT_TEMPLATE_REPO_URL:
-        argv += ["--no-input"]
-    else:
-        print("(If defaults are correct, just press enter)")
-    argv += [
-        "--extra-context",
-        quoted,
-    ]
-    subprocess.run(  # noqa: S603 no untrusted input
-        argv, check=True, cwd=working_directory
+    cruft.create(
+        template_git_url=template_repo_url,
+        checkout=checkout,
+        no_input=(template_repo_url == STAT_TEMPLATE_REPO_URL),
+        extra_context=template_info,
     )
 
     return project_dir

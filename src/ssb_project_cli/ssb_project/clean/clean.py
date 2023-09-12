@@ -1,5 +1,5 @@
 """Clean command module."""
-import subprocess  # noqa: S404 F401
+import sys
 from pathlib import Path
 
 import questionary
@@ -7,6 +7,7 @@ from rich import print
 
 from ssb_project_cli.ssb_project.util import execute_command
 from ssb_project_cli.ssb_project.util import get_kernels_dict
+from ssb_project_cli.ssb_project.util import remove_kernel_spec
 
 
 def clean_project(project_name: str) -> None:
@@ -26,7 +27,7 @@ def clean_project(project_name: str) -> None:
             )
         )
 
-        exit(1)
+        sys.exit(1)
 
     confirmation = questionary.confirm(
         "Are you sure you want to delete the kernel {!r}. This action will delete the kernel associated with the virtual environment and leave all other files untouched.".format(
@@ -35,21 +36,13 @@ def clean_project(project_name: str) -> None:
     ).ask()
 
     if not confirmation:
-        exit(1)
+        sys.exit(1)
 
     print(
         f"Deleting kernel {project_name}...If you wish to also delete the project files, you can do so manually."
     )
 
-    clean_cmd = f"jupyter kernelspec remove -f {project_name}".split(" ")
-
-    execute_command(
-        clean_cmd,
-        "clean-cmd",
-        f"Deleted Jupyter kernel {project_name}.",
-        "Error: Something went wrong while removing the jupyter kernel.",
-        None,
-    )
+    remove_kernel_spec(project_name)
 
 
 def clean_venv() -> None:
@@ -67,7 +60,6 @@ def clean_venv() -> None:
                 "Virtual environment successfully removed!",
                 "Something went wrong while removing virtual environment in current directory. A log of the issue was created...",
                 None,
-                True,
             )
 
         else:

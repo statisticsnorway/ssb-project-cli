@@ -121,7 +121,9 @@ def test_ipykernel_attach_bashrc_success(
     mock_print: Mock,
     mock_get_kernels_dict: Mock,
 ) -> None:
-    mock_get_kernels_dict.return_value = {"project_name": "/path/to/project/kernel"}
+    mock_get_kernels_dict.return_value = {
+        "project_name": {"resource_dir": "/path/to/project/kernel"}
+    }
     project_name = "project_name"
 
     ipykernel_attach_bashrc(project_name)
@@ -147,7 +149,7 @@ def test_ipykernel_attach_bashrc_kernel_not_found(
     mock_print: Mock, mock_get_kernels_dict: Mock
 ) -> None:
     project_name = "nonexisting_project"
-    expected_print_message = f":x:\tCould not mount .bashrc, '{project_name}' is not found in 'jupyter kernelspec list'."  # noqa: B907
+    expected_print_message = f":x:\tCould not mount .bashrc, '{project_name}' kernel was not found'."  # noqa: B907
     expected_exit_code = 1
 
     with unittest.TestCase().assertRaises(SystemExit) as cm:
@@ -160,7 +162,7 @@ def test_ipykernel_attach_bashrc_kernel_not_found(
 
 @patch(
     f"{BUILD}.get_kernels_dict",
-    return_value={"existing_project": "/path/which/does/not/exist"},
+    return_value={"existing_project": {"resource_dir": "/path/which/does/not/exist"}},
 )
 @patch(f"{BUILD}.Path.exists", side_effect=[False])
 @patch(f"{BUILD}.print")
@@ -182,7 +184,7 @@ def test_ipykernel_attach_bashrc_kernel_path_does_not_exist(
 
 @patch(
     f"{BUILD}.get_kernels_dict",
-    return_value={"existing_project": "/path/which/does/not/exist"},
+    return_value={"existing_project": {"resource_dir": "/path/which/does/not/exist"}},
 )
 @patch(f"{BUILD}.Path.exists", side_effect=[True, False])
 @patch(f"{BUILD}.print")
@@ -204,7 +206,7 @@ def test_ipykernel_attach_bashrc_kernel_json_file_not_exist(
 
 @patch(
     f"{BUILD}.get_kernels_dict",
-    return_value={"existing_project": "/path/which/does/not/exist"},
+    return_value={"existing_project": {"resource_dir": "/path/which/does/not/exist"}},
 )
 @patch(f"{BUILD}.Path.exists", side_effect=[True, True])
 @patch("builtins.open", new_callable=mock_open)
@@ -245,7 +247,7 @@ def test_ipykernel_attach_bashrc_python_executable_path_not_found(
 
 @patch(
     f"{BUILD}.get_kernels_dict",
-    return_value={"existing_project": "/path/which/does/not/exist"},
+    return_value={"existing_project": {"resource_dir": "/path/which/does/not/exist"}},
 )
 @patch(f"{BUILD}.Path.exists", side_effect=[True, True])
 @patch("builtins.open", new_callable=mock_open)

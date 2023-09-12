@@ -89,7 +89,7 @@ def build_project(
         poetry_source_remove(project_directory)
 
     poetry_install(project_directory)
-    install_ipykernel(project_directory, project_name)
+    install_ipykernel(project_name)
     ipykernel_attach_bashrc(project_name)
 
 
@@ -102,11 +102,11 @@ def ipykernel_attach_bashrc(project_name: str) -> None:
     kernels = get_kernels_dict()
     if project_name not in kernels:
         print(
-            f":x:\tCould not mount .bashrc, '{project_name}' is not found in 'jupyter kernelspec list'."  # noqa: B907
+            f":x:\tCould not mount .bashrc, '{project_name}' kernel was not found'."  # noqa: B907
         )
         exit(1)
 
-    project_kernel_path = kernels[project_name]
+    project_kernel_path = kernels[project_name]["resource_dir"]
     if not Path(project_kernel_path).exists():
         print(
             f":x:\tCould not mount .bashrc, path: '{project_kernel_path}' does not exist."  # noqa: B907
