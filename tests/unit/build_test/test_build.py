@@ -28,6 +28,7 @@ BUILD = "ssb_project_cli.ssb_project.build.build"
 @patch("typer.confirm")
 @patch("kvakk_git_tools.validate_git_config")
 @patch("ssb_project_cli.ssb_project.build.environment.verify_local_config")
+@patch(f"{BUILD}.get_project_name_and_root_path")
 @pytest.mark.parametrize(
     "running_onprem_return,poetry_source_includes_source_name_return,calls_to_poetry_source_includes_source_name,calls_to_poetry_source_add,calls_to_poetry_source_remove",
     [
@@ -38,6 +39,7 @@ BUILD = "ssb_project_cli.ssb_project.build.build"
     ],
 )
 def test_build(
+    mock_get_project_name_and_root_path: Mock,
     mock_verify_local_config: Mock,
     mock_kvakk: Mock,
     mock_confirm: Mock,
@@ -60,6 +62,7 @@ def test_build(
     mock_verify_local_config.return_value = True
     mock_running_onprem.return_value = running_onprem_return
     mock_confirm.return_value = False
+    mock_get_project_name_and_root_path.return_value = ("project_name", tmp_path)
     mock_poetry_source_includes_source_name.return_value = (
         poetry_source_includes_source_name_return
     )

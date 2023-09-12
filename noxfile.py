@@ -165,7 +165,7 @@ def mypy(session: Session) -> None:
 def unit_tests(session: Session) -> None:
     """Run the unit tests."""
     session.install(".")
-    session.install("coverage[toml]", "pytest", "pygments")
+    session.install("coverage[toml]", "pytest", "pygments", "tomli-w")
     try:
         session.run(
             "coverage",
@@ -185,7 +185,7 @@ def unit_tests(session: Session) -> None:
 def integration_tests(session: Session) -> None:
     """Run the unit tests."""
     session.install(".")
-    session.install("pytest")
+    session.install("pytest", "tomli-w")
     session.run(
         "pytest",
         INTEGRATION_TESTS_PATH,
@@ -211,7 +211,7 @@ def coverage(session: Session) -> None:
 def typeguard(session: Session) -> None:
     """Runtime type checking using Typeguard."""
     session.install(".")
-    session.install("pytest", "typeguard", "pygments")
+    session.install("pytest", "typeguard", "pygments", "tomli-w")
     session.run(
         "pytest", f"--typeguard-packages={package}", UNIT_TESTS_PATH, *session.posargs
     )
