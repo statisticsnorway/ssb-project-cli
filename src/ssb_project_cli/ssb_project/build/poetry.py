@@ -144,7 +144,6 @@ def install_ipykernel(project_name: str) -> None:
     """Installs ipykernel.
 
     Args:
-        project_directory: Path of project
         project_name: Name of project
     """
     with Progress(
