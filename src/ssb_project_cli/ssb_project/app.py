@@ -101,8 +101,8 @@ def create(  # noqa: C901
 
 @app.command()
 def build(
-    path: Path = typer.Argument(  # noqa: B008
-        "",
+    path: t.Optional[Path] = typer.Argument(  # noqa: B008
+        None,
         help="Project path",
     ),
     verify_config: bool = typer.Option(  # noqa: B008

@@ -153,3 +153,4 @@ def install_ipykernel(project_name: str) -> None:
     ) as progress:
         progress.add_task(description="Installing Jupyter kernel...", total=None)
         install_kernel(project_name)
+    print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")

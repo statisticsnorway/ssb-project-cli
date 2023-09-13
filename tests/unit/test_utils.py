@@ -1,12 +1,15 @@
 """Tests utils functions."""
+import json
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
+import tomli_w  # type: ignore[import]
 
 from ssb_project_cli.ssb_project.util import execute_command
+from ssb_project_cli.ssb_project.util import get_project_name_and_root_path
 from ssb_project_cli.ssb_project.util import set_debug_logging
 
 
@@ -52,3 +55,50 @@ def test_set_debug_logging_folders_created() -> None:
         error_logs_path = Path(f"{tempdir}/ssb-project-cli/.error_logs/")
         set_debug_logging(home_path=Path(tempdir))
         assert error_logs_path.is_dir()
+
+
+def test_get_project_name_cruft_json(tmp_path: Path) -> None:
+    name = "my-project-name"
+    content = {"context": {"cookiecutter": {"project_name": name}}}
+    with (tmp_path / ".cruft.json").open("w") as f:
+        f.write(json.dumps(content))
+    assert get_project_name_and_root_path(tmp_path) == (name, tmp_path)
+
+
+def test_get_project_name_pyproject_toml(tmp_path: Path) -> None:
+    name = "my-project-name"
+    content = {"tool": {"poetry": {"name": name}}}
+    with (tmp_path / "pyproject.toml").open("w") as f:
+        f.write(tomli_w.dumps(content))
+    assert get_project_name_and_root_path(tmp_path) == (name, tmp_path)
+
+
+def test_get_project_name_git_directory(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    assert get_project_name_and_root_path(tmp_path) == (tmp_path.name, tmp_path)
+
+
+def test_get_project_name_nested_directory(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    origin = (
+        tmp_path
+        / "deeply"
+        / "nested"
+        / "directory"
+        / "structure"
+        / "that"
+        / "goes"
+        / "some"
+        / "levels"
+        / "down"
+    )
+    origin.mkdir(parents=True)
+    assert get_project_name_and_root_path(origin) == (tmp_path.name, tmp_path)
+
+
+def test_get_project_name_non_existing_path(tmp_path: Path) -> None:
+    assert get_project_name_and_root_path(tmp_path / "fake") == (None, None)
+
+
+def test_get_project_name_non_project_dir(tmp_path: Path) -> None:
+    assert get_project_name_and_root_path(tmp_path) == (None, None)

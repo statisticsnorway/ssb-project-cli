@@ -4,6 +4,7 @@ import json
 import re
 
 from pathlib import Path
+import sys
 from typing import List
 
 import kvakk_git_tools.validate_ssb_gitconfig  # type: ignore
@@ -20,11 +21,14 @@ from rich import print
 
 from .prompt import confirm_fix_ssb_git_config
 
-from ssb_project_cli.ssb_project.util import get_kernels_dict
+from ssb_project_cli.ssb_project.util import (
+    get_kernels_dict,
+    get_project_name_and_root_path,
+)
 
 
 def build_project(
-    path: Path,
+    path: Path | None,
     working_directory: Path,
     template_repo_url: str,
     checkout: str | None,
@@ -39,18 +43,19 @@ def build_project(
         checkout: The git reference to check against. Supports branches, tags and commit hashes.
         verify_config: Determines if gitconfig is verified.
     """
-    if path == "":
-        project_name = working_directory.name
+    if path is None:
         project_directory = working_directory
     else:
-        project_name = path.absolute().name
         project_directory = working_directory / path
 
-    if not (project_directory / "pyproject.toml").is_file():
+    project_name, project_root = get_project_name_and_root_path(project_directory)
+
+    if project_name is None or project_root is None:
         print(
-            f":x:\tProject directory: {project_directory} is not a valid SSB-project, pyproject.toml is missing."
+            ":x:\tCould not find project root. Please run ssb-project within a project directory."
         )
-        exit(1)
+        sys.exit()
+
     if verify_config:
         try:
             valid_global_git_config = kvakk_git_tools.validate_git_config()
@@ -60,7 +65,7 @@ def build_project(
         valid_project_git_config = verify_local_config(
             template_repo_url,
             checkout,
-            cwd=str(working_directory / project_directory),
+            cwd=str(project_root),
         )
         if not valid_global_git_config or not valid_project_git_config:
             print(
@@ -70,7 +75,7 @@ def build_project(
                 project_name,
                 template_repo_url,
                 checkout,
-                project_directory,
+                project_root,
                 valid_global_git_config,
                 valid_project_git_config,
             )
@@ -79,16 +84,16 @@ def build_project(
         print(
             ":twisted_rightwards_arrows:\tDetected onprem environment, using proxy for package installation"
         )
-        if poetry_source_includes_source_name(project_directory):
-            poetry_source_remove(project_directory, lock_update=False)
-        poetry_source_add(PIP_INDEX_URL, project_directory)
-    elif poetry_source_includes_source_name(project_directory):
+        if poetry_source_includes_source_name(project_root):
+            poetry_source_remove(project_root, lock_update=False)
+        poetry_source_add(PIP_INDEX_URL, project_root)
+    elif poetry_source_includes_source_name(project_root):
         print(
             ":twisted_rightwards_arrows:\tDetected non-onprem environment, removing proxy for package installation"
         )
-        poetry_source_remove(project_directory)
+        poetry_source_remove(project_root)
 
-    poetry_install(project_directory)
+    poetry_install(project_root)
     install_ipykernel(project_name)
     ipykernel_attach_bashrc(project_name)
 
@@ -104,21 +109,21 @@ def ipykernel_attach_bashrc(project_name: str) -> None:
         print(
             f":x:\tCould not mount .bashrc, '{project_name}' kernel was not found'."  # noqa: B907
         )
-        exit(1)
+        sys.exit(1)
 
     project_kernel_path = kernels[project_name]["resource_dir"]
     if not Path(project_kernel_path).exists():
         print(
             f":x:\tCould not mount .bashrc, path: '{project_kernel_path}' does not exist."  # noqa: B907
         )
-        exit(1)
+        sys.exit(1)
 
     kernel_json_file = f"{project_kernel_path}/kernel.json"
     if not Path(kernel_json_file).exists():
         print(
             f":x:\tCould not mount .bashrc, file: '{kernel_json_file}' does not exist."  # noqa: B907
         )
-        exit(1)
+        sys.exit(1)
 
     with open(kernel_json_file, encoding="utf-8") as f:
         content_as_json = json.loads(f.read())
@@ -128,13 +133,13 @@ def ipykernel_attach_bashrc(project_name: str) -> None:
         print(
             f":x:\tCould not mount .bashrc, cannot find python executable path in {kernel_json_file}"
         )  # noqa: B907
-        exit(1)
+        sys.exit(1)
 
     if python_executable_path.endswith("/python.sh"):
         print(
             ":warning:\t.bashrc should already been mounted in your kernel, if you are in doubt do a 'clean' followed by a 'build'"
         )  # noqa: B907
-        exit(0)
+        sys.exit(0)
 
     start_script_path = f"{project_kernel_path}/python.sh"
     content_as_json["argv"] = [
