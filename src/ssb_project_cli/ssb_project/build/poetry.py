@@ -7,7 +7,7 @@ from rich.progress import TextColumn
 from rich import print
 
 from .environment import NEXUS_SOURCE_NAME
-from ssb_project_cli.ssb_project.util import execute_command, install_kernel
+from ssb_project_cli.ssb_project.util import execute_command
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -140,10 +140,11 @@ def should_update_lock_file(source_url: str, cwd: Path) -> bool:
     return True
 
 
-def install_ipykernel(project_name: str) -> None:
+def install_ipykernel(project_directory: Path, project_name: str) -> None:
     """Installs ipykernel.
 
     Args:
+        project_directory: Path of project
         project_name: Name of project
     """
     with Progress(
@@ -152,5 +153,14 @@ def install_ipykernel(project_name: str) -> None:
         transient=True,
     ) as progress:
         progress.add_task(description="Installing Jupyter kernel...", total=None)
-        install_kernel(project_name)
-    print(f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})")
+        kernel_cmd = f"poetry run python3 -m ipykernel install --user --name {project_name}".split(
+            " "
+        )
+
+        execute_command(
+            kernel_cmd,
+            "install-ipykernel",
+            f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})",
+            "Something went wrong while installing ipykernel.",
+            project_directory,
+        )

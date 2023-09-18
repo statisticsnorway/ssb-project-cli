@@ -94,7 +94,7 @@ def build_project(
         poetry_source_remove(project_root)
 
     poetry_install(project_root)
-    install_ipykernel(project_name)
+    install_ipykernel(project_root, project_name)
     ipykernel_attach_bashrc(project_name)
 
 

@@ -11,7 +11,6 @@ from typing import Union
 
 import jupyter_client
 import tomli
-from ipykernel import kernelspec
 from rich import print
 
 from .settings import HOME_PATH
@@ -116,11 +115,6 @@ def get_kernels_dict() -> dict[str, dict[str, str]]:
 def remove_kernel_spec(kernel_name: str) -> None:
     """Remove a kernel spec."""
     kernelspec_manager.remove_kernel_spec(kernel_name)  # type: ignore[no-untyped-call]
-
-
-def install_kernel(name: str) -> None:
-    """Install a kernel."""
-    kernelspec.install(kernel_name=name, user=True)  # type: ignore[no-untyped-call]
 
 
 def get_project_name_and_root_path(
