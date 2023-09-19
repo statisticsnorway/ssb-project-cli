@@ -10,6 +10,8 @@ from rich import print
 from ssb_project_cli.ssb_project.util import create_error_log
 
 from ..build.build import build_project
+from ..build.environment import JUPYTER_IMAGE_SPEC
+from ..build.environment import running_onprem
 from .github import create_github
 from .github import is_github_repo
 from .github import set_branch_protection_rules
@@ -174,7 +176,11 @@ def is_memory_full() -> None:
 
     # Get the disk usage information for the partition containing /home/jovyan/
     if os.path.exists("/home/jovyan/"):
-        disk_usage = psutil.disk_usage("/home/jovyan/")
+        disk_usage = (
+            psutil.disk_usage("/home/jovyan/")
+            if not running_onprem(JUPYTER_IMAGE_SPEC)
+            else psutil.disk_usage("/ssb/bruker")
+        )
 
         # Calculate the percentage of used disk space
         disk_used_percent = disk_usage.used / disk_usage.total * 100

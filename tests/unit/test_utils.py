@@ -6,7 +6,7 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-import tomli_w  # type: ignore[import]
+import tomli_w
 
 from ssb_project_cli.ssb_project.util import execute_command
 from ssb_project_cli.ssb_project.util import get_project_name_and_root_path
