@@ -179,7 +179,7 @@ def is_memory_full() -> None:
         disk_usage = (
             psutil.disk_usage("/home/jovyan/")
             if not running_onprem(JUPYTER_IMAGE_SPEC)
-            else psutil.disk_usage("/ssb/bruker")
+            else psutil.disk_usage("/ssb/bruker/")
         )
 
         # Calculate the percentage of used disk space
