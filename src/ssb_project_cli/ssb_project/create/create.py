@@ -174,7 +174,7 @@ def is_memory_full() -> None:
             )
             exit(1)
 
-    # Get the disk usage information for the partition containing /home/jovyan/
+    # Get the disk usage information for the partition hosting home directories
     if os.path.exists("/home/jovyan/"):
         disk_usage = (
             psutil.disk_usage("/home/jovyan/")
