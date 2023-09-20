@@ -176,11 +176,12 @@ def is_memory_full() -> None:
 
     # Get the disk usage information for the partition hosting home directories
     if os.path.exists("/home/jovyan/"):
-        disk_usage = (
-            psutil.disk_usage("/home/jovyan/")
+        home_dir = (
+            "/home/jovyan/"
             if not running_onprem(JUPYTER_IMAGE_SPEC)
-            else psutil.disk_usage("/ssb/bruker/")
+            else "/ssb/bruker/"
         )
+        disk_usage = psutil.disk_usage(home_dir)
 
         # Calculate the percentage of used disk space
         disk_used_percent = disk_usage.used / disk_usage.total * 100
