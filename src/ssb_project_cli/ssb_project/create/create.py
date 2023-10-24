@@ -54,6 +54,10 @@ def create_project(  # noqa: C901
     """
     is_memory_full()
 
+    if not is_valid_project_name(project_name):
+        print("Project name cannot contain uppercase letters.")
+        exit(1)
+
     if not valid_repo_name(project_name):
         print(
             "Invalid repo name: Please choose a valid name. For example: 'my-fantastic-project'"
@@ -192,3 +196,8 @@ def is_memory_full() -> None:
                 "Remaining disk space is less than 5%. Please free some disk space before creating a new project. Terminating."
             )
             exit(1)
+
+
+def is_valid_project_name(project_name: str) -> bool:
+    """Checks if project name does not contain uppercase letters."""
+    return not any(char.isupper() for char in project_name)

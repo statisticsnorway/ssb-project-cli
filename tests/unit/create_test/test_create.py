@@ -6,6 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from ssb_project_cli.ssb_project.app import create
+from ssb_project_cli.ssb_project.create.create import is_valid_project_name
 from ssb_project_cli.ssb_project.create.repo_privacy import RepoPrivacy
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_DEFAULT_REFERENCE
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
@@ -138,6 +139,36 @@ class TestCreateFunction(TestCase):
         )
         assert mock_rmtree.call_count == 0
 
+    @patch(f"{CREATE}.print")
+    def test_project_is_lowercase_should_fail(
+        self,
+        mock_print: Mock,
+        _mock_template: Mock,
+        _mock_git: Mock,
+        _mock_build_project: Mock,
+        _mock_rmtree: Mock,
+        _mock_log: Mock,
+        _mock_is_memory_full: Mock,
+    ) -> None:
+        """Tests the expected print message and exit code when an invalid project name is given as input"""
+        expected_print_message = "Project name cannot contain uppercase letters."
+        expected_exit_code = 1
+
+        with pytest.raises(SystemExit) as excinfo:
+            create(
+                "test_ProjEcT",
+                "description",
+                RepoPrivacy.internal,
+                False,
+                "github_token",
+                False,
+                "",
+                None,
+            )
+
+        assert mock_print.call_args[0][0] == expected_print_message
+        assert excinfo.value.code == expected_exit_code
+
 
 @patch(f"{CREATE}.Path.exists")
 def test_project_dir_exists(mock_path_exists: Mock) -> None:
@@ -155,3 +186,13 @@ def test_project_dir_exists(mock_path_exists: Mock) -> None:
             None,
         )
     assert excinfo.value.code == 1
+
+
+def test_is_valid_project_name() -> None:
+    assert is_valid_project_name("test") == True  # noqa: E712
+    assert is_valid_project_name("dapla-test") == True  # noqa: E712
+    assert is_valid_project_name("123randomletters") == True  # noqa: E712
+
+    assert is_valid_project_name("Test") == False  # noqa: E712
+    assert is_valid_project_name("Should-fail") == False  # noqa: E712
+    assert is_valid_project_name("123randomletteRs") == False  # noqa: E712
