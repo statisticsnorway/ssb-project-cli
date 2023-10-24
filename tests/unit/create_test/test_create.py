@@ -151,7 +151,7 @@ class TestCreateFunction(TestCase):
         _mock_is_memory_full: Mock,
     ) -> None:
         """Tests the expected print message and exit code when an invalid project name is given as input"""
-        expected_print_message = "Project name must be all lowercase."
+        expected_print_message = "Project name cannot contain uppercase letters."
         expected_exit_code = 1
 
         with pytest.raises(SystemExit) as excinfo:
