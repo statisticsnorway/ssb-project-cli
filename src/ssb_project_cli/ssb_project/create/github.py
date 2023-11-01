@@ -40,7 +40,7 @@ def create_github(
     try:
         # Ignoring mypy warning: Unexpected keyword argument "visibility"
         # for "create_repo" of "Organization"  [call-arg]
-        g.get_organization(github_org_name).create_repo(
+        g.get_organization(github_org_name).create_repo(  # type: ignore
             repo_name,
             visibility=repo_privacy,
             auto_init=False,
@@ -207,7 +207,7 @@ def set_branch_protection_rules(
         required_approving_review_count=1,
         dismiss_stale_reviews=True,
         enforce_admins=True,
-        users_bypass_pull_request_allowances=[],  # Supply this as workaround for https://github.com/PyGithub/PyGithub/issues/2578
+        user_bypass_pull_request_allowances=[],  # Supply this as workaround for https://github.com/PyGithub/PyGithub/issues/2578
     )
 
 
