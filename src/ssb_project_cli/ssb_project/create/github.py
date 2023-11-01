@@ -40,7 +40,7 @@ def create_github(
     try:
         # Ignoring mypy warning: Unexpected keyword argument "visibility"
         # for "create_repo" of "Organization"  [call-arg]
-        g.get_organization(github_org_name).create_repo(  # type: ignore
+        g.get_organization(github_org_name).create_repo(
             repo_name,
             visibility=repo_privacy,
             auto_init=False,
