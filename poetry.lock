@@ -2476,21 +2476,24 @@ files = [
 
 [[package]]
 name = "pygithub"
-version = "1.59.1"
+version = "1.55"
 description = "Use the full Github API v3"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.6"
 files = [
-    {file = "PyGithub-1.59.1-py3-none-any.whl", hash = "sha256:3d87a822e6c868142f0c2c4bf16cce4696b5a7a4d142a7bd160e1bdf75bc54a9"},
-    {file = "PyGithub-1.59.1.tar.gz", hash = "sha256:c44e3a121c15bf9d3a5cc98d94c9a047a5132a9b01d22264627f58ade9ddc217"},
+    {file = "PyGithub-1.55-py3-none-any.whl", hash = "sha256:2caf0054ea079b71e539741ae56c5a95e073b81fa472ce222e81667381b9601b"},
+    {file = "PyGithub-1.55.tar.gz", hash = "sha256:1bbfff9372047ff3f21d5cd8e07720f3dbfdaf6462fcaed9d815f528f1ba7283"},
 ]
 
 [package.dependencies]
 deprecated = "*"
-pyjwt = {version = ">=2.4.0", extras = ["crypto"]}
+pyjwt = ">=2.0"
 pynacl = ">=1.4.0"
 requests = ">=2.14.0"
+
+[package.extras]
+integrations = ["cryptography"]
 
 [[package]]
 name = "pygments"
@@ -2518,9 +2521,6 @@ files = [
     {file = "PyJWT-2.8.0-py3-none-any.whl", hash = "sha256:59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320"},
     {file = "PyJWT-2.8.0.tar.gz", hash = "sha256:57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de"},
 ]
-
-[package.dependencies]
-cryptography = {version = ">=3.4.0", optional = true, markers = "extra == \"crypto\""}
 
 [package.extras]
 crypto = ["cryptography (>=3.4.0)"]
@@ -4169,4 +4169,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "17d03b48c74521b75f38672326770321aa4c94ea4ca37b322f900d7f39f1ce50"
+content-hash = "cb40fa150298aae58ba8cf727934947c65f1b8be3d4411a4995a25bccf2d2b2e"
