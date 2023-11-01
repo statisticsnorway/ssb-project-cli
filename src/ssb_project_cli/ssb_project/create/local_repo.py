@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-import cruft  # type: ignore[import]
+import cruft  # type: ignore[import-untyped]
 from git import Repo
 from rich import print
 
