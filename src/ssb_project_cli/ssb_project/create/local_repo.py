@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 import cruft  # type: ignore[import]
-from git import Repo  # type: ignore[attr-defined]
+from git import Repo
 from rich import print
 
 from ssb_project_cli.ssb_project.create import temp_git_repo

@@ -4,7 +4,7 @@ from types import TracebackType
 from typing import Optional
 from typing import Type
 
-from git import Repo  # type: ignore[attr-defined]
+from git import Repo
 
 
 class TempTemplateRepo:
