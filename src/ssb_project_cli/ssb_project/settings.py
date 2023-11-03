@@ -8,5 +8,5 @@ HOME_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()
 STAT_TEMPLATE_REPO_URL = "https://github.com/statisticsnorway/ssb-project-template-stat"
 STAT_TEMPLATE_DEFAULT_REFERENCE = os.environ.get(
-    "STAT_TEMPLATE_DEFAULT_REFERENCE", "1.1.3"
+    "STAT_TEMPLATE_DEFAULT_REFERENCE", "1.1.4"
 )
