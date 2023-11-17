@@ -30,15 +30,16 @@ def test_create_github(mock_github: Mock) -> None:
     assert mock_github.call_count == 1
 
 
-@patch(f"{GITHUB}.create_error_log")
 @patch(f"{GITHUB}.Github.get_organization")
+@patch(f"{GITHUB}.create_error_log")
 def test_create_github_bad_credentials(
-    mock_github_get_organization: Mock, mock_log: Mock
+    mock_log: Mock, mock_github_get_organization: Mock
 ) -> None:
     """Checks if create_github works."""
-    mock_github_get_organization.return_value = BadCredentialsException(
-        Mock(), Mock(), Mock()
-    )
+    mock_org = Mock()
+    mock_github_get_organization.return_value = mock_org
+    mock_org.create_repo.return_value = Mock()
+    mock_org.create_repo.side_effect = BadCredentialsException(Mock(), Mock(), Mock())
 
     with pytest.raises(SystemExit):
         create_github("token", "repo", "privacy", "desc", "org_name")
