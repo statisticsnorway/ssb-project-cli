@@ -20,7 +20,6 @@ from ssb_project_cli.ssb_project.create.github import get_org_members
 from ssb_project_cli.ssb_project.create.github import is_github_repo
 from ssb_project_cli.ssb_project.create.github import set_branch_protection_rules
 
-
 GITHUB = "ssb_project_cli.ssb_project.create.github"
 
 
@@ -32,12 +31,12 @@ def test_create_github(mock_github: Mock) -> None:
 
 
 @patch(f"{GITHUB}.create_error_log")
-@patch(f"{GITHUB}.Github.get_repo")
+@patch(f"{GITHUB}.Github.get_organization")
 def test_create_github_bad_credentials(
-    mock_github_create_repo: Mock, mock_log: Mock
+    mock_github_get_organization: Mock, mock_log: Mock
 ) -> None:
     """Checks if create_github works."""
-    mock_github_create_repo.return_value = BadCredentialsException(
+    mock_github_get_organization.return_value = BadCredentialsException(
         Mock(), Mock(), Mock()
     )
 
