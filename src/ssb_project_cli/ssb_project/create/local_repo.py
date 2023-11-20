@@ -167,7 +167,6 @@ def reset_project_git_configuration(
         project_directory: Directory of the project.
     """
     files = [".gitattributes", ".gitignore"]
-    print("Heihei")
     try:
         with tempfile.TemporaryDirectory() as tempdir:
             create_project_from_template(
