@@ -67,6 +67,7 @@ def create_project_from_template(
     cruft.create(
         template_git_url=template_repo_url,
         checkout=checkout,
+        output_dir=project_dir,
         no_input=(template_repo_url == STAT_TEMPLATE_REPO_URL),
         extra_context=template_info,
     )
