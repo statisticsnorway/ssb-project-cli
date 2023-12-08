@@ -207,7 +207,7 @@ def set_branch_protection_rules(
         required_approving_review_count=1,
         dismiss_stale_reviews=True,
         enforce_admins=True,
-        user_bypass_pull_request_allowances=[],  # Supply this as workaround for https://github.com/PyGithub/PyGithub/issues/2578
+        users_bypass_pull_request_allowances=[],  # Need to supply as a workaround until PyGithub is updated to v2
     )
 
 
