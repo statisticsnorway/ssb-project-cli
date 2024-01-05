@@ -16,7 +16,7 @@ from rich import print
 from .settings import HOME_PATH
 
 
-kernelspec_manager = jupyter_client.kernelspec.KernelSpecManager()  # type: ignore[no-untyped-call]
+kernelspec_manager = jupyter_client.kernelspec.KernelSpecManager()
 
 
 def set_debug_logging(home_path: Path = HOME_PATH) -> None:
@@ -109,12 +109,12 @@ def get_kernels_dict() -> dict[str, dict[str, str]]:
     Returns:
         kernel_dict: Dictionary of installed kernel specifications
     """
-    return kernelspec_manager.get_all_specs()  # type: ignore
+    return kernelspec_manager.get_all_specs()
 
 
 def remove_kernel_spec(kernel_name: str) -> None:
     """Remove a kernel spec."""
-    kernelspec_manager.remove_kernel_spec(kernel_name)  # type: ignore[no-untyped-call]
+    kernelspec_manager.remove_kernel_spec(kernel_name)
 
 
 def get_project_name_and_root_path(
