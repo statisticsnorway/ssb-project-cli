@@ -79,6 +79,12 @@ def create(  # noqa: C901
         None,
         help="The git reference to check against. Supports branches, tags and commit hashes.",
     ),
+    no_kernel: bool = typer.Option(  # noqa: B008
+        False,
+        "--no-kernel",
+        help="Do not create a kernel after the project is created (defaults to False).",
+        show_default=True,
+    ),
 ) -> None:
     """:sparkles:  Create a project locally, and optionally on GitHub with the flag --github. The project will follow SSB's best practice for development."""
     if not checkout and template_git_url is STAT_TEMPLATE_REPO_URL:
@@ -96,6 +102,7 @@ def create(  # noqa: C901
         template_git_url,
         checkout,
         verify_config,
+        no_kernel,
     )
 
 

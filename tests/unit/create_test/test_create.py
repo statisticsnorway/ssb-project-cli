@@ -43,6 +43,7 @@ class TestCreateFunction(TestCase):
             False,
             "",
             None,
+            False,
         )
         assert mock_rmtree.call_count == 0
 
@@ -65,8 +66,9 @@ class TestCreateFunction(TestCase):
             False,
             STAT_TEMPLATE_REPO_URL,
             None,
+            False,
         )
-        assert _mock_build_project.call_args[-2][-2] == STAT_TEMPLATE_DEFAULT_REFERENCE
+        assert _mock_build_project.call_args[-2][-3] == STAT_TEMPLATE_DEFAULT_REFERENCE
 
     def test_rmtree_template_error(
         self,
@@ -89,6 +91,7 @@ class TestCreateFunction(TestCase):
                 False,
                 "",
                 None,
+                False,
             )
         assert mock_rmtree.call_count == 1
         assert mock_log.call_count == 1
@@ -114,6 +117,7 @@ class TestCreateFunction(TestCase):
                 False,
                 "",
                 None,
+                False,
             )
         assert mock_rmtree.call_count == 1
 
@@ -136,6 +140,7 @@ class TestCreateFunction(TestCase):
             False,
             "https://github.com/statisticsnorway/ssb-minimal-template",
             None,
+            False,
         )
         assert mock_rmtree.call_count == 0
 
@@ -164,6 +169,7 @@ class TestCreateFunction(TestCase):
                 False,
                 "",
                 None,
+                False,
             )
 
         assert mock_print.call_args[0][0] == expected_print_message
@@ -184,6 +190,7 @@ def test_project_dir_exists(mock_path_exists: Mock) -> None:
             False,
             "",
             None,
+            False,
         )
     assert excinfo.value.code == 1
 
