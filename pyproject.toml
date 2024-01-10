@@ -94,6 +94,7 @@ tests = ["tests", "*/tests"]
 [tool.coverage.run]
 branch = true
 source = ["ssb_project_cli", "tests"]
+relative_files = true
 
 [tool.coverage.report]
 show_missing = true
