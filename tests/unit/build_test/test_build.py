@@ -30,12 +30,13 @@ BUILD = "ssb_project_cli.ssb_project.build.build"
 @patch("ssb_project_cli.ssb_project.build.environment.verify_local_config")
 @patch(f"{BUILD}.get_project_name_and_root_path")
 @pytest.mark.parametrize(
-    "running_onprem_return,poetry_source_includes_source_name_return,calls_to_poetry_source_includes_source_name,calls_to_poetry_source_add,calls_to_poetry_source_remove",
+    "running_onprem_return,poetry_source_includes_source_name_return,calls_to_poetry_source_includes_source_name,calls_to_poetry_source_add,calls_to_poetry_source_remove,no_kernel",
     [
-        (False, False, 1, 0, 0),
-        (True, False, 1, 1, 0),
-        (True, True, 1, 1, 1),
-        (False, True, 1, 0, 1),
+        (False, False, 1, 0, 0, False),
+        (True, False, 1, 1, 0, False),
+        (True, True, 1, 1, 1, False),
+        (False, True, 1, 0, 1, False),
+        (False, False, 1, 0, 0, True),
     ],
 )
 def test_build(
@@ -55,6 +56,7 @@ def test_build(
     calls_to_poetry_source_includes_source_name: int,
     calls_to_poetry_source_add: int,
     calls_to_poetry_source_remove: int,
+    no_kernel: bool,
     tmp_path: Path,
 ) -> None:
     """Check that build calls poetry_install, install_ipykernel and poetry_source_includes_source_name."""
@@ -67,14 +69,19 @@ def test_build(
         poetry_source_includes_source_name_return
     )
     build_project(
-        tmp_path, tmp_path, STAT_TEMPLATE_REPO_URL, STAT_TEMPLATE_DEFAULT_REFERENCE
+        tmp_path,
+        tmp_path,
+        STAT_TEMPLATE_REPO_URL,
+        STAT_TEMPLATE_DEFAULT_REFERENCE,
+        True,
+        no_kernel,
     )
     assert mock_kvakk.called
     assert mock_verify_local_config
     assert mock_confirm.call_count == 1
     assert mock_poetry_install.call_count == 1
-    assert mock_install_ipykernel.call_count == 1
-    assert mock_ipykernel_attach_bashrc.call_count == 1
+    assert mock_install_ipykernel.call_count == int(not no_kernel)
+    assert mock_ipykernel_attach_bashrc.call_count == int(not no_kernel)
     assert mock_running_onprem.call_count == 1
     assert (
         mock_poetry_source_includes_source_name.call_count

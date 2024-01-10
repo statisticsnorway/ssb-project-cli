@@ -203,3 +203,58 @@ def test_is_valid_project_name() -> None:
     assert is_valid_project_name("Test") == False  # noqa: E712
     assert is_valid_project_name("Should-fail") == False  # noqa: E712
     assert is_valid_project_name("123randomletteRs") == False  # noqa: E712
+
+
+@patch("ssb_project_cli.ssb_project.app.create_project", return_value=None)
+def test_default_options_and_types(mock_create_project: Mock) -> None:
+    """Check default options andt types retuned by the create typer CLI command."""
+    # Check when all optional parameters are given
+    create(
+        "test_project",
+        "description",
+        RepoPrivacy.internal,
+        False,
+        "github_token",
+        False,
+        "",
+        None,
+        False,
+    )
+    assert mock_create_project.call_count == 1
+    args, _ = mock_create_project.call_args
+    assert len(args) == 12
+    no_kernel = args[11]
+    assert isinstance(no_kernel, bool) and not no_kernel
+
+    # Only mandatory parameters given, check default values and types of optional parameters.
+    create("test_project", "description", RepoPrivacy.internal)
+    assert mock_create_project.call_count == 2
+    args, _ = mock_create_project.call_args
+    assert len(args) == 12
+
+    add_github = args[3]
+    github_token = args[4]
+    verify_config = args[10]
+    template_repo_url = args[8]
+    checkout = args[9]
+    no_kernel = args[11]
+    print(f"\ncheckout has type {type(checkout)} with content {checkout}")
+    assert (
+        isinstance(add_github, bool) and not add_github
+    ), "add_github: Wrong type or value"
+    assert (
+        isinstance(github_token, str) and github_token == ""  # noqa: S105
+    ), "github_token: Wrong type or value"
+    assert (
+        isinstance(verify_config, bool) and verify_config
+    ), "verify_config: Wrong type or value"
+    assert (
+        isinstance(template_repo_url, str)
+        and template_repo_url == STAT_TEMPLATE_REPO_URL
+    ), "template_repo_url: Wrong type or value"
+    assert (
+        isinstance(checkout, str) and checkout == STAT_TEMPLATE_DEFAULT_REFERENCE
+    ), "checkout: Wrong type or value"
+    assert (
+        isinstance(no_kernel, bool) and not no_kernel
+    ), "no_kernel: Wrong type or value"
