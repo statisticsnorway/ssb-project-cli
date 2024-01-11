@@ -2,7 +2,7 @@ import os
 from unittest.mock import Mock
 from unittest.mock import patch
 
-from git import Repo  # type: ignore[attr-defined]
+from git import Repo
 
 from ssb_project_cli.ssb_project.build.temp_template_repo import TempTemplateRepo
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_DEFAULT_REFERENCE

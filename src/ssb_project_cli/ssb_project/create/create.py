@@ -36,6 +36,7 @@ def create_project(  # noqa: C901
     template_repo_url: str,
     checkout: str | None,
     verify_config: bool = True,
+    no_kernel: bool = False,
 ) -> None:
     """Create an SSB-project.
 
@@ -51,6 +52,7 @@ def create_project(  # noqa: C901
         template_repo_url: The Cookiecutter template URI.
         checkout: The git reference to check against. Supports branches, tags and commit hashes.
         verify_config: Determines if gitconfig is verified.
+        no_kernel: Determines if a kernel shall be generated or not.
     """
     is_memory_full()
 
@@ -105,6 +107,7 @@ def create_project(  # noqa: C901
             template_repo_url,
             checkout,
             verify_config,
+            no_kernel,
         )
 
         git_repo_dir = Path(working_directory.joinpath(project_name))

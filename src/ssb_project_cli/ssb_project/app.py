@@ -4,6 +4,7 @@ from pathlib import Path
 
 import typer
 from rich.console import Console
+from typing_extensions import Annotated
 
 from ssb_project_cli.ssb_project.util import set_debug_logging
 
@@ -48,7 +49,7 @@ app = typer.Typer(
 
 
 @app.command()
-def create(  # noqa: C901
+def create(  # noqa: C901, S107
     project_name: str = typer.Argument(..., help="Project name"),  # noqa: B008
     description: str = typer.Argument(  # noqa: B008
         "", help="A short description of your project"
@@ -56,29 +57,38 @@ def create(  # noqa: C901
     repo_privacy: RepoPrivacy = typer.Argument(  # noqa: B008
         RepoPrivacy.internal, help="Visibility of the Github repo"
     ),
-    add_github: bool = typer.Option(  # noqa: B008
-        False,
-        "--github",
-        help="Create the repo on Github as well",
-    ),
-    github_token: str = typer.Option(  # noqa: B008
-        "",
-        help="Your Github Personal Access Token, follow these instructions to create one: https://manual.dapla.ssb.no/git-github.html#personal-access-token-pat",
-    ),
-    verify_config: bool = typer.Option(  # noqa: B008
-        True,
-        "--no-verify",
-        help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
-        show_default=True,
-    ),
-    template_git_url: str = typer.Option(  # noqa: B008
-        STAT_TEMPLATE_REPO_URL,
-        help="The Cookiecutter template URI.",
-    ),
-    checkout: t.Optional[str] = typer.Option(  # noqa: B008
-        None,
-        help="The git reference to check against. Supports branches, tags and commit hashes.",
-    ),
+    add_github: Annotated[
+        bool, typer.Option("--github", help="Create the repo on Github as well")
+    ] = False,
+    github_token: Annotated[
+        str,
+        typer.Option(
+            help="Your Github Personal Access Token, follow these instructions to create one: https://manual.dapla.ssb.no/git-github.html#personal-access-token-pat"
+        ),
+    ] = "",
+    verify_config: Annotated[
+        bool,
+        typer.Option(
+            "--no-verify",
+            help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
+        ),
+    ] = True,
+    template_git_url: Annotated[
+        str, typer.Option(help="The Cookiecutter template URI.")
+    ] = STAT_TEMPLATE_REPO_URL,
+    checkout: Annotated[
+        t.Optional[str],
+        typer.Option(
+            help="The git reference to check against. Supports branches, tags and commit hashes.",
+        ),
+    ] = None,
+    no_kernel: Annotated[
+        bool,
+        typer.Option(
+            "--no-kernel",
+            help="Do not create a kernel after the project is created (defaults to False).",
+        ),
+    ] = False,
 ) -> None:
     """:sparkles:  Create a project locally, and optionally on GitHub with the flag --github. The project will follow SSB's best practice for development."""
     if not checkout and template_git_url is STAT_TEMPLATE_REPO_URL:
@@ -96,6 +106,7 @@ def create(  # noqa: C901
         template_git_url,
         checkout,
         verify_config,
+        no_kernel,
     )
 
 

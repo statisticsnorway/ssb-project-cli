@@ -33,6 +33,7 @@ def build_project(
     template_repo_url: str,
     checkout: str | None,
     verify_config: bool = True,
+    no_kernel: bool = False,
 ) -> None:
     """Installs dependencies and kernel for a given project.
 
@@ -42,6 +43,7 @@ def build_project(
         template_repo_url: Template repository url
         checkout: The git reference to check against. Supports branches, tags and commit hashes.
         verify_config: Determines if gitconfig is verified.
+        no_kernel: Determines if a kernel shall be generated or not.
     """
     if path is None:
         project_directory = working_directory
@@ -57,28 +59,9 @@ def build_project(
         sys.exit()
 
     if verify_config:
-        try:
-            valid_global_git_config = kvakk_git_tools.validate_git_config()
-        except FileExistsError:
-            # If gitconfig does not exist the configuration is invalid
-            valid_global_git_config = False
-        valid_project_git_config = verify_local_config(
-            template_repo_url,
-            checkout,
-            cwd=str(project_root),
+        validate_and_fix_git_config(
+            template_repo_url, checkout, project_name, project_root
         )
-        if not valid_global_git_config or not valid_project_git_config:
-            print(
-                ":x:\tYour project's Git configuration does not follow SSB recommendations,\n:x:\twhich may result in sensitive data being pushed to GitHub."
-            )
-            confirm_fix_ssb_git_config(
-                project_name,
-                template_repo_url,
-                checkout,
-                project_root,
-                valid_global_git_config,
-                valid_project_git_config,
-            )
 
     if running_onprem(JUPYTER_IMAGE_SPEC):
         print(
@@ -94,8 +77,44 @@ def build_project(
         poetry_source_remove(project_root)
 
     poetry_install(project_root)
-    install_ipykernel(project_root, project_name)
-    ipykernel_attach_bashrc(project_name)
+    if not no_kernel:
+        install_ipykernel(project_root, project_name)
+        ipykernel_attach_bashrc(project_name)
+
+
+def validate_and_fix_git_config(
+    template_repo_url: str, checkout: str | None, project_name: str, project_root: Path
+) -> None:
+    """Validate and fix the git config.
+
+    Args:
+        template_repo_url: Template repository url
+        checkout: The git reference to check against. Supports branches, tags and commit hashes.
+        project_name: The name of the project
+        project_root: The root directory of the project/repo.
+    """
+    try:
+        valid_global_git_config = kvakk_git_tools.validate_git_config()
+    except FileExistsError:
+        # If gitconfig does not exist the configuration is invalid
+        valid_global_git_config = False
+    valid_project_git_config = verify_local_config(
+        template_repo_url,
+        checkout,
+        cwd=str(project_root),
+    )
+    if not valid_global_git_config or not valid_project_git_config:
+        print(
+            ":x:\tYour project's Git configuration does not follow SSB recommendations,\n:x:\twhich may result in sensitive data being pushed to GitHub."
+        )
+        confirm_fix_ssb_git_config(
+            project_name,
+            template_repo_url,
+            checkout,
+            project_root,
+            valid_global_git_config,
+            valid_project_git_config,
+        )
 
 
 def ipykernel_attach_bashrc(project_name: str) -> None:

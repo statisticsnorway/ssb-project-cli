@@ -40,7 +40,7 @@ def create_github(
     try:
         # Ignoring mypy warning: Unexpected keyword argument "visibility"
         # for "create_repo" of "Organization"  [call-arg]
-        g.get_organization(github_org_name).create_repo(  # type: ignore
+        g.get_organization(github_org_name).create_repo(
             repo_name,
             visibility=repo_privacy,
             auto_init=False,
@@ -208,7 +208,7 @@ def set_branch_protection_rules(
         dismiss_stale_reviews=True,
         enforce_admins=True,
         # Need to supply the line under as a workaround until PyGithub is updated to v2
-        users_bypass_pull_request_allowances=[],  # type: ignore[call-arg]
+        users_bypass_pull_request_allowances=[],
     )
 
 
