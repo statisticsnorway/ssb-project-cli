@@ -10,15 +10,33 @@ from unittest.mock import patch
 import pytest
 
 from ssb_project_cli.ssb_project.build.environment import NEXUS_SOURCE_NAME
+from ssb_project_cli.ssb_project.build.poetry import poetry_install
 from ssb_project_cli.ssb_project.build.poetry import poetry_source_add
 from ssb_project_cli.ssb_project.build.poetry import poetry_source_includes_source_name
 from ssb_project_cli.ssb_project.build.poetry import poetry_source_remove
+from ssb_project_cli.ssb_project.build.poetry import poetry_update_lockfile_dependencies
 from ssb_project_cli.ssb_project.build.poetry import should_update_lock_file
 from ssb_project_cli.ssb_project.build.poetry import update_lock
 
 
 POETRY = "ssb_project_cli.ssb_project.build.poetry"
 CLEAN = "ssb_project_cli.ssb_project.clean.clean"
+
+
+@patch(f"{POETRY}.execute_command")
+def test_poetry_install(mock_run: Mock) -> None:
+    project_dir = Path(__file__).parent  # Just some dummy dir, not used
+    poetry_install(project_dir)
+    assert mock_run.call_count == 1
+    assert mock_run.call_args[0][0] == ["poetry", "install"]
+
+
+@patch(f"{POETRY}.execute_command")
+def test_poetry_update_lockfile_dependencies(mock_run: Mock) -> None:
+    project_dir = Path(__file__).parent  # Just some dummy dir, not used
+    poetry_update_lockfile_dependencies(project_dir)
+    assert mock_run.call_count == 1
+    assert mock_run.call_args[0][0] == ["poetry", "update", "--lock"]
 
 
 @patch(f"{POETRY}.execute_command")

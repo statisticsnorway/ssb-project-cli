@@ -10,6 +10,7 @@ import cruft
 from git import Repo
 from rich import print
 
+from ssb_project_cli.ssb_project.build.poetry import poetry_update_lockfile_dependencies
 from ssb_project_cli.ssb_project.create import temp_git_repo
 from ssb_project_cli.ssb_project.create.github import (
     get_environment_specific_github_object,
@@ -71,6 +72,7 @@ def create_project_from_template(
         no_input=(template_repo_url == STAT_TEMPLATE_REPO_URL),
         extra_context=template_info,
     )
+    poetry_update_lockfile_dependencies(project_dir)
 
     return project_dir
 

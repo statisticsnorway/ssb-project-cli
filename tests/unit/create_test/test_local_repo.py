@@ -150,11 +150,16 @@ def test_extract_name_email(mock_run: Mock) -> None:
     assert extract_name_email() == ("Name2", "")
 
 
+@patch(f"{LOCAL_REPO}.poetry_update_lockfile_dependencies")
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
 @patch(f"{LOCAL_REPO}.cruft.create")
 def test_create_project_from_template(
-    _mock_create: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+    _mock_create: Mock,
+    mock_request: Mock,
+    mock_extract: Mock,
+    mock_poetry: Mock,
+    tmp_path: Path,
 ) -> None:
     """Checks if create_project_from_template works for a temporary path."""
     mock_extract.return_value = ("Name", "")
@@ -170,13 +175,19 @@ def test_create_project_from_template(
 
     assert mock_extract.call_count == 1
     assert mock_request.call_count == 1
+    assert mock_poetry.call_count == 1
 
 
+@patch(f"{LOCAL_REPO}.poetry_update_lockfile_dependencies")
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
 @patch(f"{LOCAL_REPO}.cruft.create")
 def test_create_project_from_template_license_year(
-    mock_create: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+    mock_create: Mock,
+    mock_request: Mock,
+    mock_extract: Mock,
+    mock_poetry: Mock,
+    tmp_path: Path,
 ) -> None:
     """Verify that we supply the license year to Cruft"""
     mock_extract.return_value = ("Name", "")
@@ -196,11 +207,16 @@ def test_create_project_from_template_license_year(
     assert context["project_name"] == project_name
 
 
+@patch(f"{LOCAL_REPO}.poetry_update_lockfile_dependencies")
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
 @patch(f"{LOCAL_REPO}.cruft.create")
 def test_create_project_from_template_different_template_uri(
-    mock_create: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+    mock_create: Mock,
+    mock_request: Mock,
+    mock_extract: Mock,
+    mock_poetry: Mock,
+    tmp_path: Path,
 ) -> None:
     """Check that different template uri works"""
     mock_extract.return_value = ("Name", "")

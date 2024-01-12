@@ -35,6 +35,33 @@ def poetry_install(project_directory: Path) -> None:
         )
 
 
+def poetry_update_lockfile_dependencies(project_directory: Path) -> None:
+    """Call poetry update --lock in project_directory.
+
+    Update the lock file dependencies without installing packages.
+
+    Args:
+        project_directory: Path of project
+    """
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task(
+            description="Updating lock file dependencies... This may take some time.",
+            total=None,
+        )
+
+        execute_command(
+            "poetry update --lock".split(" "),
+            "poetry-update-lock-deps",
+            ":white_check_mark:\tUpdated lock file dependencies",
+            "Error: Something went wrong when updating lock file dependencies with Poetry.",
+            project_directory,
+        )
+
+
 def poetry_source_includes_source_name(
     cwd: Path, source_name: str = NEXUS_SOURCE_NAME
 ) -> bool:
