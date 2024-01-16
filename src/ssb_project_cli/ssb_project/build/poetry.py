@@ -8,6 +8,9 @@ from rich import print
 
 from .environment import NEXUS_SOURCE_NAME
 from ssb_project_cli.ssb_project.util import execute_command
+from .environment import JUPYTER_IMAGE_SPEC
+from .environment import PIP_INDEX_URL
+from .environment import running_onprem
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -31,6 +34,33 @@ def poetry_install(project_directory: Path) -> None:
             "poetry-install",
             ":white_check_mark:\tInstalled dependencies in the virtual environment",
             "Error: Something went wrong when installing packages with Poetry.",
+            project_directory,
+        )
+
+
+def poetry_update_lockfile_dependencies(project_directory: Path) -> None:
+    """Call poetry update --lock in project_directory.
+
+    Update the lock file dependencies without installing packages.
+
+    Args:
+        project_directory: Path of project
+    """
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task(
+            description="Updating lock file dependencies... This may take some time.",
+            total=None,
+        )
+
+        execute_command(
+            "poetry update --lock".split(" "),
+            "poetry-update-lock-deps",
+            ":white_check_mark:\tUpdated lock file dependencies",
+            "Error: Something went wrong when updating lock file dependencies with Poetry.",
             project_directory,
         )
 
@@ -164,3 +194,23 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             "Something went wrong while installing ipykernel.",
             project_directory,
         )
+
+
+def check_and_fix_onprem_source(project_root: Path) -> None:
+    """Check if running onprem and fix source in pyproject.toml if so.
+
+    Args:
+        project_root: Path to the root of the project
+    """
+    if running_onprem(JUPYTER_IMAGE_SPEC):
+        print(
+            ":twisted_rightwards_arrows:\tDetected onprem environment, using proxy for package installation"
+        )
+        if poetry_source_includes_source_name(project_root):
+            poetry_source_remove(project_root, lock_update=False)
+        poetry_source_add(PIP_INDEX_URL, project_root)
+    elif poetry_source_includes_source_name(project_root):
+        print(
+            ":twisted_rightwards_arrows:\tDetected non-onprem environment, removing proxy for package installation"
+        )
+        poetry_source_remove(project_root)

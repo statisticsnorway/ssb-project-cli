@@ -106,20 +106,6 @@ def test_make_and_repo_and_push(
     assert test_repo.git.push.call_count == 1
 
 
-"""
-@patch(f"{LOCAL_REPO}.Repo.git.branch")
-@patch(f"{LOCAL_REPO}.Repo.index")
-@patch(f"{LOCAL_REPO}.Repo.git.add")
-@patch(f"{LOCAL_REPO}.Repo.init")
-def test_make_and_init_git_repo(mock_repo_init: Mock,mock_repo_add: Mock,mock_commit: Mock,mock_branch: Mock):
-    make_and_init_git_repo("/Users/anders/test/tt")
-    assert mock_repo_init.call_count == 1
-    assert mock_repo_add.call_count == 1
-    assert mock_commit.call_count == 1
-    assert mock_branch.call_count == 2
-"""
-
-
 def fake_run_gitconfig(cmd: list[str], stdout: int, encoding: str) -> Mock:
     """Emulates subprocess.run for git config --get."""
     vals = {
@@ -150,11 +136,18 @@ def test_extract_name_email(mock_run: Mock) -> None:
     assert extract_name_email() == ("Name2", "")
 
 
+@patch(f"{LOCAL_REPO}.check_and_fix_onprem_source")
+@patch(f"{LOCAL_REPO}.poetry_update_lockfile_dependencies")
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
 @patch(f"{LOCAL_REPO}.cruft.create")
 def test_create_project_from_template(
-    _mock_create: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+    _mock_create: Mock,
+    mock_request: Mock,
+    mock_extract: Mock,
+    mock_poetry: Mock,
+    mock_check_and_fix_onprem_source: Mock,
+    tmp_path: Path,
 ) -> None:
     """Checks if create_project_from_template works for a temporary path."""
     mock_extract.return_value = ("Name", "")
@@ -170,13 +163,22 @@ def test_create_project_from_template(
 
     assert mock_extract.call_count == 1
     assert mock_request.call_count == 1
+    assert mock_poetry.call_count == 1
+    assert mock_check_and_fix_onprem_source.call_count == 1
 
 
+@patch(f"{LOCAL_REPO}.check_and_fix_onprem_source")
+@patch(f"{LOCAL_REPO}.poetry_update_lockfile_dependencies")
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
 @patch(f"{LOCAL_REPO}.cruft.create")
 def test_create_project_from_template_license_year(
-    mock_create: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+    mock_create: Mock,
+    mock_request: Mock,
+    mock_extract: Mock,
+    mock_poetry: Mock,
+    mock_check_and_fix_onprem_source: Mock,
+    tmp_path: Path,
 ) -> None:
     """Verify that we supply the license year to Cruft"""
     mock_extract.return_value = ("Name", "")
@@ -194,13 +196,22 @@ def test_create_project_from_template_license_year(
     context = mock_create.call_args.kwargs["extra_context"]
     assert context["license_year"] == license_year
     assert context["project_name"] == project_name
+    assert mock_poetry.call_count == 1
+    assert mock_check_and_fix_onprem_source.call_count == 1
 
 
+@patch(f"{LOCAL_REPO}.check_and_fix_onprem_source")
+@patch(f"{LOCAL_REPO}.poetry_update_lockfile_dependencies")
 @patch(f"{LOCAL_REPO}.extract_name_email")
 @patch(f"{LOCAL_REPO}.request_name_email")
 @patch(f"{LOCAL_REPO}.cruft.create")
 def test_create_project_from_template_different_template_uri(
-    mock_create: Mock, mock_request: Mock, mock_extract: Mock, tmp_path: Path
+    mock_create: Mock,
+    mock_request: Mock,
+    mock_extract: Mock,
+    mock_poetry: Mock,
+    mock_check_and_fix_onprem_source: Mock,
+    tmp_path: Path,
 ) -> None:
     """Check that different template uri works"""
     mock_extract.return_value = ("Name", "")
@@ -218,3 +229,5 @@ def test_create_project_from_template_different_template_uri(
     context = mock_create.call_args.kwargs["extra_context"]
     assert context["license_year"] == license_year
     assert context["project_name"] == project_name
+    assert mock_poetry.call_count == 1
+    assert mock_check_and_fix_onprem_source.call_count == 1

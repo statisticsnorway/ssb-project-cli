@@ -18,56 +18,32 @@ from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
 BUILD = "ssb_project_cli.ssb_project.build.build"
 
 
-@patch(f"{BUILD}.running_onprem")
+@patch(f"{BUILD}.check_and_fix_onprem_source")
 @patch(f"{BUILD}.poetry_install")
 @patch(f"{BUILD}.install_ipykernel")
 @patch(f"{BUILD}.ipykernel_attach_bashrc")
-@patch(f"{BUILD}.poetry_source_includes_source_name")
-@patch(f"{BUILD}.poetry_source_add")
-@patch(f"{BUILD}.poetry_source_remove")
 @patch("typer.confirm")
 @patch("kvakk_git_tools.validate_git_config")
 @patch("ssb_project_cli.ssb_project.build.environment.verify_local_config")
 @patch(f"{BUILD}.get_project_name_and_root_path")
-@pytest.mark.parametrize(
-    "running_onprem_return,poetry_source_includes_source_name_return,calls_to_poetry_source_includes_source_name,calls_to_poetry_source_add,calls_to_poetry_source_remove,no_kernel",
-    [
-        (False, False, 1, 0, 0, False),
-        (True, False, 1, 1, 0, False),
-        (True, True, 1, 1, 1, False),
-        (False, True, 1, 0, 1, False),
-        (False, False, 1, 0, 0, True),
-    ],
-)
+@pytest.mark.parametrize("no_kernel", [False, True])
 def test_build(
     mock_get_project_name_and_root_path: Mock,
     mock_verify_local_config: Mock,
     mock_kvakk: Mock,
     mock_confirm: Mock,
-    mock_poetry_source_remove: Mock,
-    mock_poetry_source_add: Mock,
-    mock_poetry_source_includes_source_name: Mock,
     mock_install_ipykernel: Mock,
     mock_ipykernel_attach_bashrc: Mock,
     mock_poetry_install: Mock,
-    mock_running_onprem: Mock,
-    running_onprem_return: bool,
-    poetry_source_includes_source_name_return: bool,
-    calls_to_poetry_source_includes_source_name: int,
-    calls_to_poetry_source_add: int,
-    calls_to_poetry_source_remove: int,
+    mock_check_and_fix_onprem_source: Mock,
     no_kernel: bool,
     tmp_path: Path,
 ) -> None:
     """Check that build calls poetry_install, install_ipykernel and poetry_source_includes_source_name."""
     mock_kvakk.return_value = True
     mock_verify_local_config.return_value = True
-    mock_running_onprem.return_value = running_onprem_return
     mock_confirm.return_value = False
     mock_get_project_name_and_root_path.return_value = ("project_name", tmp_path)
-    mock_poetry_source_includes_source_name.return_value = (
-        poetry_source_includes_source_name_return
-    )
     build_project(
         tmp_path,
         tmp_path,
@@ -82,13 +58,7 @@ def test_build(
     assert mock_poetry_install.call_count == 1
     assert mock_install_ipykernel.call_count == int(not no_kernel)
     assert mock_ipykernel_attach_bashrc.call_count == int(not no_kernel)
-    assert mock_running_onprem.call_count == 1
-    assert (
-        mock_poetry_source_includes_source_name.call_count
-        == calls_to_poetry_source_includes_source_name
-    )
-    assert mock_poetry_source_add.call_count == calls_to_poetry_source_add
-    assert mock_poetry_source_remove.call_count == calls_to_poetry_source_remove
+    assert mock_check_and_fix_onprem_source.call_count == 1
 
 
 @patch(f"{BUILD}.get_kernels_dict")
