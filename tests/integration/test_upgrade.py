@@ -1,4 +1,5 @@
 """Integration tests for the build command."""
+
 import shutil
 import subprocess
 from pathlib import Path
@@ -31,6 +32,10 @@ def create_project(
 def build_project(create_project: dict[str, str]) -> Result:
     return runner.invoke(app, ["build", "--no-verify"], catch_exceptions=False)
 
+@pytest.fixture(scope="module")
+def upgrade_project(build_project: dict[str, str]) -> Result:
+    return runner.invoke(app, ["upgrade", "--no-verify"], catch_exceptions=False)
 
-def test_build_project_exit_code(build_project: Result) -> None:
-    assert build_project.exit_code == 0
+
+def test_build_project_exit_code(upgrade_project: Result) -> None:
+    assert upgrade_project.exit_code == 0

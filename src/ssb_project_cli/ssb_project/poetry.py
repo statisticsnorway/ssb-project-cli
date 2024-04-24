@@ -1,16 +1,19 @@
 """This module contains functions used to install poetry dependecies and kernels."""
+
 import os
 from pathlib import Path
-from rich.progress import Progress
-from rich.progress import SpinnerColumn
-from rich.progress import TextColumn
-from rich import print
 
-from .environment import NEXUS_SOURCE_NAME
+from rich import print
+from rich.progress import Progress, SpinnerColumn, TextColumn
+
 from ssb_project_cli.ssb_project.util import execute_command
-from .environment import JUPYTER_IMAGE_SPEC
-from .environment import PIP_INDEX_URL
-from .environment import running_onprem
+
+from .build.environment import (
+    JUPYTER_IMAGE_SPEC,
+    NEXUS_SOURCE_NAME,
+    PIP_INDEX_URL,
+    running_onprem,
+)
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -132,6 +135,16 @@ def poetry_source_add(
     # If the lock is created off-prem, we need to refresh the lock.
     if should_update_lock_file(source_url, cwd):
         update_lock(cwd)
+
+
+def poetry_relax_upgrade(cwd: Path) -> None:
+    execute_command(
+        command="poetry self add poetry-relax && poetry relax --update".split(" "),
+        command_shortname="poetry-relax-upgrade",
+        success_desc="Dependencies relaxed and upgraded!",
+        failure_desc="Failed to relax and upgrade dependencies",
+        cwd=cwd,
+    )
 
 
 def update_lock(cwd: Path) -> None:

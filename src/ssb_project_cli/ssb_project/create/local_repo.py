@@ -10,14 +10,16 @@ import cruft
 from git import Repo
 from rich import print
 
-from ssb_project_cli.ssb_project.build.poetry import check_and_fix_onprem_source
-from ssb_project_cli.ssb_project.build.poetry import poetry_update_lockfile_dependencies
 from ssb_project_cli.ssb_project.create import temp_git_repo
 from ssb_project_cli.ssb_project.create.github import (
     get_environment_specific_github_object,
+    get_github_username,
 )
-from ssb_project_cli.ssb_project.create.github import get_github_username
 from ssb_project_cli.ssb_project.create.prompt import request_name_email
+from ssb_project_cli.ssb_project.poetry import (
+    check_and_fix_onprem_source,
+    poetry_update_lockfile_dependencies,
+)
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
 from ssb_project_cli.ssb_project.util import create_error_log
 

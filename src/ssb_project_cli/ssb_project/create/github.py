@@ -5,13 +5,13 @@ from traceback import format_exc
 
 import questionary
 import requests
-from github import BadCredentialsException
-from github import Github
-from github import GithubException
+from github import BadCredentialsException, Github, GithubException
 
 from ssb_project_cli.ssb_project import prompt_autocomplete_style
-from ssb_project_cli.ssb_project.build.environment import JUPYTER_IMAGE_SPEC
-from ssb_project_cli.ssb_project.build.environment import running_onprem
+from ssb_project_cli.ssb_project.build.environment import (
+    JUPYTER_IMAGE_SPEC,
+    running_onprem,
+)
 from ssb_project_cli.ssb_project.settings import GITHUB_ORG_NAME
 from ssb_project_cli.ssb_project.util import create_error_log
 

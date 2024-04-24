@@ -1,4 +1,5 @@
 """Command-line-interface for project-operations in dapla-jupterlab."""
+
 import typing as t
 from pathlib import Path
 
@@ -6,18 +7,20 @@ import typer
 from rich.console import Console
 from typing_extensions import Annotated
 
+from ssb_project_cli.ssb_project.upgrade.upgrade import upgrade_project
 from ssb_project_cli.ssb_project.util import set_debug_logging
 
 from .build.build import build_project
 from .clean.clean import clean_project
 from .create.create import create_project
 from .create.repo_privacy import RepoPrivacy
-from .settings import CURRENT_WORKING_DIRECTORY
-from .settings import GITHUB_ORG_NAME
-from .settings import HOME_PATH
-from .settings import STAT_TEMPLATE_DEFAULT_REFERENCE
-from .settings import STAT_TEMPLATE_REPO_URL
-
+from .settings import (
+    CURRENT_WORKING_DIRECTORY,
+    GITHUB_ORG_NAME,
+    HOME_PATH,
+    STAT_TEMPLATE_DEFAULT_REFERENCE,
+    STAT_TEMPLATE_REPO_URL,
+)
 
 # Don't print with color, it's difficult to read when run in Jupyter
 typer.rich_utils.STYLE_OPTION = ""
@@ -134,10 +137,34 @@ def build(
 
 
 @app.command()
+def upgrade(
+    path: t.Optional[Path] = typer.Argument(  # noqa: B008
+        None,
+        help="Project path",
+    ),
+    verify_config: bool = typer.Option(  # noqa: B008
+        True,
+        "--no-verify",
+        help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
+        show_default=True,
+    ),
+) -> None:
+    """:wrench:  Relaxes constraints on packages, upgrades packages to the newest version, and builds project.."""
+    upgrade_project(path, CURRENT_WORKING_DIRECTORY)
+    build_project(
+        path,
+        CURRENT_WORKING_DIRECTORY,
+        STAT_TEMPLATE_REPO_URL,
+        STAT_TEMPLATE_DEFAULT_REFERENCE,
+        verify_config,
+    )
+
+
+@app.command()
 def clean(
     project_name: str = typer.Argument(  # noqa: B008
         ..., help="The name of the project/kernel you want to delete."
-    )
+    ),
 ) -> None:
     """:broom:  Delete the kernel for the given project name."""
     clean_project(project_name)

@@ -2,6 +2,7 @@
 from pathlib import Path
 
 import typer
+
 from ssb_project_cli.ssb_project.build.environment import reset_global_gitconfig
 from ssb_project_cli.ssb_project.create.local_repo import (
     reset_project_git_configuration,

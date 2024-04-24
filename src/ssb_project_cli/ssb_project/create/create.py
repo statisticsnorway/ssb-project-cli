@@ -10,17 +10,19 @@ from rich import print
 from ssb_project_cli.ssb_project.util import create_error_log
 
 from ..build.build import build_project
-from ..build.environment import JUPYTER_IMAGE_SPEC
-from ..build.environment import running_onprem
-from .github import create_github
-from .github import is_github_repo
-from .github import set_branch_protection_rules
-from .github import valid_repo_name
-from .local_repo import create_project_from_template
-from .local_repo import make_and_init_git_repo
-from .local_repo import make_git_repo_and_push
-from .prompt import choose_login
-from .prompt import request_project_description
+from ..build.environment import JUPYTER_IMAGE_SPEC, running_onprem
+from .github import (
+    create_github,
+    is_github_repo,
+    set_branch_protection_rules,
+    valid_repo_name,
+)
+from .local_repo import (
+    create_project_from_template,
+    make_and_init_git_repo,
+    make_git_repo_and_push,
+)
+from .prompt import choose_login, request_project_description
 from .repo_privacy import RepoPrivacy
 
 

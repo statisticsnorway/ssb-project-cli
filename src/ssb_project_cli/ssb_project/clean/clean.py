@@ -5,9 +5,11 @@ from pathlib import Path
 import questionary
 from rich import print
 
-from ssb_project_cli.ssb_project.util import execute_command
-from ssb_project_cli.ssb_project.util import get_kernels_dict
-from ssb_project_cli.ssb_project.util import remove_kernel_spec
+from ssb_project_cli.ssb_project.util import (
+    execute_command,
+    get_kernels_dict,
+    remove_kernel_spec,
+)
 
 
 def clean_project(project_name: str) -> None:

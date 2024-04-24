@@ -1,8 +1,7 @@
 """This module provides the TempTemplateRepo context manager, which can be used to clone a Git repository to a temporary directory and checkout a specific tag."""
 from tempfile import TemporaryDirectory
 from types import TracebackType
-from typing import Optional
-from typing import Type
+from typing import Optional, Type
 
 from git import Repo
 

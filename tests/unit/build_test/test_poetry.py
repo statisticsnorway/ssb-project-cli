@@ -2,23 +2,20 @@
 import shutil
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock
-from unittest.mock import call
-from unittest.mock import mock_open
-from unittest.mock import patch
+from unittest.mock import Mock, call, mock_open, patch
 
 import pytest
-
 from ssb_project_cli.ssb_project.build.environment import NEXUS_SOURCE_NAME
-from ssb_project_cli.ssb_project.build.poetry import check_and_fix_onprem_source
-from ssb_project_cli.ssb_project.build.poetry import poetry_install
-from ssb_project_cli.ssb_project.build.poetry import poetry_source_add
-from ssb_project_cli.ssb_project.build.poetry import poetry_source_includes_source_name
-from ssb_project_cli.ssb_project.build.poetry import poetry_source_remove
-from ssb_project_cli.ssb_project.build.poetry import poetry_update_lockfile_dependencies
-from ssb_project_cli.ssb_project.build.poetry import should_update_lock_file
-from ssb_project_cli.ssb_project.build.poetry import update_lock
-
+from ssb_project_cli.ssb_project.poetry import (
+    check_and_fix_onprem_source,
+    poetry_install,
+    poetry_source_add,
+    poetry_source_includes_source_name,
+    poetry_source_remove,
+    poetry_update_lockfile_dependencies,
+    should_update_lock_file,
+    update_lock,
+)
 
 POETRY = "ssb_project_cli.ssb_project.build.poetry"
 CLEAN = "ssb_project_cli.ssb_project.clean.clean"
