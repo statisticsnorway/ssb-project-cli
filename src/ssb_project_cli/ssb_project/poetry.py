@@ -139,7 +139,7 @@ def poetry_source_add(
 
 def poetry_relax_upgrade(cwd: Path) -> None:
     execute_command(
-        command="poetry self add poetry-relax && poetry relax --update".split(" "),
+        command="poetry self add poetry-relax@latest && poetry relax --update".split(" "),
         command_shortname="poetry-relax-upgrade",
         success_desc="Dependencies relaxed and upgraded!",
         failure_desc="Failed to relax and upgrade dependencies",
