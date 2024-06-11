@@ -56,7 +56,7 @@ typeguard = ">=2.13.3"
 xdoctest = { extras = ["colors"], version = ">=0.15.10" }
 mock = ">=4.0.3"
 build = ">=0.8.0"
-jinja2 = ">=3.1.2"
+jinja2 = ">=3.1.4"
 nox = ">=2022.11.21"
 nox-poetry = ">=1.0.2"
 tomli-w = ">=1.0.0"
