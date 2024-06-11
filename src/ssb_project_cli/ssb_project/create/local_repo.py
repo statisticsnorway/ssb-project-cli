@@ -1,4 +1,5 @@
 """This module contains functions used to set up a local git repository with ssb-project."""
+
 import shutil
 import subprocess  # noqa: S404
 import tempfile

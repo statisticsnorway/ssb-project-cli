@@ -1,4 +1,5 @@
 """Build command module."""
+
 import os
 import json
 import re

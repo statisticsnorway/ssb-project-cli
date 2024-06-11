@@ -1,4 +1,5 @@
 """This module contains prompts used when building a ssb-project."""
+
 from pathlib import Path
 
 import typer

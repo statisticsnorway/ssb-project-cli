@@ -1,4 +1,5 @@
 """Tests for delete_folder function."""
+
 import shutil
 from pathlib import Path
 from unittest import TestCase
