@@ -23,11 +23,11 @@ def create_project(
         app, ["create", str(name), "--no-verify"], catch_exceptions=False
     )
     yield result
+    print(result.stdout)
     # Clean up project directory
     shutil.rmtree(name)
     # Clean up project kernel
-    subprocess.run(f"python -m jupyter kernelspec remove -f {name}".split(" "))
-
+    subprocess.run(f"jupyter kernelspec remove -f {name}".split(" "))
 
 @pytest.fixture(scope="module")
 def build_project(create_project: dict[str, str]) -> Result:
