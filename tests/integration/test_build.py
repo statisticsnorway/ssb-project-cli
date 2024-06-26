@@ -29,6 +29,7 @@ def create_project(
     # Clean up project kernel
     subprocess.run(f"jupyter kernelspec remove -f {name}".split(" "))
 
+
 @pytest.fixture(scope="module")
 def build_project(create_project: dict[str, str]) -> Result:
     return runner.invoke(app, ["build", "--no-verify"], catch_exceptions=False)
