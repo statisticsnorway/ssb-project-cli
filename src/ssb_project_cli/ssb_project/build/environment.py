@@ -1,4 +1,5 @@
 """This module reads in environment variables."""
+
 import os
 from pathlib import Path
 from kvakk_git_tools import ssb_gitconfig  # type: ignore

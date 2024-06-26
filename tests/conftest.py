@@ -1,4 +1,5 @@
 """Global fixtures."""
+
 import subprocess  # noqa: S404
 from pathlib import Path
 from typing import Generator

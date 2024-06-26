@@ -1,4 +1,5 @@
 """Sphinx configuration."""
+
 project = "SSB Project CLI"
 author = "Statistics Norway"
 copyright = "2022, Statistics Norway"

@@ -1,4 +1,5 @@
 """Tests for local_repo module."""
+
 from pathlib import Path
 from random import randint
 from unittest.mock import Mock

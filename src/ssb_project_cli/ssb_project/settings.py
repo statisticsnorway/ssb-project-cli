@@ -1,4 +1,5 @@
 """Global settings for SSB-project-cli."""
+
 import os
 from pathlib import Path
 

@@ -1,4 +1,5 @@
 """Tests utils functions."""
+
 import json
 import tempfile
 from pathlib import Path

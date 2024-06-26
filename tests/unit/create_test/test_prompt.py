@@ -1,4 +1,5 @@
 """Tests for the prompt module."""
+
 from pathlib import Path
 from unittest.mock import Mock
 from unittest.mock import patch

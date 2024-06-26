@@ -1,4 +1,5 @@
 """This module contains functions used to install poetry dependecies and kernels."""
+
 import os
 from pathlib import Path
 from rich.progress import Progress

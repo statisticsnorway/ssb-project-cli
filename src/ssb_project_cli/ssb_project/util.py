@@ -1,4 +1,5 @@
 """SSB-project utils."""
+
 import json
 import logging
 import os
