@@ -1,4 +1,5 @@
 """This module contains GitHub related functionality used when creating ssb-projects."""
+
 import re
 from pathlib import Path
 from traceback import format_exc

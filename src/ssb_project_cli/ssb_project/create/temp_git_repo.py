@@ -1,4 +1,5 @@
 """This module contains the TempGitRemote class."""
+
 from types import TracebackType
 from typing import Optional
 from typing import Type

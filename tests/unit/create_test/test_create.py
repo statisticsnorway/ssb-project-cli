@@ -1,4 +1,5 @@
 """Tests for create function."""
+
 from unittest import TestCase
 from unittest.mock import Mock
 from unittest.mock import patch

@@ -1,4 +1,5 @@
 """This module contains the RepoPrivacy class."""
+
 from enum import Enum
 
 

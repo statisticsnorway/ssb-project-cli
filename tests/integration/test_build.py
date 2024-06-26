@@ -1,4 +1,5 @@
 """Integration tests for the build command."""
+
 import shutil
 import subprocess
 from pathlib import Path

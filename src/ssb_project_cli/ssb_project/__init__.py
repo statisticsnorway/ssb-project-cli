@@ -1,4 +1,5 @@
 """ssb-project package."""
+
 from questionary import Style
 
 
