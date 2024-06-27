@@ -28,7 +28,7 @@ jobs:
 
       - name: Install Poetry
         run: |
-          pip install "-c ${{ github.workspace }}/.github/workflows/constraints.txt" poetry
+          pipx install --pip-args "-c ${{ github.workspace }}/.github/workflows/constraints.txt" poetry
           poetry --version
 
       - name: Check if there is a parent commit
