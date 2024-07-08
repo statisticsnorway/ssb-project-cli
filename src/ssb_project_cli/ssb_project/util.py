@@ -170,3 +170,26 @@ def get_project_name_and_root_path(
                     # Final fall back to project root directory name
                     return path.name, path
     return None, None
+
+
+def handle_no_kernel_argument(no_kernel: bool) -> bool:
+    """Handle the 'no_kernel' parameter and environment variable.
+
+    The CLI flag is always prioritised, otherwise it falls back to the environment
+    variable and then lastly defaults to False.
+    """
+    if no_kernel:
+        return no_kernel
+    env_var_no_kernel = os.environ.get("NO_KERNEL")
+    if env_var_no_kernel is None:  # handle NO_KERNEL is undefined case
+        return False
+    elif env_var_no_kernel not in ["True", "False"]:
+        print(
+            f"""
+              The value of the 'NO_KERNEL' environment variable is {os.environ["NO_KERNEL"]}.
+              The only valid values are True and False.
+            """
+        )
+        exit(1)
+    else:
+        return bool(env_var_no_kernel)

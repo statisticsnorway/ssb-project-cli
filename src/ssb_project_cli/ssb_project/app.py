@@ -18,6 +18,7 @@ from .settings import GITHUB_ORG_NAME
 from .settings import HOME_PATH
 from .settings import STAT_TEMPLATE_DEFAULT_REFERENCE
 from .settings import STAT_TEMPLATE_REPO_URL
+from .util import handle_no_kernel_argument
 
 
 # Don't print with color, it's difficult to read when run in Jupyter
@@ -107,7 +108,7 @@ def create(  # noqa: C901, S107
         template_git_url,
         checkout,
         verify_config,
-        no_kernel,
+        handle_no_kernel_argument(no_kernel),
     )
 
 
@@ -123,6 +124,13 @@ def build(
         help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
         show_default=True,
     ),
+    no_kernel: Annotated[
+        bool,
+        typer.Option(
+            "--no-kernel",
+            help="Do not install a kernel after the project is built (defaults to False).",
+        ),
+    ] = False,
 ) -> None:
     """:wrench:  Create a virtual environment and corresponding Jupyter kernel. Runs in the current folder if no arguments are supplied."""
     build_project(
@@ -131,6 +139,7 @@ def build(
         STAT_TEMPLATE_REPO_URL,
         STAT_TEMPLATE_DEFAULT_REFERENCE,
         verify_config,
+        handle_no_kernel_argument(no_kernel),
     )
 
 
