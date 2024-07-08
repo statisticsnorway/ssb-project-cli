@@ -44,6 +44,8 @@ class TestCreateFunction(TestCase):
             False,
             "",
             None,
+            None,
+            None,
             False,
         )
         assert mock_rmtree.call_count == 0
@@ -66,6 +68,8 @@ class TestCreateFunction(TestCase):
             "github_token",
             False,
             STAT_TEMPLATE_REPO_URL,
+            None,
+            None,
             None,
             False,
         )
@@ -91,6 +95,8 @@ class TestCreateFunction(TestCase):
                 "github_token",
                 False,
                 "",
+                None,
+                None,
                 None,
                 False,
             )
@@ -118,6 +124,8 @@ class TestCreateFunction(TestCase):
                 False,
                 "",
                 None,
+                None,
+                None,
                 False,
             )
         assert mock_rmtree.call_count == 1
@@ -140,6 +148,8 @@ class TestCreateFunction(TestCase):
             "github_token",
             False,
             "https://github.com/statisticsnorway/ssb-minimal-template",
+            None,
+            None,
             None,
             False,
         )
@@ -170,6 +180,8 @@ class TestCreateFunction(TestCase):
                 False,
                 "",
                 None,
+                None,
+                None,
                 False,
             )
 
@@ -191,6 +203,8 @@ def test_project_dir_exists(mock_path_exists: Mock) -> None:
             False,
             "",
             None,
+            None,
+            None,
             False,
         )
     assert excinfo.value.code == 1
@@ -208,7 +222,7 @@ def test_is_valid_project_name() -> None:
 
 @patch("ssb_project_cli.ssb_project.app.create_project", return_value=None)
 def test_default_options_and_types(mock_create_project: Mock) -> None:
-    """Check default options andt types retuned by the create typer CLI command."""
+    """Check default options and types retuned by the create typer CLI command."""
     # Check when all optional parameters are given
     create(
         "test_project",
@@ -219,26 +233,28 @@ def test_default_options_and_types(mock_create_project: Mock) -> None:
         False,
         "",
         None,
+        None,
+        None,
         False,
     )
     assert mock_create_project.call_count == 1
     args, _ = mock_create_project.call_args
-    assert len(args) == 12
-    no_kernel = args[11]
+    assert len(args) == 14
+    no_kernel = args[13]
     assert isinstance(no_kernel, bool) and not no_kernel
 
     # Only mandatory parameters given, check default values and types of optional parameters.
     create("test_project", "description", RepoPrivacy.internal)
     assert mock_create_project.call_count == 2
     args, _ = mock_create_project.call_args
-    assert len(args) == 12
+    assert len(args) == 14
 
     add_github = args[3]
     github_token = args[4]
-    verify_config = args[10]
+    verify_config = args[12]
     template_repo_url = args[8]
     checkout = args[9]
-    no_kernel = args[11]
+    no_kernel = args[13]
     print(f"\ncheckout has type {type(checkout)} with content {checkout}")
     assert (
         isinstance(add_github, bool) and not add_github

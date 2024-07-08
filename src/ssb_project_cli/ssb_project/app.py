@@ -85,10 +85,10 @@ def create(  # noqa: C901, S107
         ),
     ] = None,
     name: Annotated[
-        str, typer.Option("--name", help="Project author's full name.")
+        t.Optional[str], typer.Option("--name", help="Project author's full name.")
     ] = None,
     email: Annotated[
-        str, typer.Option("--email", help="Project author's email.")
+        t.Optional[str], typer.Option("--email", help="Project author's email.")
     ] = None,
     no_kernel: Annotated[
         bool,
