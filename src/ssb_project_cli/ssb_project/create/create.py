@@ -36,6 +36,8 @@ def create_project(  # noqa: C901
     github_org_name: str,
     template_repo_url: str,
     checkout: str | None,
+    name: str | None,
+    email: str | None,
     verify_config: bool = True,
     no_kernel: bool = False,
 ) -> None:
@@ -52,6 +54,8 @@ def create_project(  # noqa: C901
         github_org_name: Name of GitHub organization
         template_repo_url: The Cookiecutter template URI.
         checkout: The git reference to check against. Supports branches, tags and commit hashes.
+        name: The project author's name (optional).
+        email: The project author's email (optional).
         verify_config: Determines if gitconfig is verified.
         no_kernel: Determines if a kernel shall be generated or not.
     """
@@ -101,6 +105,8 @@ def create_project(  # noqa: C901
             template_repo_url,
             checkout,
             working_directory,
+            name=name,
+            email=email,
         )
         build_project(
             project_directory,

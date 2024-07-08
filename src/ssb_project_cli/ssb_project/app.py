@@ -84,6 +84,12 @@ def create(  # noqa: C901, S107
             help="The git reference to check against. Supports branches, tags and commit hashes.",
         ),
     ] = None,
+    name: Annotated[
+        str, typer.Option("--name", help="Project author's full name.")
+    ] = None,
+    email: Annotated[
+        str, typer.Option("--email", help="Project author's email.")
+    ] = None,
     no_kernel: Annotated[
         bool,
         typer.Option(
@@ -107,6 +113,8 @@ def create(  # noqa: C901, S107
         GITHUB_ORG_NAME,
         template_git_url,
         checkout,
+        name,
+        email,
         verify_config,
         handle_no_kernel_argument(no_kernel),
     )
