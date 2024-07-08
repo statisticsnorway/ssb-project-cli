@@ -173,8 +173,10 @@ def get_project_name_and_root_path(
 
 
 def handle_no_kernel_argument(no_kernel: bool) -> bool:
-    """Handle the 'no_kernel' parameter and environment variable. The CLI flag is always prioritised,
-    otherwise it falls back to the environment variable and then lastly defaults to False.
+    """Handle the 'no_kernel' parameter and environment variable.
+
+    The CLI flag is always prioritised, otherwise it falls back to the environment
+    variable and then lastly defaults to False.
     """
     if no_kernel:
         return no_kernel
