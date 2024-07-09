@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ssb-project-cli"
-version = "1.4.3"
+version = "1.4.4"
 description = "SSB Project CLI"
 authors = ["Statistics Norway <stat-dev@ssb.no>"]
 license = "MIT"
