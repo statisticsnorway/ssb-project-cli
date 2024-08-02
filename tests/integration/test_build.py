@@ -37,11 +37,4 @@ def build_project(create_project: dict[str, str]) -> Result:
 
 
 def test_build_project_exit_code(build_project: Result) -> None:
-    if build_project.exit_code != 0:
-        with open(
-            "/home/runner/ssb-project-cli/.error_logs/poetry-install-error-1722599691.txt",
-            encoding="utf-8",
-        ) as f:
-            error_logs = f.read()
-            print(error_logs)
     assert build_project.exit_code == 0
