@@ -1406,13 +1406,13 @@ testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)",
 
 [[package]]
 name = "kvakk-git-tools"
-version = "2.2.3"
+version = "2.2.4"
 description = "Recommended git config and git scripts for Statistics Norway."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "kvakk_git_tools-2.2.3-py3-none-any.whl", hash = "sha256:cd9a42ad0dd01b76312b5c691afe26ba053ae7bcf3019469f2fd4408dac2486c"},
-    {file = "kvakk_git_tools-2.2.3.tar.gz", hash = "sha256:57c574b5c7e99fc5a1b114b11b53501d341928f85a6f10f184b5ece7c075f8be"},
+    {file = "kvakk_git_tools-2.2.4-py3-none-any.whl", hash = "sha256:0281d6dcb6ae89365dcb1a5a2851faadcc5f758fbf1e7b9845416870c9d61e79"},
+    {file = "kvakk_git_tools-2.2.4.tar.gz", hash = "sha256:dfa1fbbf6a0dab5156bf3d63a5671c85ca632db39bb9bd55bf5ced16a0376bff"},
 ]
 
 [[package]]
@@ -3989,4 +3989,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "d2628bb061850f0fad22894ec9e3ba95a74ba787ea13674d0025794724822e26"
+content-hash = "558d3a656033051671de35911d7498c7bfd64bf3e90a8246621ca1c766535cae"
