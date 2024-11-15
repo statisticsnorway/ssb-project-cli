@@ -9,10 +9,8 @@ from textwrap import dedent
 
 import nox
 
-
 try:
-    from nox_poetry import Session
-    from nox_poetry import session
+    from nox_poetry import Session, session
 except ImportError:
     message = f"""\
     Nox failed to import the 'nox-poetry' package.
@@ -148,7 +146,7 @@ def safety(session: Session) -> None:
     """Scan dependencies for insecure packages."""
     requirements = session.poetry.export_requirements()
     session.install("safety")
-    session.run("safety", "check", "--full-report", f"--file={requirements}")
+    session.run("safety", "scan", "--full-report", f"--file={requirements}")
 
 
 @session(python=python_versions)
