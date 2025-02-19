@@ -19,7 +19,7 @@ from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
 BUILD = "ssb_project_cli.ssb_project.build.build"
 
 
-@patch(f"{BUILD}.check_and_fix_onprem_source")
+@patch(f"{BUILD}.check_and_remove_onprem_source")
 @patch(f"{BUILD}.poetry_install")
 @patch(f"{BUILD}.install_ipykernel")
 @patch(f"{BUILD}.ipykernel_attach_bashrc")
@@ -36,7 +36,7 @@ def test_build(
     mock_install_ipykernel: Mock,
     mock_ipykernel_attach_bashrc: Mock,
     mock_poetry_install: Mock,
-    mock_check_and_fix_onprem_source: Mock,
+    mock_check_and_remove_onprem_source: Mock,
     no_kernel: bool,
     tmp_path: Path,
 ) -> None:
@@ -59,7 +59,7 @@ def test_build(
     assert mock_poetry_install.call_count == 1
     assert mock_install_ipykernel.call_count == int(not no_kernel)
     assert mock_ipykernel_attach_bashrc.call_count == int(not no_kernel)
-    assert mock_check_and_fix_onprem_source.call_count == 1
+    assert mock_check_and_remove_onprem_source.call_count == 1
 
 
 @patch(f"{BUILD}.get_kernels_dict")
