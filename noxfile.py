@@ -26,7 +26,7 @@ UNIT_TESTS_PATH = "tests/unit"
 INTEGRATION_TESTS_PATH = "tests/integration"
 package = "ssb_project_cli"
 python_versions = ["3.10", "3.11"]
-nox.needs_version = ">= 2021.6.6"
+nox.needs_version = ">= 2025.02.09"
 nox.options.sessions = (
     "pre-commit",
     "mypy",

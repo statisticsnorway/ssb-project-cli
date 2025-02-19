@@ -1,27 +1,23 @@
 """Build command module."""
 
-import os
 import json
+import os
 import re
-
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import List
 
 import kvakk_git_tools.validate_ssb_gitconfig  # type: ignore
-
-from .environment import verify_local_config
-from .poetry import install_ipykernel
-from .poetry import poetry_install
-from .poetry import check_and_fix_onprem_source
 from rich import print
-
-from .prompt import confirm_fix_ssb_git_config
 
 from ssb_project_cli.ssb_project.util import (
     get_kernels_dict,
     get_project_name_and_root_path,
 )
+
+from .environment import verify_local_config
+from .poetry import check_and_remove_onprem_source, install_ipykernel, poetry_install
+from .prompt import confirm_fix_ssb_git_config
 
 
 def build_project(
@@ -60,7 +56,7 @@ def build_project(
             template_repo_url, checkout, project_name, project_root
         )
 
-    check_and_fix_onprem_source(project_root)
+    check_and_remove_onprem_source(project_root)
 
     poetry_install(project_root)
     if not no_kernel:

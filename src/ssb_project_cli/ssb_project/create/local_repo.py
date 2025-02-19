@@ -11,7 +11,7 @@ import cruft
 from git import Repo
 from rich import print
 
-from ssb_project_cli.ssb_project.build.poetry import check_and_fix_onprem_source
+from ssb_project_cli.ssb_project.build.poetry import check_and_remove_onprem_source
 from ssb_project_cli.ssb_project.build.poetry import poetry_update_lockfile_dependencies
 from ssb_project_cli.ssb_project.create import temp_git_repo
 from ssb_project_cli.ssb_project.create.github import (
@@ -75,7 +75,7 @@ def create_project_from_template(
         extra_context=template_info,
     )
     project_root = project_dir / project_name
-    check_and_fix_onprem_source(project_root)
+    check_and_remove_onprem_source(project_root)
     poetry_update_lockfile_dependencies(project_root)
 
     return project_dir
