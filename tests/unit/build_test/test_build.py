@@ -25,7 +25,7 @@ BUILD = "ssb_project_cli.ssb_project.build.build"
 @patch(f"{BUILD}.ipykernel_attach_bashrc")
 @patch("typer.confirm")
 @patch("kvakk_git_tools.validate_git_config")
-@patch("kvakk_git_tools.validate_local_git_files", return_value = True)
+@patch("kvakk_git_tools.validate_local_git_files")
 @patch(f"{BUILD}.get_project_name_and_root_path")
 @pytest.mark.parametrize("no_kernel", [False, True])
 def test_build(
@@ -42,7 +42,7 @@ def test_build(
 ) -> None:
     """Check that build calls poetry_install, install_ipykernel and poetry_source_includes_source_name."""
     mock_kvakk.return_value = True
-    #mock_validate_local_git_files.return_value = True
+    mock_validate_local_git_files.return_value = True
     mock_confirm.return_value = False
     mock_get_project_name_and_root_path.return_value = ("project_name", tmp_path)
     build_project(

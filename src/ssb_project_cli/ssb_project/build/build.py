@@ -7,8 +7,7 @@ import sys
 from pathlib import Path
 from typing import List
 
-import kvakk_git_tools.validate_ssb_gitconfig  # type: ignore
-from kvakk_git_tools import validate_local_git_files
+import kvakk_git_tools
 from rich import print
 
 from ssb_project_cli.ssb_project.util import (
@@ -80,7 +79,9 @@ def validate_and_fix_git_config(
     except FileExistsError:
         # If gitconfig does not exist the configuration is invalid
         valid_global_git_config = False
-    valid_project_git_config = validate_local_git_files(cwd=Path(str(project_root)))
+    valid_project_git_config = kvakk_git_tools.validate_local_git_files(
+        cwd=Path(str(project_root))
+    )
     if not valid_global_git_config or not valid_project_git_config:
         print(
             ":x:\tYour project's Git configuration does not follow SSB recommendations,\n:x:\twhich may result in sensitive data being pushed to GitHub."
