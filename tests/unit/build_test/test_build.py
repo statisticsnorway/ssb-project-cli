@@ -25,12 +25,12 @@ BUILD = "ssb_project_cli.ssb_project.build.build"
 @patch(f"{BUILD}.ipykernel_attach_bashrc")
 @patch("typer.confirm")
 @patch("kvakk_git_tools.validate_git_config")
-@patch("ssb_project_cli.ssb_project.build.environment.verify_local_config")
+@patch("kvakk_git_tools.validate_local_git_files", return_value = True)
 @patch(f"{BUILD}.get_project_name_and_root_path")
 @pytest.mark.parametrize("no_kernel", [False, True])
 def test_build(
     mock_get_project_name_and_root_path: Mock,
-    mock_verify_local_config: Mock,
+    mock_validate_local_git_files: Mock,
     mock_kvakk: Mock,
     mock_confirm: Mock,
     mock_install_ipykernel: Mock,
@@ -42,7 +42,7 @@ def test_build(
 ) -> None:
     """Check that build calls poetry_install, install_ipykernel and poetry_source_includes_source_name."""
     mock_kvakk.return_value = True
-    mock_verify_local_config.return_value = True
+    #mock_validate_local_git_files.return_value = True
     mock_confirm.return_value = False
     mock_get_project_name_and_root_path.return_value = ("project_name", tmp_path)
     build_project(
@@ -54,7 +54,7 @@ def test_build(
         no_kernel,
     )
     assert mock_kvakk.called
-    assert mock_verify_local_config
+    assert mock_validate_local_git_files
     assert mock_confirm.call_count == 1
     assert mock_poetry_install.call_count == 1
     assert mock_install_ipykernel.call_count == int(not no_kernel)
