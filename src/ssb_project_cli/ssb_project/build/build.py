@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import List
 
-import kvakk_git_tools
+import kvakk_git_tools # type: ignore
 from rich import print
 
 from ssb_project_cli.ssb_project.util import (
