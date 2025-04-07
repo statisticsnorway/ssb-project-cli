@@ -6,6 +6,7 @@ import re
 import sys
 from pathlib import Path
 from typing import List
+from ..util import try_if_file_exists
 
 import kvakk_git_tools  # type: ignore
 from rich import print
@@ -74,17 +75,24 @@ def validate_and_fix_git_config(
         project_name: The name of the project
         project_root: The root directory of the project/repo.
     """
-    try:
-        valid_global_git_config = kvakk_git_tools.validate_git_config()
-    except FileExistsError:
-        # If gitconfig does not exist the configuration is invalid
-        valid_global_git_config = False
-    valid_project_git_config = kvakk_git_tools.validate_local_git_files(
-        cwd=Path(str(project_root))
-    )
-    if not (valid_global_git_config and valid_project_git_config):
+    valid_global_git_config: bool = try_if_file_exists(
+        lambda: kvakk_git_tools.validate_git_config()
+    ).get_or_else(False)
+    valid_project_git_files: bool = try_if_file_exists(
+        lambda: kvakk_git_tools.validate_local_git_files(cwd=Path(str(project_root)))
+    ).get_or_else(False)
+
+    if not (valid_global_git_config and valid_project_git_files):
+
         print(
-            ":x:\tYour project's Git configuration does not follow SSB recommendations,\n:x:\twhich may result in sensitive data being pushed to GitHub."
+            f"""
+            :x:    Your project's Git configuration does not follow SSB recommendations,
+            :x:    which may result in sensitive data being pushed to GitHub.
+
+                Git file validation status:
+            {":white_check_mark:" if valid_global_git_config else ":x:"}      - Global .gitconfig file
+            {":white_check_mark:" if valid_project_git_files else ":x:"}      - Project .gitignore and .gitattributes files
+            """
         )
         confirm_fix_ssb_git_config(
             project_name,
@@ -92,7 +100,7 @@ def validate_and_fix_git_config(
             checkout,
             project_root,
             valid_global_git_config,
-            valid_project_git_config,
+            valid_project_git_files,
         )
 
 
