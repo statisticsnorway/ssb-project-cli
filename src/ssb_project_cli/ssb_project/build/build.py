@@ -82,7 +82,7 @@ def validate_and_fix_git_config(
     valid_project_git_config = kvakk_git_tools.validate_local_git_files(
         cwd=Path(str(project_root))
     )
-    if not valid_global_git_config or not valid_project_git_config:
+    if not (valid_global_git_config and valid_project_git_config):
         print(
             ":x:\tYour project's Git configuration does not follow SSB recommendations,\n:x:\twhich may result in sensitive data being pushed to GitHub."
         )
