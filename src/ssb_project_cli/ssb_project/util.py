@@ -6,8 +6,12 @@ import os
 import subprocess  # noqa: S404
 import sys  # noqa: S404
 import time
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
+from typing import Generic
 from typing import Optional
+from typing import TypeVar
 from typing import Union
 
 import jupyter_client
@@ -18,6 +22,69 @@ from .settings import HOME_PATH
 
 
 kernelspec_manager = jupyter_client.kernelspec.KernelSpecManager()
+
+T = TypeVar("T")
+U = TypeVar("U")
+
+
+class Option(Generic[T]):
+    """Represents a value that might be empty."""
+
+    def get_or_else(self, default: U) -> Union[T, U]:
+        """Get value if it exists or return default."""
+        raise NotImplementedError
+
+    def map(self, func: Callable[[T], U]) -> "Option[U]":
+        """Map function over value if it exists."""
+        raise NotImplementedError
+
+    def is_empty(self) -> bool:
+        """Check if the Option type contains a value."""
+        raise NotImplementedError
+
+
+@dataclass
+class Some(Option[T]):
+    """An 'Option' type that contains a value."""
+
+    value: T
+
+    def get_or_else(self, default: U) -> T:
+        """Get value if it exists or return default."""
+        return self.value
+
+    def map(self, func: Callable[[T], U]) -> Option[U]:
+        """Map function over value if it exists."""
+        return Some(func(self.value))
+
+    def is_empty(self) -> bool:
+        """Check if the Option type contains a value."""
+        return False
+
+
+@dataclass
+class Nothing(Option[T]):
+    """An 'Option' type that doesn't contain a value."""
+
+    def get_or_else(self, default: U) -> U:
+        """Get value if it exists or return default."""
+        return default
+
+    def map(self, func: Callable[[T], U]) -> Option[U]:
+        """Map function over value if it exists."""
+        return Nothing()
+
+    def is_empty(self) -> bool:
+        """Check if the Option type contains a value."""
+        return True
+
+
+def try_if_file_exists(f: Callable[[], U]) -> Option[U]:
+    """Convert a function that may throw a 'FileExistsError' into an Option value that returns None if an error is thrown."""
+    try:
+        return Some(value=f())
+    except FileExistsError:
+        return Nothing()
 
 
 def set_debug_logging(home_path: Path = HOME_PATH) -> None:
