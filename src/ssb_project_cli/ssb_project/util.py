@@ -117,7 +117,9 @@ def create_error_log(
         filename = f"{calling_function}-error-{int(time.time())}.txt"
         with open(f"{error_logs_path}/{filename}", "w+") as f:
             f.write(log)
-            print(f"Detailed error information saved to {error_logs_path}/{filename}")
+            print(
+                f"Detailed error information can be viewed with the terminal command 'cat {error_logs_path}/{filename}'"
+            )
             print(
                 f"You can find the full debug log here {error_logs_path}/ssb-project-debug.log"
             )
