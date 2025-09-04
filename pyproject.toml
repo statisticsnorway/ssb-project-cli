@@ -16,7 +16,7 @@ Changelog = "https://github.com/statisticsnorway/ssb-project-cli/releases"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-typer = ">=0.6.1"
+typer = "==0.16.1"              # Pin typer because breaking changes may be released at any moment
 gitpython = ">=3.1.27"
 pygithub = ">=1.55"
 cruft = ">=2.11.1"
@@ -117,11 +117,7 @@ show_error_codes = true
 show_error_context = true
 
 [[tool.mypy.overrides]]
-module = [
-    "attr.*",
-    "cruft.*",
-    "tomli_w.*",
-]
+module = ["attr.*", "cruft.*", "tomli_w.*"]
 ignore_missing_imports = true
 
 [build-system]
@@ -129,6 +125,4 @@ requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-pythonpath = [
-  "src"
-]
+pythonpath = ["src"]
