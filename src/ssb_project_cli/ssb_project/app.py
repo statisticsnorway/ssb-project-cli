@@ -5,6 +5,7 @@ from pathlib import Path
 
 import typer
 from rich.console import Console
+from typer import rich_utils
 from typing_extensions import Annotated
 
 from ssb_project_cli.ssb_project.util import set_debug_logging
@@ -22,24 +23,24 @@ from .util import handle_no_kernel_argument
 
 
 # Don't print with color, it's difficult to read when run in Jupyter
-typer.rich_utils.STYLE_OPTION = ""
-typer.rich_utils.STYLE_SWITCH = ""
-typer.rich_utils.STYLE_NEGATIVE_OPTION = ""
-typer.rich_utils.STYLE_NEGATIVE_SWITCH = ""
-typer.rich_utils.STYLE_METAVAR = ""
-typer.rich_utils.STYLE_METAVAR_SEPARATOR = "dim"
-typer.rich_utils.STYLE_USAGE = ""
-typer.rich_utils.STYLE_USAGE_COMMAND = "bold"
-typer.rich_utils.STYLE_DEPRECATED = ""
-typer.rich_utils.STYLE_DEPRECATED_COMMAND = "dim"
-typer.rich_utils.STYLE_HELPTEXT_FIRST_LINE = ""
-typer.rich_utils.STYLE_HELPTEXT = ""
-typer.rich_utils.STYLE_OPTION_HELP = ""
-typer.rich_utils.STYLE_OPTION_DEFAULT = "dim"
-typer.rich_utils.STYLE_OPTION_ENVVAR = "dim"
-typer.rich_utils.STYLE_REQUIRED_SHORT = ""
-typer.rich_utils.STYLE_REQUIRED_LONG = ""
-typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "dim"
+rich_utils.STYLE_OPTION = ""
+rich_utils.STYLE_SWITCH = ""
+rich_utils.STYLE_NEGATIVE_OPTION = ""
+rich_utils.STYLE_NEGATIVE_SWITCH = ""
+rich_utils.STYLE_METAVAR = ""
+rich_utils.STYLE_METAVAR_SEPARATOR = "dim"
+rich_utils.STYLE_USAGE = ""
+rich_utils.STYLE_USAGE_COMMAND = "bold"
+rich_utils.STYLE_DEPRECATED = ""
+rich_utils.STYLE_DEPRECATED_COMMAND = "dim"
+rich_utils.STYLE_HELPTEXT_FIRST_LINE = ""
+rich_utils.STYLE_HELPTEXT = ""
+rich_utils.STYLE_OPTION_HELP = ""
+rich_utils.STYLE_OPTION_DEFAULT = "dim"
+rich_utils.STYLE_OPTION_ENVVAR = "dim"
+rich_utils.STYLE_REQUIRED_SHORT = ""
+rich_utils.STYLE_REQUIRED_LONG = ""
+rich_utils.STYLE_OPTIONS_PANEL_BORDER = "dim"
 console = Console(color_system=None)
 print = console.print
 
@@ -155,7 +156,7 @@ def build(
 def clean(
     project_name: str = typer.Argument(  # noqa: B008
         ..., help="The name of the project/kernel you want to delete."
-    )
+    ),
 ) -> None:
     """:broom:  Delete the kernel for the given project name."""
     clean_project(project_name)

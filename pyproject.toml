@@ -1,40 +1,44 @@
-[tool.poetry]
+[project]
 name = "ssb-project-cli"
 version = "1.7.1"
+requires-python = ">=3.10"
 description = "SSB Project CLI"
-authors = ["Statistics Norway <stat-dev@ssb.no>"]
 license = "MIT"
+dynamic = ["classifiers"]
 readme = "README.md"
+authors = [{ name = "Statistics Norway", email = "stat-dev@ssb.no" }]
+dependencies = [
+    'typer (==0.19.2)',
+    'gitpython (>=3.1.27)',
+    'pygithub (>=1.55)',
+    'cruft (>=2.11.1)',
+    'rich (>=12.5.1)',
+    'requests (>=2.32.3)',
+    'questionary (>=1.10.0)',
+    'psutil (>=5.9.4)',
+    'kvakk-git-tools (>=2.5.1)',
+    'poetry (>=2.0)',
+    'jupyter-client (>=8.3.1)',
+    'ipykernel (>=6.25.2)',      # Run as a module, not imported in code
+    'tomli (>=2.0.1)',
+]
+
+[tool.poetry]
+packages = [{ include = "ssb_project_cli", from = "src" }]
+classifiers = ["Development Status :: 4 - Beta"]
+requires-poetry = '>=2.0.0,<3.0.0'
+
+[project.urls]
 homepage = "https://github.com/statisticsnorway/ssb-project-cli"
 repository = "https://github.com/statisticsnorway/ssb-project-cli"
 documentation = "https://ssb-project-cli.readthedocs.io"
-packages = [{ include = "ssb_project_cli", from = "src" }]
-classifiers = ["Development Status :: 4 - Beta"]
-
-[tool.poetry.urls]
 Changelog = "https://github.com/statisticsnorway/ssb-project-cli/releases"
 
+[project.scripts]
+ssb-project = "ssb_project_cli.__main__:main"
+
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-typer = "==0.16.1"              # Pin typer because breaking changes may be released at any moment
-gitpython = ">=3.1.27"
-pygithub = ">=1.55"
-cruft = ">=2.11.1"
-rich = ">=12.5.1"
-requests = ">=2.32.3"
-types-toml = ">=0.10.8"
-questionary = ">=1.10.0"
-psutil = ">=5.9.4"
-types-urllib3 = ">=1.26.25.10"
-types-requests = ">=2.28.11.17"
-types-psutil = ">=5.9.5.12"
-kvakk-git-tools = "^2.5.1"
-poetry = ">=2.0"
-jupyter-client = ">=8.3.1"
-ipykernel = ">=6.25.2"
-tomli = ">=2.0.1"
-certifi = ">=2024.8.30"
-virtualenv = ">=20.27.1"
+python = ">=3.10,<4.0"
 
 [tool.poetry.group.dev.dependencies]
 pygments = ">=2.10.0"
@@ -54,6 +58,10 @@ pre-commit-hooks = ">=4.1.0"
 pytest = ">=7.2.0"
 pyupgrade = ">=2.29.1"
 typeguard = ">=2.13.3"
+types-urllib3 = ">=1.26.25.10"
+types-requests = ">=2.28.11.17"
+types-psutil = ">=5.9.5.12"
+types-toml = ">=0.10.8"
 xdoctest = { extras = ["colors"], version = ">=0.15.10" }
 mock = ">=4.0.3"
 build = ">=0.8.0"
@@ -64,6 +72,7 @@ tomli-w = ">=1.0.0"
 bandit = ">=1.7.9"
 cryptography = ">=42.0.8"
 idna = ">=3.7"
+deptry = "^0.23.1"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs-typer = ">=0.0.3"
@@ -86,9 +95,6 @@ nox-poetry = ">=1.1.0"
 build = ">=0.8.0"
 Jinja2 = ">=3.1.2"
 furo = ">=2021.11.12"
-
-[tool.poetry.scripts]
-ssb-project = "ssb_project_cli.__main__:main"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
