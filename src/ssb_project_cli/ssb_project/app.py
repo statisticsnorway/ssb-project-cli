@@ -13,13 +13,14 @@ from .build.build import build_project
 from .clean.clean import clean_project
 from .create.create import create_project
 from .create.repo_privacy import RepoPrivacy
-from .settings import CURRENT_WORKING_DIRECTORY
-from .settings import GITHUB_ORG_NAME
-from .settings import HOME_PATH
-from .settings import STAT_TEMPLATE_DEFAULT_REFERENCE
-from .settings import STAT_TEMPLATE_REPO_URL
+from .settings import (
+    CURRENT_WORKING_DIRECTORY,
+    GITHUB_ORG_NAME,
+    HOME_PATH,
+    STAT_TEMPLATE_DEFAULT_REFERENCE,
+    STAT_TEMPLATE_REPO_URL,
+)
 from .util import handle_no_kernel_argument
-
 
 # Don't print with color, it's difficult to read when run in Jupyter
 typer.rich_utils.STYLE_OPTION = ""
@@ -68,13 +69,13 @@ def create(  # noqa: C901, S107
             help="Your Github Personal Access Token, follow these instructions to create one: https://manual.dapla.ssb.no/git-github.html#personal-access-token-pat"
         ),
     ] = "",
-    verify_config: Annotated[
+    no_verify: Annotated[
         bool,
         typer.Option(
             "--no-verify",
-            help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
+            help="Disable verification of git configuration files.",
         ),
-    ] = True,
+    ] = False,
     template_git_url: Annotated[
         str, typer.Option(help="The Cookiecutter template URI.")
     ] = STAT_TEMPLATE_REPO_URL,
@@ -115,7 +116,7 @@ def create(  # noqa: C901, S107
         checkout,
         name,
         email,
-        verify_config,
+        not no_verify,
         handle_no_kernel_argument(no_kernel),
     )
 
@@ -126,12 +127,13 @@ def build(
         None,
         help="Project path",
     ),
-    verify_config: bool = typer.Option(  # noqa: B008
-        True,
-        "--no-verify",
-        help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
-        show_default=True,
-    ),
+    no_verify: Annotated[
+        bool,
+        typer.Option(
+            "--no-verify",
+            help="Disable verification of git configuration files.",
+        ),
+    ] = False,
     no_kernel: Annotated[
         bool,
         typer.Option(
@@ -146,7 +148,7 @@ def build(
         CURRENT_WORKING_DIRECTORY,
         STAT_TEMPLATE_REPO_URL,
         STAT_TEMPLATE_DEFAULT_REFERENCE,
-        verify_config,
+        not no_verify,
         handle_no_kernel_argument(no_kernel),
     )
 

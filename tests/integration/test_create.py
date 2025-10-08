@@ -12,7 +12,6 @@ from typer.testing import CliRunner
 from ssb_project_cli.ssb_project.app import app
 from ssb_project_cli.ssb_project.util import get_kernels_dict
 
-
 runner = CliRunner()
 
 
@@ -26,7 +25,7 @@ def create_project(
     )
     yield result
     # Clean up project directory
-    shutil.rmtree(name)
+    shutil.rmtree(name, ignore_errors=True)
     # Clean up project kernel
     subprocess.run(f"jupyter kernelspec remove -f {name}".split(" "))
 
@@ -48,4 +47,4 @@ def test_create_project_files_created(
 
 def test_create_kernel_installed(name: Path, create_project: Result) -> None:
     """Kernel successfully installed."""
-    assert str(name) in get_kernels_dict()
+    assert str(name) in get_kernels_dict().keys()
