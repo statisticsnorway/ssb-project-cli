@@ -12,6 +12,7 @@ from typer.testing import CliRunner
 from ssb_project_cli.ssb_project.app import app
 from ssb_project_cli.ssb_project.util import get_kernels_dict
 
+
 runner = CliRunner()
 
 

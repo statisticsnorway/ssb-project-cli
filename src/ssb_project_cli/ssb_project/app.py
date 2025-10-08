@@ -13,14 +13,13 @@ from .build.build import build_project
 from .clean.clean import clean_project
 from .create.create import create_project
 from .create.repo_privacy import RepoPrivacy
-from .settings import (
-    CURRENT_WORKING_DIRECTORY,
-    GITHUB_ORG_NAME,
-    HOME_PATH,
-    STAT_TEMPLATE_DEFAULT_REFERENCE,
-    STAT_TEMPLATE_REPO_URL,
-)
+from .settings import CURRENT_WORKING_DIRECTORY
+from .settings import GITHUB_ORG_NAME
+from .settings import HOME_PATH
+from .settings import STAT_TEMPLATE_DEFAULT_REFERENCE
+from .settings import STAT_TEMPLATE_REPO_URL
 from .util import handle_no_kernel_argument
+
 
 # Don't print with color, it's difficult to read when run in Jupyter
 typer.rich_utils.STYLE_OPTION = ""
