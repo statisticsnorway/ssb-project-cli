@@ -68,13 +68,13 @@ def create(  # noqa: C901, S107
             help="Your Github Personal Access Token, follow these instructions to create one: https://manual.dapla.ssb.no/git-github.html#personal-access-token-pat"
         ),
     ] = "",
-    verify_config: Annotated[
+    no_verify: Annotated[
         bool,
         typer.Option(
             "--no-verify",
-            help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
+            help="Disable verification of git configuration files.",
         ),
-    ] = True,
+    ] = False,
     template_git_url: Annotated[
         str, typer.Option(help="The Cookiecutter template URI.")
     ] = STAT_TEMPLATE_REPO_URL,
@@ -115,7 +115,7 @@ def create(  # noqa: C901, S107
         checkout,
         name,
         email,
-        verify_config,
+        not no_verify,
         handle_no_kernel_argument(no_kernel),
     )
 
@@ -126,12 +126,13 @@ def build(
         None,
         help="Project path",
     ),
-    verify_config: bool = typer.Option(  # noqa: B008
-        True,
-        "--no-verify",
-        help="Verify git configuration files. Use --no-verify to disable verification (defaults to True).",
-        show_default=True,
-    ),
+    no_verify: Annotated[
+        bool,
+        typer.Option(
+            "--no-verify",
+            help="Disable verification of git configuration files.",
+        ),
+    ] = False,
     no_kernel: Annotated[
         bool,
         typer.Option(
@@ -146,7 +147,7 @@ def build(
         CURRENT_WORKING_DIRECTORY,
         STAT_TEMPLATE_REPO_URL,
         STAT_TEMPLATE_DEFAULT_REFERENCE,
-        verify_config,
+        not no_verify,
         handle_no_kernel_argument(no_kernel),
     )
 
