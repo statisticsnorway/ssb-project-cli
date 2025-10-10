@@ -1,6 +1,6 @@
 [project]
 name = "ssb-project-cli"
-version = "1.7.2"
+version = "1.7.1"
 requires-python = ">=3.10"
 description = "SSB Project CLI"
 license = "MIT"
