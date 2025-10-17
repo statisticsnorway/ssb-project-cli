@@ -72,7 +72,7 @@ tomli-w = ">=1.0.0"
 bandit = ">=1.7.9"
 cryptography = ">=42.0.8"
 idna = ">=3.7"
-deptry = "^0.23.1"
+deptry = ">=0.23.1"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs-typer = ">=0.0.3"
