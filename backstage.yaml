@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ssb-project
+  title: SSB Project CLI
+  description: |
+    CLI tool for creating and building python poetry projects
+    together with a jupyter kernel.
+  tags:
+    - python
+    - project
+    - template
+  annotations:
+    github.com/project-slug: statisticsnorway/ssb-project-cli
+spec:
+  type: library
+  owner: dapla-stat-developers
+  lifecycle: production
+  dependsOn:
+    - component:ssb-project-template
