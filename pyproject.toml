@@ -70,7 +70,7 @@ nox = ">=2025.02.09"
 nox-poetry = ">=1.1.0"
 tomli-w = ">=1.0.0"
 bandit = ">=1.7.9"
-cryptography = ">=42.0.8"
+cryptography = ">=48.0.1"
 idna = ">=3.7"
 deptry = "^0.23.1"
 
