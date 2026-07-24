@@ -9,7 +9,7 @@ readme = "README.md"
 authors = [{ name = "Statistics Norway", email = "stat-dev@ssb.no" }]
 dependencies = [
     'typer (==0.19.2)',
-    'gitpython (>=3.1.27)',
+    'gitpython (>=3.1.52)',
     'pygithub (>=1.55)',
     'cruft (>=2.11.1)',
     'rich (>=12.5.1)',
