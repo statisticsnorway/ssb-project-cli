@@ -21,7 +21,6 @@ from ssb_project_cli.ssb_project.create.github import get_org_members
 from ssb_project_cli.ssb_project.create.github import is_github_repo
 from ssb_project_cli.ssb_project.create.github import set_branch_protection_rules
 
-
 GITHUB = "ssb_project_cli.ssb_project.create.github"
 
 

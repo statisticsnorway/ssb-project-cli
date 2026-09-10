@@ -12,7 +12,6 @@ from ssb_project_cli.ssb_project.create.repo_privacy import RepoPrivacy
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_DEFAULT_REFERENCE
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
 
-
 CREATE = "ssb_project_cli.ssb_project.create.create"
 
 

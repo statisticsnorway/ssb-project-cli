@@ -16,7 +16,6 @@ from ssb_project_cli.ssb_project.create.local_repo import mangle_url
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_DEFAULT_REFERENCE
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
 
-
 LOCAL_REPO = "ssb_project_cli.ssb_project.create.local_repo"
 
 

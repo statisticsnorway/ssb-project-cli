@@ -20,7 +20,6 @@ from rich import print
 
 from .settings import HOME_PATH
 
-
 kernelspec_manager = jupyter_client.kernelspec.KernelSpecManager()
 
 T = TypeVar("T")
@@ -256,12 +255,10 @@ def handle_no_kernel_argument(no_kernel: bool) -> bool:
     if env_var_no_kernel is None:  # handle NO_KERNEL is undefined case
         return False
     elif env_var_no_kernel not in ["True", "False"]:
-        print(
-            f"""
+        print(f"""
               The value of the 'NO_KERNEL' environment variable is {os.environ["NO_KERNEL"]}.
               The only valid values are True and False.
-            """
-        )
+            """)
         exit(1)
     else:
         return bool(env_var_no_kernel)

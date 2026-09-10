@@ -21,7 +21,6 @@ from ssb_project_cli.ssb_project.build.poetry import poetry_update_lockfile_depe
 from ssb_project_cli.ssb_project.build.poetry import should_update_lock_file
 from ssb_project_cli.ssb_project.build.poetry import update_lock
 
-
 POETRY = "ssb_project_cli.ssb_project.build.poetry"
 CLEAN = "ssb_project_cli.ssb_project.clean.clean"
 
