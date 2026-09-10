@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List
 from ..util import try_if_file_exists
 
-import kvakk_git_tools  # type: ignore
+import kvakk_git_tools
 from rich import print
 
 from ssb_project_cli.ssb_project.util import (
@@ -76,10 +76,12 @@ def validate_and_fix_git_config(
         project_root: The root directory of the project/repo.
     """
     valid_global_git_config: bool = try_if_file_exists(
-        lambda: kvakk_git_tools.validate_git_config()
+        lambda: kvakk_git_tools.validate_git_config()  # type: ignore[attr-defined]
     ).get_or_else(False)
     valid_project_git_files: bool = try_if_file_exists(
-        lambda: kvakk_git_tools.validate_local_git_files(cwd=Path(str(project_root)))
+        lambda: kvakk_git_tools.validate_local_git_files(  # type: ignore[attr-defined]
+            cwd=Path(str(project_root))
+        )
     ).get_or_else(False)
 
     if not (valid_global_git_config and valid_project_git_files):
