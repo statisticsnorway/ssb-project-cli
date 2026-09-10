@@ -1,7 +1,7 @@
 """This module reads in environment variables."""
 
 import os
-from kvakk_git_tools import ssb_gitconfig  # type: ignore
+from kvakk_git_tools import ssb_gitconfig
 from rich import print
 
 JUPYTER_IMAGE_SPEC = os.environ.get("JUPYTER_IMAGE_SPEC", "")
@@ -32,7 +32,7 @@ def reset_global_gitconfig() -> None:
     try:
         ssb_gitconfig.main(test=False)
     except SystemExit:
-        platform = ssb_gitconfig.Platform()
+        platform = ssb_gitconfig.Platform()  # type: ignore[no-untyped-call]
         is_supported_bools = ("is", "is not")
         print(
             f"\n:x:\tYour global gitconfig was not fixed, your platform {is_supported_bools[platform.is_unsupported()]} supported."

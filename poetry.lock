@@ -1758,14 +1758,14 @@ type = ["pygobject-stubs", "pytest-mypy", "shtab", "types-pywin32"]
 
 [[package]]
 name = "kvakk-git-tools"
-version = "2.5.1"
+version = "2.6.1"
 description = "Recommended git config and git scripts for Statistics Norway."
 optional = false
-python-versions = "<4.0,>=3.10"
+python-versions = ">=3.6"
 groups = ["main"]
 files = [
-    {file = "kvakk_git_tools-2.5.1-py3-none-any.whl", hash = "sha256:f05fc9548a9ecfc659d5859c0f694f4300cc31fbd19d8a6b5b8efe88b493bc5c"},
-    {file = "kvakk_git_tools-2.5.1.tar.gz", hash = "sha256:65d1d1555eb25713abd51e79bec7f4d4915abf5070ab510b22080df9609d3f2a"},
+    {file = "kvakk_git_tools-2.6.1-py3-none-any.whl", hash = "sha256:345a118c90719ca89cac0421c8ddb7faac4c5c6258495f8c41166b76b1df4d33"},
+    {file = "kvakk_git_tools-2.6.1.tar.gz", hash = "sha256:f791679a74e0148e96c4477e1aa42a2c35dcfbc69f2421d54ed3e9563ee4ce6a"},
 ]
 
 [[package]]
@@ -4814,4 +4814,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "80612b235614889ed5f051b61d24fafa9153d1190296873f749c2298776f7883"
+content-hash = "7ec3c84686bce87c524d31cd54ffb49863e189a8b05f311a54abf2ebf823c1cd"
