@@ -1822,7 +1822,7 @@ version = "3.9"
 description = "Python implementation of John Gruber's Markdown."
 optional = false
 python-versions = ">=3.9"
-groups = ["docs"]
+groups = ["dev", "docs"]
 files = [
     {file = "markdown-3.9-py3-none-any.whl", hash = "sha256:9f4d91ed810864ea88a6f32c07ba8bee1346c0cc1f6b1f9f6c822f2a9667d280"},
     {file = "markdown-3.9.tar.gz", hash = "sha256:d2900fe1782bd33bdbbd56859defef70c2e78fc46668f8eb9df3128138f2cb6a"},
@@ -2941,14 +2941,14 @@ crypto = ["cryptography (>=3.4.0)"]
 
 [[package]]
 name = "pymdown-extensions"
-version = "10.16.1"
+version = "11.0.1"
 description = "Extension pack for Python Markdown."
 optional = false
-python-versions = ">=3.9"
-groups = ["docs"]
+python-versions = ">=3.10"
+groups = ["dev", "docs"]
 files = [
-    {file = "pymdown_extensions-10.16.1-py3-none-any.whl", hash = "sha256:d6ba157a6c03146a7fb122b2b9a121300056384eafeec9c9f9e584adfdb2a32d"},
-    {file = "pymdown_extensions-10.16.1.tar.gz", hash = "sha256:aace82bcccba3efc03e25d584e6a22d27a8e17caa3f4dd9f207e49b787aa9a91"},
+    {file = "pymdown_extensions-11.0.1-py3-none-any.whl", hash = "sha256:db3943a62bab7e03af1364f0c4083e64b91fb097675a4b6cceccfbe9a77e5eb2"},
+    {file = "pymdown_extensions-11.0.1.tar.gz", hash = "sha256:dd2905ae6fc5b75582fafb139a1266ffc754705efa902aa50067fa7ff4f94ec0"},
 ]
 
 [package.dependencies]
