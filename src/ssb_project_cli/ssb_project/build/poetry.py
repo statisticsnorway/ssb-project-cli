@@ -4,15 +4,22 @@ import os
 from pathlib import Path
 
 from rich import print
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress
+from rich.progress import SpinnerColumn
+from rich.progress import TextColumn
 
 from ssb_project_cli.ssb_project.util import execute_command
 
-from .environment import (
-    JUPYTER_IMAGE_SPEC,
-    NEXUS_SOURCE_NAME,
-    running_onprem,
-)
+from .environment import JUPYTER_IMAGE_SPEC
+from .environment import NEXUS_SOURCE_NAME
+from .environment import running_onprem
+
+
+def poetry_environment() -> dict[str, str]:
+    """Return an environment where Poetry can create the project's own venv."""
+    env = os.environ.copy()
+    env.pop("VIRTUAL_ENV", None)
+    return env
 
 
 def poetry_install(project_directory: Path) -> None:
@@ -37,6 +44,7 @@ def poetry_install(project_directory: Path) -> None:
             ":white_check_mark:\tInstalled dependencies in the virtual environment",
             "Error: Something went wrong when installing packages with Poetry.",
             project_directory,
+            env=poetry_environment(),
         )
 
 
@@ -195,6 +203,7 @@ def install_ipykernel(project_directory: Path, project_name: str) -> None:
             f":white_check_mark:\tInstalled Jupyter Kernel ({project_name})",
             "Something went wrong while installing ipykernel.",
             project_directory,
+            env=poetry_environment(),
         )
 
 

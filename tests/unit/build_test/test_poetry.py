@@ -12,6 +12,7 @@ import pytest
 
 from ssb_project_cli.ssb_project.build.environment import NEXUS_SOURCE_NAME
 from ssb_project_cli.ssb_project.build.poetry import check_and_remove_onprem_source
+from ssb_project_cli.ssb_project.build.poetry import poetry_environment
 from ssb_project_cli.ssb_project.build.poetry import poetry_install
 from ssb_project_cli.ssb_project.build.poetry import poetry_source_add
 from ssb_project_cli.ssb_project.build.poetry import poetry_source_includes_source_name
@@ -23,6 +24,14 @@ from ssb_project_cli.ssb_project.build.poetry import update_lock
 
 POETRY = "ssb_project_cli.ssb_project.build.poetry"
 CLEAN = "ssb_project_cli.ssb_project.clean.clean"
+
+
+def test_poetry_environment_excludes_active_virtualenv(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("VIRTUAL_ENV", "/outer/venv")
+
+    assert "VIRTUAL_ENV" not in poetry_environment()
 
 
 @patch(f"{POETRY}.execute_command")
