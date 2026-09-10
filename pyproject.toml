@@ -71,7 +71,7 @@ nox-poetry = ">=1.1.0"
 tomli-w = ">=1.0.0"
 bandit = ">=1.7.9"
 cryptography = ">=50.0.0"
-idna = ">=3.7"
+idna = ">=3.15"
 deptry = "^0.23.1"
 
 [tool.poetry.group.docs.dependencies]
