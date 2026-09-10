@@ -15,17 +15,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
-          python-version: 3.14.x
-      - run: pip install .
-      - run: pip install jinja2
-      - run: pip install mkdocs
-      - run: pip install mkdocstrings-python
-      - run: pip install mkdocs-literate-nav
-      - run: pip install mkdocs-section-index
-      - run: pip install mkdocstrings
-      - run: pip install mkdocs-material
-      - run: pip install mkdocs-typer
-      - run: pip install mkdocs-gen-files
-      - run: mkdocs gh-deploy --force
+          python-version: "3.14"
+          enable-cache: true
+      - run: uv run --frozen --group docs mkdocs gh-deploy --force

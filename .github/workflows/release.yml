@@ -20,21 +20,10 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
-          python-version: "3.14.x"
-
-      - name: Upgrade pip
-        run: |
-          pip install -c ${{ github.workspace }}/.github/workflows/constraints.txt pip
-          pip --version
-
-      - name: Install Poetry
-        run: |
-          pipx install --pip-args "-c ${{ github.workspace }}/.github/workflows/constraints.txt" poetry
-          pipx inject poetry poetry-plugin-export
-          poetry --version
+          python-version: "3.14"
 
       - name: Check if there is a parent commit
         id: check-parent-commit
@@ -47,18 +36,17 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@b1778166f13188a9d478e2d1198f993011ba9864 # v2.0.3
         with:
           version-command: |
-            bash -o pipefail -c "poetry version | awk '{ print \$2 }'"
+            uv version --short
 
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          poetry version patch &&
-          version=$(poetry version | awk '{ print $2 }') &&
-          poetry version $version.dev.$(date +%s)
+          uv version --frozen --bump patch &&
+          uv version --frozen "$(uv version --short).dev.$(date +%s)"
 
       - name: Build package
         run: |
-          poetry build --ansi
+          uv build --no-sources
 
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
