@@ -136,6 +136,7 @@ def execute_command(
     success_desc: Optional[str] = None,
     failure_desc: Optional[str] = None,
     cwd: Optional[Path] = None,
+    env: Optional[dict[str, str]] = None,
 ) -> subprocess.CompletedProcess[bytes]:
     """Execute command and handle failure/success cases.
 
@@ -145,6 +146,7 @@ def execute_command(
         success_desc: For example: "Poetry install ran successfully".
         failure_desc: For example: "Something went wrong while running poetry install".
         cwd: The current working directory.
+        env: Environment variables for the command.
 
     Returns:
         The result of the subprocess.
@@ -155,6 +157,7 @@ def execute_command(
         command,
         capture_output=True,
         cwd=cwd,
+        env=env,
     )
 
     if result.returncode != 0:
