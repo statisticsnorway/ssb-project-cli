@@ -20,30 +20,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.generate_token.outputs.token }}
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
-          python-version: "3.14.x"
-      - uses: Gr1N/setup-poetry@48b0f77c8c1b1b19cb962f0f00dff7b4be8f81ec # v9
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
-      - name: Print Poetry version
-        shell: bash
-        run: poetry --version
-      - name: Install poetry relax plugin
-        shell: bash
-        run: poetry self add poetry-relax
-      - name: Print files in folder
-        shell: bash
-        run: ls
+          python-version: "3.14"
+          enable-cache: true
       - name: Run autoupdate
         shell: bash
         env:
-          update_command: "poetry relax --update"
+          update_command: "uv lock --upgrade"
           default_branch: ${{ github.event.repository.default_branch }}
           update_path: "" # Set to run in a specific path with run update_command
-          on_changes_command: "" # Command to run when changes are detected
+          on_changes_command: "uv sync --frozen --all-groups" # Command to run when changes are detected
         run: |
           .github/workflows/update-dependencies.sh \
           ${{ steps.generate_token.outputs.token }} \

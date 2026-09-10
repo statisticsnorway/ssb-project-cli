@@ -6,23 +6,13 @@ updates:
       interval: weekly
     cooldown:
       default-days: 7
-  - package-ecosystem: pip
-    directory: "/.github/workflows"
+  - package-ecosystem: uv
+    directory: "/"
     schedule:
       interval: monthly
     cooldown:
       default-days: 7
     groups:
-      github-actions-dependencies:
-        patterns:
-          - "*"
-  - package-ecosystem: pip
-    directory: "/docs"
-    schedule:
-      interval: monthly
-    cooldown:
-      default-days: 7
-    groups:
-      docs-dependencies:
+      python-dependencies:
         patterns:
           - "*"

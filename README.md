@@ -55,11 +55,11 @@ git switch --create release main
 ```
 
 ```console
-poetry version <version>
+uv version <version>
 ```
 
 ```console
-git commit --message="<project> <version>" pyproject.toml
+git commit --message="<project> <version>" pyproject.toml uv.lock
 ```
 
 ```console
@@ -70,10 +70,11 @@ git push origin release
 
 ### Setup
 
-1. [Install dependencies](https://cookiecutter-hypermodern-python.readthedocs.io/en/latest/guide.html#installation)
-1. [Install pre-commit hooks](https://cookiecutter-hypermodern-python.readthedocs.io/en/latest/guide.html#running-pre-commit-from-git)
-1. Run tests: `nox -r` ([More information here](https://cookiecutter-hypermodern-python.readthedocs.io/en/latest/guide.html#using-nox))
-1. Run the help command: `poetry run ssb-project --help`
+1. [Install uv](https://docs.astral.sh/uv/getting-started/installation/)
+1. Install dependencies: `uv sync --all-groups`
+1. Install pre-commit hooks: `uv run pre-commit install`
+1. Run tests: `uv run nox -r`
+1. Run the help command: `uv run ssb-project --help`
 
 ## License
 
