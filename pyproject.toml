@@ -42,7 +42,7 @@ python = ">=3.10,<4.0"
 
 [tool.poetry.group.dev.dependencies]
 pygments = ">=2.10.0"
-black = ">=24.4.2"
+black = ">=26.3.1"
 coverage = { extras = ["toml"], version = ">=6.2" }
 darglint = ">=1.8.1"
 flake8 = ">=4.0.1"
