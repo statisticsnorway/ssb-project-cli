@@ -84,16 +84,14 @@ def validate_and_fix_git_config(
 
     if not (valid_global_git_config and valid_project_git_files):
 
-        print(
-            f"""
+        print(f"""
             :x:    Your project's Git configuration does not follow SSB recommendations,
             :x:    which may result in sensitive data being pushed to GitHub.
 
                 Git file validation status:
             {":white_check_mark:" if valid_global_git_config else ":x:"}      - Global .gitconfig file
             {":white_check_mark:" if valid_project_git_files else ":x:"}      - Project .gitignore and .gitattributes files
-            """
-        )
+            """)
         confirm_fix_ssb_git_config(
             project_name,
             template_repo_url,
