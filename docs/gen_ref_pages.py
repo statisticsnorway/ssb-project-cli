@@ -4,7 +4,6 @@ from pathlib import Path
 
 import mkdocs_gen_files
 
-
 nav = mkdocs_gen_files.Nav()
 
 for path in sorted(Path("src").rglob("*.py")):
