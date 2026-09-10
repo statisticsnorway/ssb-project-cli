@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 from ssb_project_cli.ssb_project.create.create import delete_folder
 
-
 CREATE = "ssb_project_cli.ssb_project.create.create"
 
 

@@ -21,7 +21,6 @@ from .settings import STAT_TEMPLATE_DEFAULT_REFERENCE
 from .settings import STAT_TEMPLATE_REPO_URL
 from .util import handle_no_kernel_argument
 
-
 # Don't print with color, it's difficult to read when run in Jupyter
 rich_utils.STYLE_OPTION = ""
 rich_utils.STYLE_SWITCH = ""

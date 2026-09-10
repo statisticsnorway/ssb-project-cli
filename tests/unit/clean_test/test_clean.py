@@ -8,7 +8,6 @@ import pytest
 from ssb_project_cli.ssb_project.clean.clean import clean_project
 from ssb_project_cli.ssb_project.clean.clean import clean_venv
 
-
 CLEAN = "ssb_project_cli.ssb_project.clean.clean"
 
 

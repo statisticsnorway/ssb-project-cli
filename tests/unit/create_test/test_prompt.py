@@ -7,7 +7,6 @@ from unittest.mock import patch
 from ssb_project_cli.ssb_project.create.prompt import choose_login
 from ssb_project_cli.ssb_project.create.prompt import request_name_email
 
-
 PROMPT = "ssb_project_cli.ssb_project.create.prompt"
 
 

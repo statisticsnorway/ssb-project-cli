@@ -15,7 +15,6 @@ from ssb_project_cli.ssb_project.build.build import ipykernel_attach_bashrc
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_DEFAULT_REFERENCE
 from ssb_project_cli.ssb_project.settings import STAT_TEMPLATE_REPO_URL
 
-
 BUILD = "ssb_project_cli.ssb_project.build.build"
 
 
