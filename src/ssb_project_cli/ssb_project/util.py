@@ -20,6 +20,7 @@ from rich import print
 
 from .settings import HOME_PATH
 
+
 kernelspec_manager = jupyter_client.kernelspec.KernelSpecManager()
 
 T = TypeVar("T")

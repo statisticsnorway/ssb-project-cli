@@ -5,6 +5,7 @@ import pytest
 
 from ssb_project_cli.ssb_project.create.create import is_memory_full
 
+
 CREATE = "ssb_project_cli.ssb_project.create.create"
 
 

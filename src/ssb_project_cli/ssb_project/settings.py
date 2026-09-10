@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 
+
 GITHUB_ORG_NAME = "statisticsnorway"
 HOME_PATH = Path.home()
 CURRENT_WORKING_DIRECTORY = Path.cwd()

@@ -4,6 +4,7 @@ import pytest
 
 from ssb_project_cli.ssb_project.build.environment import running_onprem
 
+
 ENVIRONMENT = "ssb_project_cli.ssb_project.build.environment"
 
 

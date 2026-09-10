@@ -13,6 +13,7 @@ from ssb_project_cli.ssb_project.util import execute_command
 from ssb_project_cli.ssb_project.util import get_project_name_and_root_path
 from ssb_project_cli.ssb_project.util import set_debug_logging
 
+
 UTILS = "ssb_project_cli.ssb_project.util"
 
 
