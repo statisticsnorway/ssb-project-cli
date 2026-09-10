@@ -26,14 +26,14 @@ INTEGRATION_TESTS_PATH = "tests/integration"
 package = "ssb_project_cli"
 python_versions = ["3.14", "3.11"]
 nox.needs_version = ">= 2025.02.09"
-nox.options.sessions = (
+nox.options.sessions = [
     "pre-commit",
     "mypy",
     "unit_tests",
     "integration_tests",
     "typeguard",
     "docs-build",
-)
+]
 
 
 def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
