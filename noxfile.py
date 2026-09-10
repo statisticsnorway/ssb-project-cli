@@ -24,7 +24,7 @@ except ImportError:
 UNIT_TESTS_PATH = "tests/unit"
 INTEGRATION_TESTS_PATH = "tests/integration"
 package = "ssb_project_cli"
-python_versions = ["3.14", "3.13", "3.11"]
+python_versions = ["3.14", "3.11"]
 nox.needs_version = ">= 2025.02.09"
 nox.options.sessions = (
     "pre-commit",
@@ -110,7 +110,7 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
                 break
 
 
-@session(name="pre-commit", python=python_versions[0])
+@session(name="pre-commit", python="3.13")
 def precommit(session: Session) -> None:
     """Lint using pre-commit."""
     args = session.posargs or [
