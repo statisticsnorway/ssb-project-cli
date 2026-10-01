@@ -8,8 +8,8 @@ classifiers = ["Development Status :: 4 - Beta"]
 readme = "README.md"
 authors = [{ name = "Statistics Norway", email = "stat-dev@ssb.no" }]
 dependencies = [
-    'typer (==0.19.2)',
-    'click (<8.4)',
+    'typer==0.27.2',
+    'click<8.6',
     'gitpython (>=3.1.59)',
     'pygithub (>=1.55)',
     'cruft (>=2.11.1)',
@@ -41,7 +41,7 @@ dev = [
     "coverage[toml]>=6.2",
     "cryptography>=50.0.0",
     "darglint>=1.8.1",
-    "deptry>=0.23.1,<0.24",
+    "deptry>=0.23.1,<0.26",
     "flake8>=4.0.1",
     "flake8-bandit>=2.1.2",
     "flake8-bugbear>=21.9.2",
