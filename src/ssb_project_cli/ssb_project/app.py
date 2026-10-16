@@ -44,7 +44,7 @@ console = Console(color_system=None)
 print = console.print
 
 app = typer.Typer(
-    help="Usage instructions: https://manual.dapla.ssb.no/ssbproject.html",
+    help="Usage instructions: https://manual.dapla.ssb.no/statistikkere/ssb-project.html",
     rich_markup_mode="rich",
     pretty_exceptions_show_locals=False,  # Locals can contain sensitive information
 )
